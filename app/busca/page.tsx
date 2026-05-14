@@ -1,9 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { createClient } from '../../lib/supabase'
 
 export default function Busca() {
+  const router = useRouter()
   const [tipo, setTipo] = useState<'ida' | 'idavolta' | 'multiplos'>('idavolta')
   const [origem, setOrigem] = useState('')
   const [destino, setDestino] = useState('')
@@ -15,6 +18,13 @@ export default function Busca() {
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState('')
   const [voos, setVoos] = useState<any>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) router.replace('/')
+    })
+  }, [router])
 
   async function buscarVoos() {
     if (!origem || !destino || !dataIda) {
@@ -46,7 +56,12 @@ export default function Busca() {
       {/* Header */}
       <div className="px-8 py-5 flex items-center justify-between">
         <Image src="/logo.png" alt="Facilita Pass" width={140} height={46} style={{ objectFit: 'contain' }} />
-        <button className="text-sm text-white/60 hover:text-white transition-colors">Sair</button>
+        <button
+          onClick={async () => { await createClient().auth.signOut(); router.replace('/') }}
+          className="text-sm text-white/60 hover:text-white transition-colors"
+        >
+          Sair
+        </button>
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
