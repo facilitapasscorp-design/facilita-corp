@@ -80,12 +80,16 @@ export async function POST(request: NextRequest) {
     )
 
     // Combina voos de todos os sistemas, ignorando os que retornaram erro
-    const voos = disponibilidades.flatMap(d => {
+    const voosIda = disponibilidades.flatMap(d => {
       if (d.Exception || d.SessaoExpirada) return []
-      return d.Voos ?? []
+      return d.ViagensTrecho1 ?? []
+    })
+    const voosVolta = disponibilidades.flatMap(d => {
+      if (d.Exception || d.SessaoExpirada) return []
+      return d.ViagensTrecho2 ?? []
     })
 
-    return NextResponse.json({ sistemas: sistemasData.Sistemas, voos })
+    return NextResponse.json({ sistemas: sistemasData.Sistemas, voos: voosIda, voosVolta })
 
   } catch (error: unknown) {
     console.error('Erro WOOBA:', error)

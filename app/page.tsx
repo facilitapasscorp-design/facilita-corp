@@ -17,6 +17,7 @@ export default function Home() {
   const [carregandoLogin, setCarregandoLogin] = useState(false)
 
   // Lead form
+  const [modalAberto, setModalAberto] = useState(false)
   const [nomeCompleto, setNomeCompleto] = useState('')
   const [empresa, setEmpresa] = useState('')
   const [emailLead, setEmailLead] = useState('')
@@ -25,6 +26,23 @@ export default function Home() {
   const [enviandoLead, setEnviandoLead] = useState(false)
   const [sucessoLead, setSucessoLead] = useState(false)
   const [erroLead, setErroLead] = useState('')
+
+  function abrirModal() {
+    setSucessoLead(false)
+    setErroLead('')
+    setModalAberto(true)
+  }
+
+  function fecharModal() {
+    setModalAberto(false)
+    setNomeCompleto('')
+    setEmpresa('')
+    setEmailLead('')
+    setTelefone('')
+    setGastoMensal('')
+    setErroLead('')
+    setSucessoLead(false)
+  }
 
   async function entrar() {
     setCarregandoLogin(true)
@@ -99,110 +117,141 @@ export default function Home() {
         </div>
 
         <div className="flex-1 flex flex-col justify-center px-12 pb-10">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-white leading-snug mb-3">
-              Gestão inteligente de<br />viagens corporativas
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-white leading-snug mb-4">
+              Soluções em viagens corporativas com controle, economia e previsibilidade
             </h2>
             <p className="text-blue-200 text-sm leading-relaxed max-w-sm">
-              Centralize, controle e otimize os gastos com viagens da sua empresa.
-              Mais eficiência, mais economia e total visibilidade para o seu time.
+              A Facilita Pass traz soluções inteligentes em viagens para a sua empresa,
+              garantindo economia comprovada.
             </p>
           </div>
 
-          {/* Formulário de solicitação */}
-          <div className="rounded-2xl p-7" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
-            <h3 className="text-white font-semibold text-base mb-5">Solicitar acesso</h3>
+          <button
+            onClick={abrirModal}
+            className="self-start px-7 py-3 rounded-xl text-sm font-semibold text-white border border-white/30 transition-all"
+            style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}
+            onMouseEnter={e => { (e.target as HTMLButtonElement).style.backgroundColor = 'rgba(255,255,255,0.2)' }}
+            onMouseLeave={e => { (e.target as HTMLButtonElement).style.backgroundColor = 'rgba(255,255,255,0.12)' }}
+          >
+            Tenho interesse
+          </button>
+        </div>
+      </div>
+
+      {/* ── Modal de solicitação ── */}
+      {modalAberto && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          onClick={e => { if (e.target === e.currentTarget) fecharModal() }}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl p-8 relative"
+            style={{ backgroundColor: '#1a2744', boxShadow: '0 25px 60px rgba(0,0,0,0.5)' }}
+          >
+            <button
+              onClick={fecharModal}
+              className="absolute top-4 right-4 text-blue-300 hover:text-white transition-colors"
+              aria-label="Fechar"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
 
             {sucessoLead ? (
               <div className="text-center py-8">
                 <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
+                  className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
                   style={{ backgroundColor: '#22c55e' }}
                 >
-                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <p className="text-white font-semibold">Solicitação enviada!</p>
-                <p className="text-blue-200 text-sm mt-1">Nossa equipe entrará em contato em breve.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Nome completo"
-                  value={nomeCompleto}
-                  onChange={e => setNomeCompleto(e.target.value)}
-                  className={inputLeadClass}
-                />
-                <input
-                  type="text"
-                  placeholder="Empresa"
-                  value={empresa}
-                  onChange={e => setEmpresa(e.target.value)}
-                  className={inputLeadClass}
-                />
-                <input
-                  type="email"
-                  placeholder="E-mail corporativo"
-                  value={emailLead}
-                  onChange={e => setEmailLead(e.target.value)}
-                  className={inputLeadClass}
-                />
-                <input
-                  type="tel"
-                  placeholder="Telefone / WhatsApp"
-                  value={telefone}
-                  onChange={e => setTelefone(e.target.value)}
-                  className={inputLeadClass}
-                />
-                <select
-                  value={gastoMensal}
-                  onChange={e => setGastoMensal(e.target.value as GastoMensal)}
-                  className={`${inputLeadClass} ${gastoMensal === '' ? 'text-blue-300' : 'text-white'}`}
-                  style={{ appearance: 'auto' }}
-                >
-                  <option value="" disabled style={{ color: '#374151' }}>
-                    Gasto médio mensal com viagens
-                  </option>
-                  <option value="ate-5k" style={{ color: '#374151' }}>Até R$ 5 mil</option>
-                  <option value="5k-20k" style={{ color: '#374151' }}>R$ 5 mil a R$ 20 mil</option>
-                  <option value="20k-50k" style={{ color: '#374151' }}>R$ 20 mil a R$ 50 mil</option>
-                  <option value="acima-50k" style={{ color: '#374151' }}>Acima de R$ 50 mil</option>
-                </select>
-
-                {erroLead && (
-                  <p className="text-red-300 text-xs">{erroLead}</p>
-                )}
-
+                <p className="text-white font-semibold text-lg">Solicitação enviada!</p>
+                <p className="text-blue-200 text-sm mt-2 mb-6">Nossa equipe entrará em contato em breve.</p>
                 <button
-                  onClick={solicitarAcesso}
-                  disabled={enviandoLead}
-                  className="w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50 mt-1"
+                  onClick={fecharModal}
+                  className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors"
                   style={{ backgroundColor: '#3b82f6' }}
-                  onMouseEnter={e => { (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb' }}
-                  onMouseLeave={e => { (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6' }}
                 >
-                  {enviandoLead ? 'Enviando...' : 'Solicitar acesso'}
+                  Fechar
                 </button>
               </div>
+            ) : (
+              <>
+                <h3 className="text-white font-semibold text-lg mb-1">Solicitar acesso</h3>
+                <p className="text-blue-200 text-sm mb-6">Preencha os dados e nossa equipe entra em contato.</p>
+
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Nome completo"
+                    value={nomeCompleto}
+                    onChange={e => setNomeCompleto(e.target.value)}
+                    className={inputLeadClass}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Empresa"
+                    value={empresa}
+                    onChange={e => setEmpresa(e.target.value)}
+                    className={inputLeadClass}
+                  />
+                  <input
+                    type="email"
+                    placeholder="E-mail corporativo"
+                    value={emailLead}
+                    onChange={e => setEmailLead(e.target.value)}
+                    className={inputLeadClass}
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Telefone / WhatsApp"
+                    value={telefone}
+                    onChange={e => setTelefone(e.target.value)}
+                    className={inputLeadClass}
+                  />
+                  <select
+                    value={gastoMensal}
+                    onChange={e => setGastoMensal(e.target.value as GastoMensal)}
+                    className={`${inputLeadClass} ${gastoMensal === '' ? 'text-blue-300' : 'text-white'}`}
+                    style={{ appearance: 'auto' }}
+                  >
+                    <option value="" disabled style={{ color: '#374151' }}>
+                      Gasto médio mensal com viagens
+                    </option>
+                    <option value="ate-5k" style={{ color: '#374151' }}>Até R$ 5 mil</option>
+                    <option value="5k-20k" style={{ color: '#374151' }}>R$ 5 mil a R$ 20 mil</option>
+                    <option value="20k-50k" style={{ color: '#374151' }}>R$ 20 mil a R$ 50 mil</option>
+                    <option value="acima-50k" style={{ color: '#374151' }}>Acima de R$ 50 mil</option>
+                  </select>
+
+                  {erroLead && (
+                    <p className="text-red-300 text-xs">{erroLead}</p>
+                  )}
+
+                  <button
+                    onClick={solicitarAcesso}
+                    disabled={enviandoLead}
+                    className="w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50 mt-1"
+                    style={{ backgroundColor: '#3b82f6' }}
+                    onMouseEnter={e => { (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb' }}
+                    onMouseLeave={e => { (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6' }}
+                  >
+                    {enviandoLead ? 'Enviando...' : 'Solicitar acesso'}
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>
-      </div>
+      )}
 
       {/* ── Lado direito – branco ── */}
       <div className="w-full lg:w-1/2 flex flex-col bg-white">
-        <div className="p-8 lg:p-10">
-          <Image
-            src="/logo.png"
-            alt="Facilita Pass"
-            width={120}
-            height={36}
-            style={{ objectFit: 'contain', objectPosition: 'left' }}
-          />
-        </div>
-
         <div className="flex-1 flex items-center justify-center px-8 sm:px-12 lg:px-16">
           <div className="w-full max-w-sm">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">Acesse sua conta</h1>
