@@ -1,0 +1,10 @@
+{
+  "Data": "/Date(1778851243342-0300)/",
+  "DataVersao": "14/05/2026",
+  "SessaoExpirada": false,
+  "Exception": {
+    "Message": "Enter your credit card."
+  },
+  "Financiamentos": null,
+  "RequerDadosComplementaresDoTitular": false
+}

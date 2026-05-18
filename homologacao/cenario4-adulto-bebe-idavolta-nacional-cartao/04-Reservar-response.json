@@ -1,0 +1,346 @@
+{
+  "Data": "/Date(1778853877949-0300)/",
+  "DataVersao": "14/05/2026",
+  "SessaoExpirada": false,
+  "CobrancaDeServico": null,
+  "CodigoDeAutorizacao": null,
+  "Exception": null,
+  "Reservas": [
+    {
+      "Id": 101051,
+      "Agencia": {
+        "Id": 295,
+        "Contato": "55 61 34350420",
+        "Email": "api.travellink@wooba.com.br",
+        "Localizacao": {
+          "Id": 0,
+          "Bairro": "",
+          "CEP": "",
+          "Cidade": "",
+          "Complemento": "",
+          "Endereco": "",
+          "Estado": "  ",
+          "Numero": "",
+          "Pais": "Brasil"
+        },
+        "Nome": "Desenvolvedores Facilita Pass",
+        "Unidade": "Desenvolvedores"
+      },
+      "Alerta": null,
+      "Bilhetes": [],
+      "CancelamentoConfiguracao": null,
+      "ClienteUnidade": null,
+      "Contatos": [
+        {
+          "Id": 0,
+          "Cidade": null,
+          "Email": null,
+          "Endereco": null,
+          "NumeroDDD": "11",
+          "NumeroDDI": "55",
+          "NumeroTelefone": "999999999",
+          "Nome": "JOAO SILVA",
+          "Tipo": 0
+        },
+        {
+          "Id": 0,
+          "Cidade": null,
+          "Email": null,
+          "Endereco": null,
+          "NumeroDDD": "61",
+          "NumeroDDI": "55",
+          "NumeroTelefone": "34350420",
+          "Nome": "Facilita Pass Viagens",
+          "Tipo": 2
+        },
+        {
+          "Id": 0,
+          "Cidade": null,
+          "Email": null,
+          "Endereco": null,
+          "NumeroDDD": "61",
+          "NumeroDDI": "55",
+          "NumeroTelefone": "34350420",
+          "Nome": "Desenvolvedores Facilita Pass",
+          "Tipo": 0
+        }
+      ],
+      "DadosCorporativos": [
+        {
+          "Informacao": "Solicitante",
+          "Valor": "JOAO"
+        }
+      ],
+      "DataCriacao": "/Date(1778846640000-0300)/",
+      "DataEmissao": "/Date(-62135589600000-0300)/",
+      "EMDs": [],
+      "ExigirChaveDeSegurancaParaCancelar": false,
+      "Localizador": "OSUQLT",
+      "Loja": null,
+      "MapaDeAssentosDisponivel": true,
+      "Passageiros": [
+        {
+          "Id": 0,
+          "Assentos": null,
+          "CPF": null,
+          "Documento": {
+            "Id": 0,
+            "Nacionalidade": "BR",
+            "Numero": "12345678901",
+            "PaisEmissor": "BR",
+            "Tipo": 1,
+            "Validade": "/Date(2094433200000-0300)/"
+          },
+          "Email": null,
+          "FaixaEtaria": "ADT",
+          "FidelidadeTam": null,
+          "Fidelidades": null,
+          "InfDocumento": null,
+          "InfPassaporte": {
+            "Id": 0,
+            "Nacionalidade": "",
+            "NomeDoMeioPax": null,
+            "NomePax": null,
+            "Numero": "",
+            "PaisEmissor": "",
+            "SobrenomePax": null,
+            "Validade": "/Date(-62135589600000-0300)/"
+          },
+          "InfantilLinha": null,
+          "InfantilNascimento": "/Date(-62135589600000-0300)/",
+          "InfantilNome": "",
+          "InfantilSexo": "",
+          "InfantilSobrenome": "",
+          "InformacaoTributaria": null,
+          "Linha": "1",
+          "Nascimento": "/Date(631072800000-0300)/",
+          "Nome": "JOAO",
+          "NomeDoMeio": "",
+          "NumeroAvianca": null,
+          "NumeroAzul": null,
+          "NumeroFidelidadeGenerico": null,
+          "Passaporte": {
+            "Id": 0,
+            "Nacionalidade": "",
+            "NomeDoMeioPax": null,
+            "NomePax": null,
+            "Numero": "",
+            "PaisEmissor": "",
+            "SobrenomePax": null,
+            "Validade": "/Date(-62135589600000-0300)/"
+          },
+          "PossuiBebe": false,
+          "RecusarEnvioDoEmailParaFornecedor": false,
+          "RecusarEnvioDoTelefoneParaFornecedor": false,
+          "Redress": null,
+          "ServicosAuxiliares": null,
+          "Sexo": "M",
+          "SmilesGol": "",
+          "Sobrenome": "SILVA",
+          "TaxaAssento": 0,
+          "TaxaBagagem": 0,
+          "Telefone": null,
+          "Tipo": null,
+          "VoeBiz": ""
+        }
+      ],
+      "Pedido": null,
+      "PermiteCancelar": true,
+      "PermiteEmitir": true,
+      "PermiteReemissao": true,
+      "PermiteReemissaoCombinada": true,
+      "PermiteReemissaoTarifada": true,
+      "PnrClasseRevendida": false,
+      "PrazoEmissao": "/Date(1779156000000-0300)/",
+      "ReemissaoExigeRemoverTrechoAntesDaPesquisa": false,
+      "ReservaParaNovoProcessoReemissao": 0,
+      "ReservaRecalculadaParaReemissao": false,
+      "Sistema": "Gol_GWS",
+      "SistemaLabel": "GOL  GWS",
+      "Status": "Ativa",
+      "Usuario": {
+        "Id": 3114,
+        "Celular": null,
+        "Email": null,
+        "Nome": "Facilita Pass Viagens",
+        "NomeCompleto": null,
+        "Telefone": null
+      },
+      "ValorPendenteParaPagamento": null,
+      "Viagens": [
+        {
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "G3",
+            "Descricao": "Gol Linhas Aéreas"
+          },
+          "ClasseBaseReferencias": null,
+          "Combinada": false,
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "GIG",
+            "Descricao": "GIG - RIO DE JANEIRO"
+          },
+          "Duracao": 85,
+          "DuracoesSegmentos": null,
+          "Fornecedor": {
+            "Id": 0,
+            "Codigo": 70,
+            "Label": "GOL  GWS",
+            "Nome": "Gol_GWS"
+          },
+          "HouveAlteracaoDeValores": false,
+          "Id": 0,
+          "IdentificacaoDaViagem": null,
+          "IsNdc": false,
+          "NumeroParadas": 0,
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "GRU",
+            "Descricao": "GRU - SAO PAULO"
+          },
+          "PossuiDetalheDeFamilia": false,
+          "Preco": {
+            "Id": 0,
+            "EqCambio": 1,
+            "EqMoeda": "",
+            "Moeda": "BRL",
+            "PrecoAdulto": {
+              "Id": 0,
+              "EqValorTarifa": 0,
+              "EqValorTaxaServico": 0,
+              "FaixaEtaria": "ADT",
+              "Quantidade": 1,
+              "TaxasConsolidador": 0,
+              "ValorFee": 0,
+              "ValorObFee": 0,
+              "ValorPenalidade": 0,
+              "ValorRav": 0,
+              "ValorTarifa": 212.9,
+              "ValorTarifaNet": 212.9,
+              "ValorTaxaAssento": 0,
+              "ValorTaxaBagagem": 0,
+              "ValorTaxaCombustivel": 0,
+              "ValorTaxaEmbarque": 33.64,
+              "ValorTaxaMenorDesacompanhado": 0,
+              "ValorTaxaServico": 40
+            },
+            "PrecoBebe": null,
+            "PrecoCrianca": null,
+            "Tarifa": 212.9,
+            "TarifaOperadora": false,
+            "TarifaPrivada": false,
+            "Taxa": 73.64,
+            "TaxasConsolidador": 0,
+            "Total": 286.54,
+            "TotalGeral": 286.54,
+            "TotalTarifa": 212.9,
+            "TotalTarifaNet": 212.9,
+            "TotalTaxaAssento": 0,
+            "TotalTaxaBagagem": 0,
+            "TotalTaxaDeCombustivel": 0,
+            "TotalTaxaEmbarque": 33.64,
+            "TotalTaxaMenorDesacompanhado": 0,
+            "TotalTaxaServico": 40,
+            "TourCodeIdAplicado": 0,
+            "ValorComissao": null,
+            "ValorEMD": 0,
+            "ValorFEE": 0,
+            "ValorObFee": 0,
+            "ValorRAV": 0
+          },
+          "Rota": "D",
+          "Segmento": null,
+          "SubFornecedor": null,
+          "TempoDeDuracao": "01:25",
+          "VooReferenciaIds": null,
+          "Voos": [
+            {
+              "Id": 0,
+              "BagagemInclusa": false,
+              "BagagemIndicador": 2,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 0,
+              "BagagemUnidadeDeMedida": "KG",
+              "Bagagens": [
+                {
+                  "BagagemInclusa": true,
+                  "BagagemIndicador": 3,
+                  "BagagemPeso": 12,
+                  "BagagemQuantidade": 1,
+                  "BagagemTipo": 11,
+                  "BagagemUnidadeDeMedida": "KG PER BAG"
+                },
+                {
+                  "BagagemInclusa": true,
+                  "BagagemIndicador": 3,
+                  "BagagemPeso": 10,
+                  "BagagemQuantidade": 1,
+                  "BagagemTipo": 12,
+                  "BagagemUnidadeDeMedida": "KG PER BAG"
+                }
+              ],
+              "BaseTarifaria": [
+                {
+                  "Id": 0,
+                  "Classe": "O",
+                  "Codigo": "OOJIAG2J",
+                  "Familia": "LI",
+                  "FamiliaCor": "#008000",
+                  "FamiliaCorFonte": "#FFFFFF",
+                  "FamiliaDescricao": "LIGHT"
+                }
+              ],
+              "Cabine": "Econ.",
+              "CabineTipo": null,
+              "Campo1": null,
+              "CiaMandatoria": {
+                "Id": 0,
+                "CodigoIata": "G3",
+                "Descricao": "Gol Linhas Aéreas"
+              },
+              "CiaOperacional": null,
+              "Classe": "O",
+              "Companhia": null,
+              "Conexao": false,
+              "DataChegada": "/Date(1782394800000-0300)/",
+              "DataSaida": "/Date(1782389700000-0300)/",
+              "Destino": {
+                "Id": 0,
+                "CodigoIata": "GIG",
+                "Descricao": "GIG - RIO DE JANEIRO"
+              },
+              "Duracao": "01:25",
+              "DuracaoDaConexao": "",
+              "Equipamento": "789",
+              "Escalas": [],
+              "Familia": "LIGHT",
+              "FamiliaCodigo": "LIG",
+              "GrupoDeSegmento": 0,
+              "HoraChegada": "1040",
+              "HoraSaida": "0915",
+              "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico5.gif",
+              "InicioDoSegmento": false,
+              "Linha": "1",
+              "ListaDeClasses": null,
+              "LocalizadorCompanhia": "OSUQLT",
+              "Numero": "0069",
+              "Origem": {
+                "Id": 0,
+                "CodigoIata": "GRU",
+                "Descricao": "GRU - SAO PAULO"
+              },
+              "QuantidadeParadas": 0,
+              "Referencia": "1",
+              "ReferenciaDoSegmento": "I",
+              "Segmento": "1",
+              "SegmentoDeReferencia": null,
+              "Status": "HK"
+            }
+          ]
+        }
+      ],
+      "VoeBiz": ""
+    }
+  ]
+}

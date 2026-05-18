@@ -1,0 +1,10 @@
+{
+  "Data": "/Date(1778854000309-0300)/",
+  "DataVersao": "14/05/2026",
+  "SessaoExpirada": false,
+  "Bilhete": null,
+  "Exception": {
+    "Message": "Function not available for this system"
+  },
+  "Reserva": null
+}

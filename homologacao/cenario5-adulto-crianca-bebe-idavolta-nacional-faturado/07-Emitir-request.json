@@ -1,0 +1,9 @@
+{
+  "Login": "WoobaApi_Air_FacilitaPass",
+  "Senha": "@Woob@FacilitaPass@2026",
+  "ClienteId": 0,
+  "Localizador": "OUTTIX",
+  "Pagamento": {
+    "FormaDePagamento": 1
+  }
+}

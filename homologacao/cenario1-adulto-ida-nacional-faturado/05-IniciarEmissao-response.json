@@ -1,0 +1,236 @@
+{
+  "Data": "/Date(1778788239047-0300)/",
+  "DataVersao": "13/05/2026",
+  "SessaoExpirada": false,
+  "ConfiguracoesDeEmissao": {
+    "CartoesDeCredito": null,
+    "ConfiguracoesCentroDeCusto": null,
+    "ConfiguracoesTourcode": {
+      "OpcoesTourcode": [],
+      "PermiteInserirTourcodeManual": false,
+      "PermitirSelecionar": false,
+      "RequisitarSelecao": false
+    },
+    "ExigirChaveDeSeguranca": false,
+    "ExigirTokenDeSeguranca": false,
+    "FoidObrigatorio": false,
+    "HouveAlteracaoDeValores": false,
+    "OpcoesDePagamento": [
+      {
+        "Id": 0,
+        "AplicaTaxaOBFEE": true,
+        "CartaoConsolidadorAtivo": false,
+        "CartaoDeCredito": true,
+        "CartaoDeCreditoOnline": true,
+        "CartaoVirtualAtivo": false,
+        "CartoesDeCredito": [
+          {
+            "Id": 0,
+            "Bandeira": {
+              "Id": 1,
+              "Nome": "Visa"
+            }
+          },
+          {
+            "Id": 0,
+            "Bandeira": {
+              "Id": 3,
+              "Nome": "Mastercard"
+            }
+          },
+          {
+            "Id": 0,
+            "Bandeira": {
+              "Id": 2,
+              "Nome": "Amex"
+            }
+          },
+          {
+            "Id": 0,
+            "Bandeira": {
+              "Id": 5,
+              "Nome": "Diners"
+            }
+          },
+          {
+            "Id": 0,
+            "Bandeira": {
+              "Id": 6,
+              "Nome": "Hipercard"
+            }
+          },
+          {
+            "Id": 0,
+            "Bandeira": {
+              "Id": 7,
+              "Nome": "Elo"
+            }
+          }
+        ],
+        "CodigoFormaDeRecebimento": 2,
+        "CodigoFormaDeRecebimentoTipo": 6,
+        "Descricao": "Cartão",
+        "ExigirAutorizacaoManual": false,
+        "Faturado": false,
+        "FaturadoEspecial": false,
+        "FormaDeRecebimento": 0,
+        "NumeroDeAutorizacao": "",
+        "PermitirAlterarNumeroDeAutorizacao": true
+      },
+      {
+        "Id": 0,
+        "AplicaTaxaOBFEE": false,
+        "CartaoConsolidadorAtivo": false,
+        "CartaoDeCredito": false,
+        "CartaoDeCreditoOnline": false,
+        "CartaoVirtualAtivo": false,
+        "CartoesDeCredito": [],
+        "CodigoFormaDeRecebimento": 1,
+        "CodigoFormaDeRecebimentoTipo": 2,
+        "Descricao": "Faturada",
+        "ExigirAutorizacaoManual": false,
+        "Faturado": true,
+        "FaturadoEspecial": false,
+        "FormaDeRecebimento": 0,
+        "NumeroDeAutorizacao": "",
+        "PermitirAlterarNumeroDeAutorizacao": false
+      }
+    ],
+    "OpcoesDePagamentoValorCobrancaDeServico": [
+      {
+        "Id": 0,
+        "AplicaTaxaOBFEE": false,
+        "CartaoConsolidadorAtivo": false,
+        "CartaoDeCredito": false,
+        "CartaoDeCreditoOnline": false,
+        "CartaoVirtualAtivo": false,
+        "CartoesDeCredito": null,
+        "CodigoFormaDeRecebimento": 1,
+        "CodigoFormaDeRecebimentoTipo": 0,
+        "Descricao": "FATURADO",
+        "ExigirAutorizacaoManual": false,
+        "Faturado": true,
+        "FaturadoEspecial": false,
+        "FormaDeRecebimento": 101,
+        "NumeroDeAutorizacao": null,
+        "PermitirAlterarNumeroDeAutorizacao": false
+      },
+      {
+        "Id": 0,
+        "AplicaTaxaOBFEE": false,
+        "CartaoConsolidadorAtivo": false,
+        "CartaoDeCredito": true,
+        "CartaoDeCreditoOnline": true,
+        "CartaoVirtualAtivo": false,
+        "CartoesDeCredito": null,
+        "CodigoFormaDeRecebimento": 3,
+        "CodigoFormaDeRecebimentoTipo": 0,
+        "Descricao": "Cartão de Credito",
+        "ExigirAutorizacaoManual": false,
+        "Faturado": false,
+        "FaturadoEspecial": false,
+        "FormaDeRecebimento": 105,
+        "NumeroDeAutorizacao": null,
+        "PermitirAlterarNumeroDeAutorizacao": false
+      }
+    ],
+    "PermitirAlterarFEE": false,
+    "PermitirAlterarRAV": true,
+    "RequerUsuarioAceitouRetarifarMascaraCC": false,
+    "TokenDeSegurancaConfiguracao": null,
+    "UnidadesDeNegocio": [],
+    "ValorRAV": 0
+  },
+  "Exception": null,
+  "Localizador": "QVZQWU",
+  "OpcoesDeDocumentoDePassageiro": [],
+  "Passageiros": [
+    {
+      "Id": 0,
+      "CentroDeCusto": null,
+      "Documento": null,
+      "Empenho": null,
+      "InfantilNome": "",
+      "InfantilSobrenome": "",
+      "Nome": "JOAO MR",
+      "Requisicao": null,
+      "Sobrenome": "SILVA",
+      "Tipo": "ADT"
+    }
+  ],
+  "PosicaoChaveDeSeguranca": null,
+  "PosicaoTokenDeSeguranca": null,
+  "Sumario": {
+    "Credito": null,
+    "Moeda": "BRL",
+    "OutrasTaxas": null,
+    "Penalidade": null,
+    "SubTotal": 282.04,
+    "TaxaAdicional": null,
+    "TaxaDU": 40,
+    "TaxaDeServicoContratante": null,
+    "TaxaRAV": null,
+    "Taxas": 62.14,
+    "TotalParaPagamento": 282.04,
+    "TotalTarifa": 179.9,
+    "TotalTaxa": 102.14,
+    "ValorEMD": null
+  },
+  "ValorDeEmissaoPassageiro": [
+    {
+      "Credito": null,
+      "FaixaEtaria": "ADT",
+      "Moeda": "BRL",
+      "OutrasTaxas": null,
+      "Penalidade": 0,
+      "Quantidade": 1,
+      "SubTotal": 282.04,
+      "TarifaUnitaria": 179.9,
+      "TaxaAdicional": 0,
+      "TaxaDU": 40,
+      "TaxaDeServicoContratante": null,
+      "TaxaRAV": null,
+      "Taxas": 62.14,
+      "TotalTarifa": 179.9,
+      "TotalTaxa": 102.14,
+      "ValorEMD": 0
+    }
+  ],
+  "Voos": [
+    {
+      "Assentos": 1,
+      "BagagemInclusa": false,
+      "BagagemIndicador": 2,
+      "BagagemPeso": 0,
+      "BagagemQuantidade": 0,
+      "BagagemUnidadeDeMedida": "KG",
+      "Chegada": "/Date(1782400800000-0300)/",
+      "CiaAerea": {
+        "Id": 0,
+        "CodigoIata": "G3",
+        "Descricao": "Gol Linhas Aéreas"
+      },
+      "Classe": "O (LI)",
+      "Conexao": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "GIG",
+        "Descricao": "GIG - RIO DE JANEIRO"
+      },
+      "Escalas": [],
+      "Familia": "LIGHT",
+      "FamiliaCodigo": "LI",
+      "Id": 1,
+      "LocalizadorCia": "QVZQWU",
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "CGH",
+        "Descricao": "CGH - SAO PAULO"
+      },
+      "Saida": "/Date(1782396600000-0300)/",
+      "Status": "HK",
+      "Surface": false,
+      "Voo": "1446"
+    }
+  ]
+}

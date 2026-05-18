@@ -1,0 +1,52 @@
+{
+  "Data": "/Date(1778851152346-0300)/",
+  "DataVersao": "14/05/2026",
+  "SessaoExpirada": false,
+  "CobrancaDeServico": null,
+  "CodigoDeAutorizacao": "",
+  "Alertas": null,
+  "Bilhetes": [
+    {
+      "Id": 0,
+      "BilheteDoInfantil": false,
+      "DadosCorporativos": [
+        {
+          "Informacao": "Solicitante",
+          "Valor": "JOAO"
+        }
+      ],
+      "DataDeEmissao": "/Date(1778851147116-0300)/",
+      "Numero": "0745010513650",
+      "Pagamentos": null,
+      "Passageiro": "MARIA SANTOS",
+      "PassageirosAdicionais": null,
+      "PaxRef": "1",
+      "Status": "Ativo",
+      "Voos": null,
+      "BilhetesAdicionais": null
+    },
+    {
+      "Id": 0,
+      "BilheteDoInfantil": false,
+      "DadosCorporativos": [
+        {
+          "Informacao": "Solicitante",
+          "Valor": "JOAO"
+        }
+      ],
+      "DataDeEmissao": "/Date(1778851148020-0300)/",
+      "Numero": "0745010513651",
+      "Pagamentos": null,
+      "Passageiro": "JOAO SILVA",
+      "PassageirosAdicionais": null,
+      "PaxRef": "2",
+      "Status": "Ativo",
+      "Voos": null,
+      "BilhetesAdicionais": null
+    }
+  ],
+  "EMDs": [],
+  "EmissaoEmProcessoDeFilaNoFornecedor": false,
+  "Exception": null,
+  "NivelAnaliseDeRisco": null
+}

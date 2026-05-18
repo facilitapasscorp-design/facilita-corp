@@ -1,0 +1,33 @@
+{
+  "Data": "/Date(1778788264482-0300)/",
+  "DataVersao": "13/05/2026",
+  "SessaoExpirada": false,
+  "CobrancaDeServico": null,
+  "CodigoDeAutorizacao": "",
+  "Alertas": null,
+  "Bilhetes": [
+    {
+      "Id": 0,
+      "BilheteDoInfantil": false,
+      "DadosCorporativos": [
+        {
+          "Informacao": "Solicitante",
+          "Valor": "JOAO"
+        }
+      ],
+      "DataDeEmissao": "/Date(1778788254000-0300)/",
+      "Numero": "1272300376281",
+      "Pagamentos": null,
+      "Passageiro": "JOAO SILVA",
+      "PassageirosAdicionais": null,
+      "PaxRef": "1",
+      "Status": "Ativo",
+      "Voos": null,
+      "BilhetesAdicionais": null
+    }
+  ],
+  "EMDs": [],
+  "EmissaoEmProcessoDeFilaNoFornecedor": false,
+  "Exception": null,
+  "NivelAnaliseDeRisco": null
+}

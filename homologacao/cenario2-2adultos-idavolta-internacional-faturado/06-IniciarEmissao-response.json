@@ -1,0 +1,222 @@
+{
+  "Data": "/Date(1778851118073-0300)/",
+  "DataVersao": "14/05/2026",
+  "SessaoExpirada": false,
+  "ConfiguracoesDeEmissao": {
+    "CartoesDeCredito": null,
+    "ConfiguracoesCentroDeCusto": null,
+    "ConfiguracoesTourcode": {
+      "OpcoesTourcode": [],
+      "PermiteInserirTourcodeManual": false,
+      "PermitirSelecionar": false,
+      "RequisitarSelecao": false
+    },
+    "ExigirChaveDeSeguranca": false,
+    "ExigirTokenDeSeguranca": false,
+    "FoidObrigatorio": false,
+    "HouveAlteracaoDeValores": false,
+    "OpcoesDePagamento": [
+      {
+        "Id": 0,
+        "AplicaTaxaOBFEE": false,
+        "CartaoConsolidadorAtivo": false,
+        "CartaoDeCredito": false,
+        "CartaoDeCreditoOnline": false,
+        "CartaoVirtualAtivo": false,
+        "CartoesDeCredito": [],
+        "CodigoFormaDeRecebimento": 1,
+        "CodigoFormaDeRecebimentoTipo": 2,
+        "Descricao": "Faturada",
+        "ExigirAutorizacaoManual": false,
+        "Faturado": true,
+        "FaturadoEspecial": false,
+        "FormaDeRecebimento": 0,
+        "NumeroDeAutorizacao": "",
+        "PermitirAlterarNumeroDeAutorizacao": false
+      }
+    ],
+    "OpcoesDePagamentoValorCobrancaDeServico": [
+      {
+        "Id": 0,
+        "AplicaTaxaOBFEE": false,
+        "CartaoConsolidadorAtivo": false,
+        "CartaoDeCredito": false,
+        "CartaoDeCreditoOnline": false,
+        "CartaoVirtualAtivo": false,
+        "CartoesDeCredito": null,
+        "CodigoFormaDeRecebimento": 1,
+        "CodigoFormaDeRecebimentoTipo": 0,
+        "Descricao": "FATURADO",
+        "ExigirAutorizacaoManual": false,
+        "Faturado": true,
+        "FaturadoEspecial": false,
+        "FormaDeRecebimento": 101,
+        "NumeroDeAutorizacao": null,
+        "PermitirAlterarNumeroDeAutorizacao": false
+      },
+      {
+        "Id": 0,
+        "AplicaTaxaOBFEE": false,
+        "CartaoConsolidadorAtivo": false,
+        "CartaoDeCredito": true,
+        "CartaoDeCreditoOnline": true,
+        "CartaoVirtualAtivo": false,
+        "CartoesDeCredito": null,
+        "CodigoFormaDeRecebimento": 3,
+        "CodigoFormaDeRecebimentoTipo": 0,
+        "Descricao": "Cartão de Credito",
+        "ExigirAutorizacaoManual": false,
+        "Faturado": false,
+        "FaturadoEspecial": false,
+        "FormaDeRecebimento": 105,
+        "NumeroDeAutorizacao": null,
+        "PermitirAlterarNumeroDeAutorizacao": false
+      }
+    ],
+    "PermitirAlterarFEE": false,
+    "PermitirAlterarRAV": true,
+    "RequerUsuarioAceitouRetarifarMascaraCC": true,
+    "TokenDeSegurancaConfiguracao": null,
+    "UnidadesDeNegocio": [],
+    "ValorRAV": 0
+  },
+  "Exception": null,
+  "Localizador": "BV3F9L",
+  "OpcoesDeDocumentoDePassageiro": [],
+  "Passageiros": [
+    {
+      "Id": 0,
+      "CentroDeCusto": null,
+      "Documento": null,
+      "Empenho": null,
+      "InfantilNome": "",
+      "InfantilSobrenome": "",
+      "Nome": "MARIA",
+      "Requisicao": null,
+      "Sobrenome": "SANTOS",
+      "Tipo": "ADT"
+    },
+    {
+      "Id": 0,
+      "CentroDeCusto": null,
+      "Documento": null,
+      "Empenho": null,
+      "InfantilNome": "",
+      "InfantilSobrenome": "",
+      "Nome": "JOAO",
+      "Requisicao": null,
+      "Sobrenome": "SILVA",
+      "Tipo": "ADT"
+    }
+  ],
+  "PosicaoChaveDeSeguranca": null,
+  "PosicaoTokenDeSeguranca": null,
+  "Sumario": {
+    "Credito": null,
+    "Moeda": "BRL",
+    "OutrasTaxas": null,
+    "Penalidade": null,
+    "SubTotal": 1312.14,
+    "TaxaAdicional": null,
+    "TaxaDU": null,
+    "TaxaDeServicoContratante": null,
+    "TaxaRAV": null,
+    "Taxas": 863.2,
+    "TotalParaPagamento": 1312.14,
+    "TotalTarifa": 448.94,
+    "TotalTaxa": 863.2,
+    "ValorEMD": null
+  },
+  "ValorDeEmissaoPassageiro": [
+    {
+      "Credito": null,
+      "FaixaEtaria": "ADT",
+      "Moeda": "BRL",
+      "OutrasTaxas": null,
+      "Penalidade": 0,
+      "Quantidade": 2,
+      "SubTotal": 1312.14,
+      "TarifaUnitaria": 224.47,
+      "TaxaAdicional": 0,
+      "TaxaDU": 0,
+      "TaxaDeServicoContratante": null,
+      "TaxaRAV": null,
+      "Taxas": 863.2,
+      "TotalTarifa": 448.94,
+      "TotalTaxa": 863.2,
+      "ValorEMD": 0
+    }
+  ],
+  "Voos": [
+    {
+      "Assentos": 2,
+      "BagagemInclusa": false,
+      "BagagemIndicador": 2,
+      "BagagemPeso": 0,
+      "BagagemQuantidade": 0,
+      "BagagemUnidadeDeMedida": "KG",
+      "Chegada": "/Date(1782441600000-0300)/",
+      "CiaAerea": {
+        "Id": 0,
+        "CodigoIata": "KL",
+        "Descricao": "KLM"
+      },
+      "Classe": "G (LIGHT)",
+      "Conexao": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "AMS",
+        "Descricao": "AMS - AMSTERDA"
+      },
+      "Escalas": [],
+      "Familia": "LIGHT",
+      "FamiliaCodigo": "LIGHT",
+      "Id": 1,
+      "LocalizadorCia": "BV3F9L",
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Saida": "/Date(1782427500000-0300)/",
+      "Status": "HK",
+      "Surface": false,
+      "Voo": "1586"
+    },
+    {
+      "Assentos": 2,
+      "BagagemInclusa": false,
+      "BagagemIndicador": 2,
+      "BagagemPeso": 0,
+      "BagagemQuantidade": 0,
+      "BagagemUnidadeDeMedida": "KG",
+      "Chegada": "/Date(1782479700000-0300)/",
+      "CiaAerea": {
+        "Id": 0,
+        "CodigoIata": "KL",
+        "Descricao": "KLM"
+      },
+      "Classe": "G (LIGHT)",
+      "Conexao": true,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "Escalas": [],
+      "Familia": "LIGHT",
+      "FamiliaCodigo": "LIGHT",
+      "Id": 2,
+      "LocalizadorCia": "BV3F9L",
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "AMS",
+        "Descricao": "AMS - AMSTERDA"
+      },
+      "Saida": "/Date(1782470400000-0300)/",
+      "Status": "HK",
+      "Surface": false,
+      "Voo": "151"
+    }
+  ]
+}

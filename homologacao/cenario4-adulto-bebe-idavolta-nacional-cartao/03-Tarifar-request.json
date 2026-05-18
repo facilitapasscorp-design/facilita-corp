@@ -1,0 +1,28 @@
+{
+  "Login": "WoobaApi_Air_FacilitaPass",
+  "Senha": "@Woob@FacilitaPass@2026",
+  "ClienteId": 0,
+  "IdentificacaoDaViagem": "6goAAB+LCAAAAAAABAC9lutu2jAUx1+l8r4CdWi45VtIZpopbRCXatJUTW5iwGqIIztsTFUfaN/3BnuxHTsBSpdJg11QW459fP4+52efpE/IRY7VQB5ycAMNzV+yRc6Cpoo10JQr5PSwMYIEOfYAlnKKHDS6Qg1085jvl47NALdg8QT8PrhnYiM9kbAgcfOUxzQRRn/GczDaDeQzVfBMwBYfnlCkRSdzCPO1FYzAGoPVxu1uE3eb7c4MY8f8oHKL0tNr4vbB83wPVVDFvJQqxWBRhMqJGZV8Ab869yh6FwxH9judopmeiYKmwKFntQY6f/euqsSfVwZhrLLKiChnEuqR9FA/hQmqTIVeoGtoPyyu+nFiNbE1YE2bxnazb/dos2/1BollL3A/6UIKd6IicDOSeZVxCN+6zBeswYzy3SBRlUekFyHPVlRduN+/Sgb7N5B7QOkeWPrTVzAHjtUpYV5rFx5YHb3MO15mYceumF9rl4VtbfsbSWMqdJzltHXg7WYNo+4AzClbrllWaG+gMxfZgdLxINXATMVjOCRAuz+dtj6dF3dq+JNzWEVrk8B3qPcajndWEItMX4BVUeTKubyEYcE2iWgVkn5iacqzx1Ys1q0HeflZiAeqaJY8iO1lKJZiTWVMFYSsc5qtOOWx6LSWfAGyhK55qtk/oVuxZma30fXMlJnwpdhtX44C2FNm+8mxZAu+LYcjs0jX9AbjPjaEYUx0mnqSmA96hllzl8s74k0qXp47NI3rK2Oht1Df929r6DKdpHeMilDJZl9y0P0A/bGHNb6h8nGzIzz23MpfluhXPfM/Sz3uPPtV66VcFTrF58YZIK7qQXjhOSC80J1OA+8lCiP0GkWpvkcBYQcUfUzITyiw+fxjFHY9CnIWChK+ff+SA6njQI45QMyBAyF/40rc7+0ndEdTI93tmCf8EsxiI+cZT2jClHl0x1xklCs3ZkoJ/WqDjdiCSZbFnI7ptnyuBNmCZgVPqyeWhr3TtvbSJOXLVRFkCdv+ngqkGugjQ7VJ73V3b8+TUzsuuyzx4xkljqLw4jq6icJoVCNojv9kycl86NeIzdUG7pU4XQ+OMq3Rm7B4I9Xv672O9yRLTFB6Brc6+u7MPVmH6IkasbJD3YJ/Oh3YLctW8KL+laj51+xUTdww7VuvWC76syv8Fzr3/vkHwlF/g+oKAAA=",
+  "ViagemIda": 65585,
+  "ViagemVolta": 131121,
+  "ClassesSelecionadas": [
+    {
+      "BaseTarifaria": "OOJIBG2J",
+      "Classe": "O",
+      "Familia": "LI",
+      "NumeroDoVoo": "69"
+    }
+  ],
+  "ClassesSelecionadasVolta": [
+    {
+      "BaseTarifaria": "NNIABG2J",
+      "Classe": "N",
+      "Familia": "LI",
+      "NumeroDoVoo": "1379"
+    }
+  ],
+  "RetornarPlanoDeFinanciamento": true,
+  "RetornarRegrasTarifarias": true,
+  "TarifarMelhorFamilia": true,
+  "TarifarMelhorPreco": true
+}

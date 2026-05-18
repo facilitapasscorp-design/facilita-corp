@@ -1,0 +1,4945 @@
+{
+  "Data": "/Date(1778851071374-0300)/",
+  "DataVersao": "14/05/2026",
+  "SessaoExpirada": false,
+  "Cia": [
+    {
+      "Id": 0,
+      "CodigoIata": "UX",
+      "Descricao": "AIR EUROPA"
+    },
+    {
+      "Id": 0,
+      "CodigoIata": "TP",
+      "Descricao": "TAP"
+    },
+    {
+      "Id": 0,
+      "CodigoIata": "IB",
+      "Descricao": "Iberia"
+    },
+    {
+      "Id": 0,
+      "CodigoIata": "KL",
+      "Descricao": "KLM"
+    },
+    {
+      "Id": 0,
+      "CodigoIata": "AF",
+      "Descricao": "Air France"
+    },
+    {
+      "Id": 0,
+      "CodigoIata": "BA",
+      "Descricao": "British Airways"
+    },
+    {
+      "Id": 0,
+      "CodigoIata": "LX",
+      "Descricao": "Swiss"
+    },
+    {
+      "Id": 0,
+      "CodigoIata": "LH",
+      "Descricao": "Lufthansa"
+    },
+    {
+      "Id": 0,
+      "CodigoIata": "TK",
+      "Descricao": "Turkish Airlines"
+    },
+    {
+      "Id": 0,
+      "CodigoIata": "UA",
+      "Descricao": "United Airlines "
+    }
+  ],
+  "DataIda": "/Date(1782961200000-0300)/",
+  "DataVolta": "/Date(-62135589600000-0300)/",
+  "Destino": {
+    "Id": 0,
+    "CodigoIata": "LIS",
+    "Descricao": "LISBOA (LIS)"
+  },
+  "Exception": null,
+  "ExceptionPorSistema": null,
+  "Origem": {
+    "Id": 0,
+    "CodigoIata": "MAD",
+    "Descricao": "MADRI - Aeropuerto De Barajas (MAD)"
+  },
+  "QuantidadeAdultos": 2,
+  "QuantidadeBebes": 0,
+  "QuantidadeCriancas": 0,
+  "Recomendacoes": null,
+  "Rota": "I",
+  "TempoPesquisa": "00:00:03.9700000",
+  "ViagensMultiplosTrechos": null,
+  "ViagensTrecho1": [
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "UX",
+        "Descricao": "AIR EUROPA"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 80,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "01:20"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 65564,
+      "IdentificacaoDaViagem": "mwUAAB+LCAAAAAAABACtVNtu2zAM/ZVBz7n40qSJ31yn6YwljZdLsXbYAyMrqVDbNCR7y1D030cpbrwMKNACAwz7iKQOySPKzyxkgddhEQucDruy7+mBBZWqRYetpGaBa79xSnEjCpTAArb5xjps/lSyYAeZpsjELpwebV+SPyb3GmsVYSriNCwzySFF4iKGtSzRsk6ErmSBlOL7M1vQrnk4oX0TQrN4RSgh5DnesOtcdh1v7TiBfdgxh+M4btc+reflB/GDkjtYYwUZpXEHPdcUFd415U02DZgK0aBEYY6cStWvlZqaTlSLUiiyKWi7BTKAtmpFsSnY2/KxP4ARVTMW3Qsn9bpjn4+6/si7HIiRC74YUt132LQ7v1GkFyPTjD4uOxOW4KLxpvpoD+Plp+vNcpGEZAxbscJWrcnqTbk+G5cz9A2eRG+HRTZsYMNqBRzQGNzAM5bbOjeluoMxLVZin4uiwuasp6DE+ncpTHNsmTDSLsKi1ets0Y7KFQlMDA/394uLmRmZybHrqygz6rIHg6e2w/W1wclfeHlbH6NjjgUdJXusqlIH/T4tK1Gn2KsU/BRZJounHse8t1X9X4hb0FCkWzz0Z7jHHBQHTVvyEopHCZLjwO/t5c42lcvMqP/MbjEXbWqaarnHdp0osZOHxsBeKIDmg1dCSRpwDscTP419XKR2xpS9eF9rKCqZQmr4jcyJ0DiHg8yxEWlTWPdcpPSloC83lOLEd07o/0PofpzQ+z+ENAEZtW9bv4PMcLF7c8SwJ7RVAp4SlEVlLrPYCSUKLiGBQ3Okxc4kzZqhMWyxufPnvEeu1//M+5g6bTlD/1RPVaumCW1vO5dYgNQhF1qj+fd9lHtqDCd6cz0WZUWkKxrn93X88gf1DbT8mwUAAA==",
+      "IsNdc": false,
+      "NumeroParadas": 0,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 10,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 57.55,
+          "ValorTarifaNet": 57.55,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 140.82,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 281.64,
+        "TaxasConsolidador": 0,
+        "Total": 396.74,
+        "TotalGeral": 396.74,
+        "TotalTarifa": 115.1,
+        "TotalTarifaNet": 115.1,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 281.64,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 18,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "01:20",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "Z",
+              "Codigo": "ZYYO4L",
+              "Familia": "LITE",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "LITE"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "UX",
+            "Descricao": "AIR EUROPA"
+          },
+          "CiaOperacional": null,
+          "Classe": "Z",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1782985800000-0300)/",
+          "DataSaida": "/Date(1782984600000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "01:20",
+          "DuracaoDaConexao": null,
+          "Equipamento": "73H",
+          "Escalas": null,
+          "Familia": "LITE",
+          "FamiliaCodigo": "LIT",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "0650",
+          "HoraSaida": "0630",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico53.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1159",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "UX",
+        "Descricao": "AIR EUROPA"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 80,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "01:20"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 327708,
+      "IdentificacaoDaViagem": "mwUAAB+LCAAAAAAABACtVNtu2zAM/ZVBz7n4UreJ39yk6Yzl4uVSrBj2wMhKKtQWDdneMgT991GKGy8DCrTAAMOiSOqQPCJ1ZBELvQ4bsdDpsFv7nxxYWOladNhKlix07Rqn5DcgRwksZJtvrMNmzwULd5CV5JnYjdOj40uyx2ReY61HmIo4jYpMckiRsAhhLQu0qGNRVlIhhfh+ZAs6NYvGdG5M0jRekZSQ5Dnedde56Tre2nFC+7FTDMdx3K79WsvLD8IHLXewxgoyFvo3w96Agi6jhya98aYRJkI0UqIxR06plq+ZmpzOUItCaNJpaKsFUkBp2RrFJmFvy4d+AAPKZii6V07qdYc+H3T9gXcTiIELvrimvB+wKXd2r4kvRqopLS67IJbERWNNy5M+ipef7jbLRRKRMmrJilq2xqs36fpsTO5VEBi30dtuxuQGrnWrNXBAw7MbesY6r3Njdi3KSuxzoSps7noCWqx/F8IUx5YJI+5GqFq+LjZtq9wSwYQwf3xcBFPTMuNT1bejzLDL5kae2ArXd0ZO/pKX8/rkHXNUdJXsqaqKMuz3aVuJOsVepeGnyDKpnnsc895W938hbqEElW7x0J/iHnPQHEo6khegniRIjoHf28udLSqXmWH/yOaYizY0dbXcY7tPtNjJQ6NgL+RA/cEroSU1OIfTjZ/bPlap7TFtB+9rDaqSKaQG39CciBJncJA5NiRtlDXPREorOX25pxBnvEtA/x9A9+OA3v8BpA7IqHxb+gNkBos9miuGPUlbLeA5QakqM8xiJ7RQXEICh+ZK1c4EzZqmMWixmflL3BPW6zvzPqROm861f86nqnVTRGmnnUtUIMuIi7JE8/Z9FHtiFGd4Mx6LoiLQFbXz+yp++QPGkyTsmwUAAA==",
+      "IsNdc": false,
+      "NumeroParadas": 0,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 33,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 189.94,
+          "ValorTarifaNet": 189.94,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 140.82,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 281.64,
+        "TaxasConsolidador": 0,
+        "Total": 661.52,
+        "TotalGeral": 661.52,
+        "TotalTarifa": 379.88,
+        "TotalTarifaNet": 379.88,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 281.64,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 18,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "01:20",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "N",
+              "Codigo": "NYYO5L",
+              "Familia": "LITE",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "LITE"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "UX",
+            "Descricao": "AIR EUROPA"
+          },
+          "CiaOperacional": null,
+          "Classe": "N",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783016100000-0300)/",
+          "DataSaida": "/Date(1783014900000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "01:20",
+          "DuracaoDaConexao": null,
+          "Equipamento": "73H",
+          "Escalas": null,
+          "Familia": "LITE",
+          "FamiliaCodigo": "LIT",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1515",
+          "HoraSaida": "1455",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico53.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1155",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "TP",
+        "Descricao": "TAP"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 85,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "01:25"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 131100,
+      "IdentificacaoDaViagem": "pwUAAB+LCAAAAAAABACtVG1vmzAQ/i/+nBdDmi7hGwWlQ2sSFtJK07QPF+OkVoFDNmyZqv73nR0alEqVWmkSgvO9PL577o5nFrLAH7CIBXzAbtx7cWRBo1s5YJkyLPDcN8nJb0aOCljAtikbsOVTzYI9FIY8U3fgIwrfkD0h8xZbHWEukzysCyUgR8Kak17V6FBjaRpVIV3x85mtKWoZxhQXk3SXZCSlJPncvx7yL0PubzkP3MNOd3DOvaF7esvLL8IHrfawxQYKFsz4aEpZb8KHLrv4vhMWUnZSqrFEQZma10RtSmekdS016TT0xQIpwDiyosTm6+/EfDKFGSUzl8MrnvvD+UTMhpOZ/2UqZx5M5DWl/YBdtctbTXQxUt3Rx2MXvJK4ttaVZTE3nSW0prCnKex5irN3ifrqTL4/tW7R+27O5E+tHLcaBKBl2Atc4KotbZbct4lm8lDKqsGuywvQcvu3lrYutkkZ0RZh1VN1ceiH5Ia4tVUteJxF/MqOS3wi5CYqLLVsa+UFCXGSRev7lTunb86bVXuKSgRW1E/22DS1CcZjOjayzXHUaPgti0JVTyOB5Winx38Qd2Cgynd4HN/hAUvQAgyFlDVUjwqUQG82Oqi9K69UhW3AM1thKS+vp+lWB7zUpVru1bFTshdyomERjdSKhl3Aqf3nFUiq3A2cdkv4vYWqUTnk9h7bilQaXMJRldjRdl8581Lm9CWnb7d0xRnvEnDyBtD7PKD/fwBpJgoq35X+AIXFYj9sy+FA0k5LeEpRVY1dbLmXWlZCQQrHrrXV3l5adGNk0RK7/5e4J6zXf87HkAZ9OteTcz5Nq7sijFt9obACZUIhjUH7H/ws9sIqzvB2YdZ1Q6AZjffHKn75B6rsCXCnBQAA",
+      "IsNdc": false,
+      "NumeroParadas": 0,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 7,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 40.29,
+          "ValorTarifaNet": 40.29,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 182.76,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 365.52,
+        "TaxasConsolidador": 0,
+        "Total": 446.1,
+        "TotalGeral": 446.1,
+        "TotalTarifa": 80.58,
+        "TotalTarifaNet": 80.58,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 365.52,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 19,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "01:25",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "T",
+              "Codigo": "TF0DSC04",
+              "Familia": "DISCOUNT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "DISCOUNT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "TP",
+            "Descricao": "TAP"
+          },
+          "CiaOperacional": {
+            "Id": 0,
+            "CodigoIata": "NI",
+            "Descricao": null
+          },
+          "Classe": "T",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783043400000-0300)/",
+          "DataSaida": "/Date(1783041900000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "01:25",
+          "DuracaoDaConexao": null,
+          "Equipamento": "E90",
+          "Escalas": null,
+          "Familia": "DISCOUNT",
+          "FamiliaCodigo": "DIS",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2250",
+          "HoraSaida": "2225",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico18.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1021",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "TP",
+        "Descricao": "TAP"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 85,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "01:25"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 589852,
+      "IdentificacaoDaViagem": "pgUAAB+LCAAAAAAABACtVFtPo0AU/i/z3MsAtba8IViXrG1Rqslmsw+nw7ROhDlkgN1ujP99z1AsqYmJJpsQONfv3HlhAfPdAQuZzwfsqn0vDsyvTSMHLFUV8532G2dkNyNDBcxnm4QN2PK5ZP4O8oosk5bhI3K/J31M6g02JsRMxllQ5kpAhoQ1J7kqsUWNZFUrjRTi5wtbk9cyiMgvIuo2TolKiHK5Ox3yyyF3N5z77cOOMTjnzrB9es3rL8IHo3awwRpySnk6GV1OySF47NKLHjpiIWVHJQYLFJRq9ZapzekEtS6lIZmBvlogAVRtt8LYJuxuxdy7gBllM5fDCc/c4dwTs6E3cy8v5MwBT04p70fsyl3eGOoXI9EtfRx21lgi1502qzp5YBVB36Wgb1OUftinb1bleBNLR+HHZlblTPiFNWsMCEDbYMd3rWTVFFbNHY+YVO4LqWvshrwAIzd/S2mrYvcJo6aFqPtGnTH9jlxRZwnhesGjNOQTuy3RseCrMLeNZdeWXhARxWm4flhtLJ+84+9XzdErFqhpmuyprsvKH4+JrWWT4ag28FvmudLPI4HFaGvGfxC3UIHOtngY3+IeCzACKnIpStBPCpRAZzbaq11bXqFyO4AXtsJCnoen5VZ7PJclRu7UoROyVzKiVRG1NIp2XcBx+KcLiHXWrptpb/CuAV2rDDIbx44lkRUu4aAK7Nr2oFv1Umb0JaPvNxTihHcO6L0DdL4O6P4fQNqJnMpvS3+E3GKxH3bksCdqayQ8J6h0be9a7qSRWihI4NCNVu9s0LxbI4sW2/M/xz1ivf1yPoc06NOZeqd86sZ0RVTt4QuFGlQVCFlVaH+DX8VeWMEJ3h7MuqwJNKX1/lzFr/8AMIUT9aYFAAA=",
+      "IsNdc": false,
+      "NumeroParadas": 0,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 23,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 132.38,
+          "ValorTarifaNet": 132.38,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 242.81,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 485.62,
+        "TaxasConsolidador": 0,
+        "Total": 750.38,
+        "TotalGeral": 750.38,
+        "TotalTarifa": 264.76,
+        "TotalTarifaNet": 264.76,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 485.62,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 19,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "01:25",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "E",
+              "Codigo": "EF0DSC04",
+              "Familia": "DISCOUNT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "DISCOUNT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "TP",
+            "Descricao": "TAP"
+          },
+          "CiaOperacional": null,
+          "Classe": "E",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783011900000-0300)/",
+          "DataSaida": "/Date(1783010400000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "01:25",
+          "DuracaoDaConexao": null,
+          "Equipamento": "320",
+          "Escalas": null,
+          "Familia": "DISCOUNT",
+          "FamiliaCodigo": "DIS",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1405",
+          "HoraSaida": "1340",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico18.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1013",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "IB",
+        "Descricao": "Iberia"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 85,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "01:25"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 1638428,
+      "IdentificacaoDaViagem": "ogUAAB+LCAAAAAAABACtVN9vmzAQ/l/8TAiBpE14I0Hp0ErCmrTSNO3hYpzUKviQDVumqv/7zoSG5qFTK01CcL/83d13Z55ZxELfYQsWeg6bt+/lkYW1boTDNtKwcNR+k5ziphQogYUsmTOHpU8VC/dQGIrMWsVz6fid9ZN7i41eYC6SPKoKySFHFs7ILCtsQWNhaqmQMvx4Zms6lEYxHYtJuk02JGUk+Z5/NfCuB56/9bywfdgphed5o0H79J6Xn4QPWu5hizUUlIaC3IktKnroyovvO2EphA1wPWo/01gip2LNa622rDPauhKabBr6foEMYFq+Fomt2d/xWTCBKRU0E4Oxl/uDWcCng2DqX0/EdASBuKLSH7DrOL3RxBgj0y19RuyCWhLXnTc3nX0nNAkOi3quop6sePMuW1+sazQbWzlevB92cnkTG9Zo4ICW5lHoW8uqKUmbBNckb8ShFKrGbtBL0GL7pxK2L3aXMaJtgaqn6kLp92RO3BLCOl6tonU6thsTn1qeLwpLLS0FyUsrZNskjayWXWh3q+Z0IuGoaJrssa4rEw6HpNaiydGtNfwSRSHVk8uxdHd6+BtxBwZUvsPj8BYPWILmYOhIWYF6lCA5jsbuQe7b1kpZWPqf2QpL8TY5rbY84FtLpsVeHjsTe6EQWhJe09ho0Tmcxn5e/0Tl7aIRB4HDvjWgaplDLrplyITBFI6yxI6ue9W6U5HTl4K+3lCKM96/Af3PA/r/p0LahYLab1t/gMJise921HAgaacFPGUoVW0vtdgLLRSXkMGxG6va26RFtz4WLbF3/xL3hPX6u/kYktOXcxWc66kb3TVh2ivPJSqQJuLCGLS/wM9iL63hDG8vyrqqCXRDa/2xjl/+Al8H3xGiBQAA",
+      "IsNdc": false,
+      "NumeroParadas": 0,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 87,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 5.01,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 500.75,
+          "ValorTarifaNet": 500.75,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 112.62,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 225.24,
+        "TaxasConsolidador": 0,
+        "Total": 1236.76,
+        "TotalGeral": 1236.76,
+        "TotalTarifa": 1001.5,
+        "TotalTarifaNet": 1001.5,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 225.24,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 9,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 10.02,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "01:25",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 2,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "O",
+              "Codigo": "ODNNAOM4",
+              "Familia": "OPTIMA",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "OPTIMA"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "IB",
+            "Descricao": "Iberia"
+          },
+          "CiaOperacional": null,
+          "Classe": "O",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783033500000-0300)/",
+          "DataSaida": "/Date(1783032000000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "01:25",
+          "DuracaoDaConexao": null,
+          "Equipamento": "32A",
+          "Escalas": null,
+          "Familia": "OPTIMA",
+          "FamiliaCodigo": "OPT",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2005",
+          "HoraSaida": "1940",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico14.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "537",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "IB",
+        "Descricao": "Iberia"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 85,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "01:25"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 2424860,
+      "IdentificacaoDaViagem": "pgUAAB+LCAAAAAAABACtVN+PmkAQ/l/2GRVBT+UNJV5JT6HqXdI0fRiX1dsc7JBdaG0u/u+dRU7iwzV3SRMC82u/mflmllcWssBz2IIFrsPmzXt5YkGla+GwrTQsGDbfOKO4KQVKYAGL58xhq5eSBQfIDUWmjeL26fjG+sm9w1ovMBNxFpa55JAhC2ZkliU2oJEwlVRIGX68soQOrcKIjkUkPcRbklKSPNe767mTnuvtXDdoHnZJ4brusNc8nef8k/BBywPssIKc0oy8SX9E/W3Cp7a86LEVlkLYgL7tKtVYIKdizVuttqwrWlIKTTYNXb9ABjANX4vY1uzt+cwfw5QKmoneyM283szn054/9SZjMR2CL+6o9CdsO17da2KMkemBPkN2Qy2JSevNTGvfC02Cw8KOq7AjK9q+y9YX6xrORlaOFu+HXVzu2IbVGjigpXkYeNayrgvSxv6E5K04FkJV2A56CVrs/pTC9sU2KSPaFqg6qm6Ubk/mxC0hJNF6HSaPI7sx0aXl+SK31NJSkLwkYZGslslmZ9X0Vt2s68uZmKOiebLnqipNMBiQWok6w36l4ZfIc6le+hyL/l4PfiPuwYDK9ngaPOARC9AcDB0pSlDPEiRH2oujPDTNFTK3A3hlayzETXbabnnEG1OqxUGeWhs7UwwtCq9odLTsHC6jv16BWGXNshEPvsO+1aAqmUEm2oVIhcEVnGSBLWWPqnGvREZfCvp6TymueP8G9D4P6P2fCmkfcmq/af0JcovFvttxw5GkvRbwkqJUlb3Y4iC0UFxCCqd2sOpgk+btClm02N7/W9wL1tsv52NITlfOnX+tp6p124Rprj2XqECakAtj0P4GP4u9tIYrvL0sSVkR6JZW+2Mdn/8CpwqoAaYFAAA=",
+      "IsNdc": false,
+      "NumeroParadas": 0,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 124,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 7.14,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 713.71,
+          "ValorTarifaNet": 713.71,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 112.62,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 225.24,
+        "TaxasConsolidador": 0,
+        "Total": 1666.94,
+        "TotalGeral": 1666.94,
+        "TotalTarifa": 1427.42,
+        "TotalTarifaNet": 1427.42,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 225.24,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 9,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 14.28,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "01:25",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 2,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "O",
+              "Codigo": "ODNNAOU4",
+              "Familia": "COMFORT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "COMFORT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "IB",
+            "Descricao": "Iberia"
+          },
+          "CiaOperacional": null,
+          "Classe": "O",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783033500000-0300)/",
+          "DataSaida": "/Date(1783032000000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "01:25",
+          "DuracaoDaConexao": null,
+          "Equipamento": "32A",
+          "Escalas": null,
+          "Familia": "COMFORT",
+          "FamiliaCodigo": "COM",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2005",
+          "HoraSaida": "1940",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico14.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "537",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "KL",
+        "Descricao": "KLM"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 925,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "15:25"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 2031644,
+      "IdentificacaoDaViagem": "5QgAAB+LCAAAAAAABADtVttu4jAQ/Rc/czHJAiFvgYg2WgJpoUjVah8Gx1CrSRw5yS6rqv++YycQ2qpSK/WxUoRnxuMzF89JeCIeca0OmRGXdsjU/M6PxC1VxTtkLQriDswaxOjnoKMA4pKfC9Ih4WNO3D0kBXpGRqE9PH6L+wFub2SlZjLmQezliWAQS4O+Ebk0oD4vSpFJjPDriazwUOj5eMxHaRGsUYpQsqg16tJxl1obSl3zkDoEpXTQNU+78/wb8UGJPWxkCQlxx+NBzxrhAW/bZOffNcKc80aKlEwlw0yLU6I6pzPUKucKbQraYgENULdmFuiErR2b2ENwMJsJ7/6gsdWd2Mzp2o41HnJnADYfYd5b2ZQbXilsFxmgbdGsF41FcaW3UYyLkz1EzWvb5OmwXqj75K/fbdR1vWVr2Z+972a2bCP7lQIGUnfYcs3BZZXqHIfUQWXNDynPStlc8hwU3/zLuS6L3EYEuzaTWdupF0o7I1NsLSJs72/8qbfw9LT4dcHTWaI7S7ZanptZuLreaCW6VG6XVe0fMJnhRZKHsswLt99HteRVLHulgj88SUT22GMy7e1U/6+UOyggi3fy2F/Ig0xBMSjwSJpD9iBAMGlbvYPYm8JSkejWP5GlTPlFbJxpcZAXhkjxvTg2FvKMHjgfrORK4IAzqG/8PPZBFpsZU4Z3NxVkpYgh1hF0syNeyBCOIpVNq+4ysx3yGFc9CTrEGe8loP0KcPB5QOtrAHEOEizflL6FRGORpb5mOKC0UxweIymyUpOZ77niGRMQwbG51GyvgybN6Gi0QHPeJPqKO9ZnuFMTxmvfMS+5Y7/hDnWGwzfcsd9wZ0Brt5Y7tntik6EAoRPXuDRksscf51L9Lv6m0jeVzlS6/wIqXeLWWKcv9seQOm06I/ucT1mppojCfDiZkBmIwmO8KKT+F/FZ7Lk2nOE1R1Z5iaBrHOmPVfz8H05iesflCAAA",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 67,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 385.63,
+          "ValorTarifaNet": 385.63,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 412.07,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 824.14,
+        "TaxasConsolidador": 0,
+        "Total": 1595.4,
+        "TotalGeral": 1595.4,
+        "TotalTarifa": 771.26,
+        "TotalTarifaNet": 771.26,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 824.14,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 0,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "15:25",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "V",
+              "Codigo": "VYQDBALA",
+              "Familia": "LIGHT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "LIGHT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "KL",
+            "Descricao": "KLM"
+          },
+          "CiaOperacional": null,
+          "Classe": "V",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783044000000-0300)/",
+          "DataSaida": "/Date(1783035000000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "AMS",
+            "Descricao": "AMS - AMSTERDA"
+          },
+          "Duracao": "02:30",
+          "DuracaoDaConexao": null,
+          "Equipamento": "32Q",
+          "Escalas": null,
+          "Familia": "LIGHT",
+          "FamiliaCodigo": "LIG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2300",
+          "HoraSaida": "2030",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico32.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1508",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "V",
+              "Codigo": "VYQDBALA",
+              "Familia": "LIGHT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "LIGHT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "KL",
+            "Descricao": "KLM"
+          },
+          "CiaOperacional": null,
+          "Classe": "V",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783086900000-0300)/",
+          "DataSaida": "/Date(1783079700000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "03:00",
+          "DuracaoDaConexao": "09:55",
+          "Equipamento": "32Q",
+          "Escalas": null,
+          "Familia": "LIGHT",
+          "FamiliaCodigo": "LIG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1055",
+          "HoraSaida": "0855",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico32.gif",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "137",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "AMS",
+            "Descricao": "AMS - AMSTERDA"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "KL",
+        "Descricao": "KLM"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 560,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "09:20"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 2818076,
+      "IdentificacaoDaViagem": "5wgAAB+LCAAAAAAABADtVttuozAQ/Rc/52KgSSlvJFFatLnQJK1UrfZhAk5qFTAysJtVlX/fGUMurVRtKvWxEorHM+MzF8+BvDKfeXaLDZnHW2xgfsc75pW6Ei22lAXzLLMGMfq56CiBeezHhLXY9CVn3gaSAj1Ds+EdPL5Ae4Dmlar0UMUiiP08kRHEyqCvZK4M6EgUpcwURvj5yuZ4aOqP8NgIpUmwRClEyeZ2v82v29xece6Zh9UhOOdW2zwny/4X4oOWG1ipEhIMY7m9Th/TXviPTXqjh0YYC9FIoVapijDV4pApJXXEmudCo07DqVpABdS9GQaUsb2ObpweuJjOjWhf8dhu3ziR23Zc+7onXAsc0cfEH1VT7/RWY7+YhbpJs551FsU5mVGMi4N+ijv/1CefwvpTatRo+WGn7shkcbtHbsOP3chkOUYeVRoiUNRi23Po4KxKydzjNm6WYpuKrFTNLY9Bi9XfXFBZbBEy7NpQZadOvdmchmSArUWE1dP99cCf+DQuo7rgwTChzrIVyWMzDLd3ZhOebxazqvYPIpXhRbLnsswLr9vFbSmqWHVKDb9FksjspROptLPW3T9KraGALF6rXXeitioFHUGBR9IcsmcJMlKO3dnKjSkslQm1/pXNVCrOYuNQy606U4RabOSu0bA9euB8RKXQEic8gvrGj3MfZLGZMW2Id19BVsoYYopA7Q9Foaawk6lqWvWQGfNUxLjSJFCII95bQOcdoPV5QPtrAHEOEizflP4ICWGxGV0zbFFaawEvoZJZSWwWG6FFFkkIYddcarahoEkzOoQWEOlNou+4Y3+GOzVh/NNL5r/c6V/xS7jjXvXecsfxeKMxFCCFQTqQye1dTqb6bfzNpW8uHbn09AVcOsetsQ7f7MuQWqd0+s4xn7LSTRGF+XJGUmUgCz8SRaHof8RnscekOMITR+Z5iaBLHOnLKt7/A01kAlvnCAAA",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 103,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 592.84,
+          "ValorTarifaNet": 592.84,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 412.07,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 824.14,
+        "TaxasConsolidador": 0,
+        "Total": 2009.82,
+        "TotalGeral": 2009.82,
+        "TotalTarifa": 1185.68,
+        "TotalTarifaNet": 1185.68,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 824.14,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 0,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "09:20",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "T",
+              "Codigo": "TYQ7BALA",
+              "Familia": "LIGHT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "LIGHT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "KL",
+            "Descricao": "KLM"
+          },
+          "CiaOperacional": null,
+          "Classe": "T",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783008000000-0300)/",
+          "DataSaida": "/Date(1782998700000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "AMS",
+            "Descricao": "AMS - AMSTERDA"
+          },
+          "Duracao": "02:35",
+          "DuracaoDaConexao": null,
+          "Equipamento": "32Q",
+          "Escalas": null,
+          "Familia": "LIGHT",
+          "FamiliaCodigo": "LIG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1300",
+          "HoraSaida": "1025",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico32.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1502",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "T",
+              "Codigo": "TYQ7BALA",
+              "Familia": "LIGHT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "LIGHT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "KL",
+            "Descricao": "KLM"
+          },
+          "CiaOperacional": null,
+          "Classe": "T",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783028700000-0300)/",
+          "DataSaida": "/Date(1783021200000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "03:05",
+          "DuracaoDaConexao": "03:40",
+          "Equipamento": "32Q",
+          "Escalas": null,
+          "Familia": "LIGHT",
+          "FamiliaCodigo": "LIG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1845",
+          "HoraSaida": "1640",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico32.gif",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1585",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "AMS",
+            "Descricao": "AMS - AMSTERDA"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "AF",
+        "Descricao": "Air France"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 375,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "06:15"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 4456476,
+      "IdentificacaoDaViagem": "9ggAAB+LCAAAAAAABADtVttu4jAQ/ZWVn7k44VLIWwClRAs0LbRStdqHwTHUamJHTrLLquq/79hJCa1ULV31sVKExzPjMxfPSXgiPvHcFpkSj7bIxP4GB+IVuuQtshY58Ry7hjH6jdBRAPGIH5AWWT5mxNtBkqNnZDe0g8dv0B6ieaNKPVUxD2M/SwSDWCFWH/UiUxZ1xvNCSIUhfjyRKzy19Gd4bobSIlyjFKHkUnfYphdt6m4o9exDqhiUUqdtn8by/BPxQYsdbFQBCabcHzid8RBP+Hd1frPbWgg4r6VIq1QxzDV/SdUkdcS6yrhGnYamXEAFVM2ZhiZjd8vGvQGMMJ0xb/dp7LbHPTZq90buxYCPHOjxISZ+p+p6l5caG0Yc1C3q9aS1KF4ZM4pxXuuF/hZokIyj0m/a5Zvo09ml6dz63YbNjYkOrTybvu9mTHTkWLdSAwNlFK5nNasyNan2qcl2zfcpl4WqbzsAzTd/Mm6qIzcRweZNlWwa9mrTDMsEO4wI8/trOvEXvhmbWVX3ZJqYBpO5kQM7E5fzjdlEp5ubVVn5h0xJvE/yUBRZ7nW7uC14GatOoeEXTxIhHztMpZ2t7v5Wags5yHirDt2F2qsUNIMcj6QZyAcBgimHdjK5t4WlIjE38ERWKuUnsXG4xV6dKCLNd+JQa8gzeuCYsIJrgYPOoLr44/iHMrajpi0Br0uQhYghNhFMsyOeqyUcRKrqVt1Ka17yGFd0+m5CHPFeA/beADofB3Q/BxDnIMHybel3kBgssjLXDHuUtprDY6SELAyp+Y5rLpmACA71pcqdCZrUo2PQQsN9m+gbCrn/QaGKN37zyvknhZDkZ1DIcZzBWwr1a1JZJhDqeO6g4RR1++dzqno5f1Hqi1JHSt1/AqVOcSusl0/4eUitJp1h75hPUeq6iNx+R5lQEkTuM57nyvyt+Ch2YBRHeMORq6xA0PUkOLPi578sE9uJ9ggAAA==",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 213,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 1225.98,
+          "ValorTarifaNet": 1225.98,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 354.34,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 708.68,
+        "TaxasConsolidador": 0,
+        "Total": 3160.64,
+        "TotalGeral": 3160.64,
+        "TotalTarifa": 2451.96,
+        "TotalTarifaNet": 2451.96,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 708.68,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 14,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "06:15",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "H",
+              "Codigo": "HYQ0BALA",
+              "Familia": "LIGHT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "LIGHT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "AF",
+            "Descricao": "Air France"
+          },
+          "CiaOperacional": null,
+          "Classe": "H",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1782990600000-0300)/",
+          "DataSaida": "/Date(1782982800000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "CDG",
+            "Descricao": "CDG - PARIS, FR"
+          },
+          "Duracao": "02:10",
+          "DuracaoDaConexao": null,
+          "Equipamento": "320",
+          "Escalas": null,
+          "Familia": "LIGHT",
+          "FamiliaCodigo": "LIG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "0810",
+          "HoraSaida": "0600",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico10.png",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1401",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "H",
+              "Codigo": "HYQ0BALA",
+              "Familia": "LIGHT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "LIGHT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "AF",
+            "Descricao": "Air France"
+          },
+          "CiaOperacional": null,
+          "Classe": "H",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783001700000-0300)/",
+          "DataSaida": "/Date(1782995700000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "02:40",
+          "DuracaoDaConexao": "01:25",
+          "Equipamento": "223",
+          "Escalas": null,
+          "Familia": "LIGHT",
+          "FamiliaCodigo": "LIG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1115",
+          "HoraSaida": "0935",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico10.png",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1024",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "CDG",
+            "Descricao": "CDG - PARIS, FR"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "AF",
+        "Descricao": "Air France"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 340,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "05:40"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 4390940,
+      "IdentificacaoDaViagem": "9ggAAB+LCAAAAAAABADtVttu4jAQ/ZWVn7k44VLIWwClRMslLbRStdqHITHUamJHTrLLCvXfdyZJgVaqlq76WCki45nxmYvnOByYyxy7wcbM4Q02Kn+9PXNyU4gGW8mMOVb59iP0G6CjBOYw12MNNn9KmbOFOEPPoFzwFm6/RbuP5rUuzFhHwo/cNJYhRBqxuqiXqS5RJyLLpdIY4seBLXHX3J3gvglKM3+FUoCSze1+k181ub3m3CkfVsXgnFvN8jlZnn8iPhi5hbXOIcaUuz2rNezjDve+zm9yVwueELUUGJ3oEHPNXlKlpI5Yy1QY1Bk4lQuogKo5Y58ytjfhsNODAaYzFM0uj+zmsBMOmp2BfdUTAws6oo+J3+u63vm1wYYxC3Wz+n3WWhSXZEYxymq9NN88AyoUqHRP7XIp+nhyTZ1bvduwKZmsq26P3Mbvu5HJGvZInhQGQtDUadvhtHFRJGQecMp2JXaJULmuT9sDI9Z/UkHVsduAYfPGWp0a9mpxGpYRdhgRpg83fOTOXBqbSVX3aBxTg9mUZK+cievpmhbB+eJ2UVT+fqgVnid7zPM0c9ptXOaiiHQrN/BLxLFUT61QJ62Naf/WegMZqGij9+2Z3ukETAgZbklSUI8SZKgt3krVriwskTGdwIEtdCLOYuNwy50+UwRGbOW+1rBn9MAxCXNhJA56CNXBH8ffV1E5aqYk4E0BKpcRRBSB2h+ITM9hLxNdt+pOlea5iPCNTt8pxBHvNWDnDaD1cUD7cwBxDmIsvyz9HmLCYgs6ZtihtDECngItVU6kFlthhAolBLCvD1VtKWhcjw6h+cT9MtE3FLL/g0IVb9zTlfMvCtn8IgrZtt17S6FuTaqSCXh7Ob0zTll293JOVZfzF6W+KHWk1MMnUOoct8J6+YRfhtQ4pdPvHPPJC1MXkZXf0VBqBTJzQ5Flmv5WfBTbI8URnjiyTHMEXY28Cyt+/gv7Zbdg9ggAAA==",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 213,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 1225.98,
+          "ValorTarifaNet": 1225.98,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 354.34,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 708.68,
+        "TaxasConsolidador": 0,
+        "Total": 3160.64,
+        "TotalGeral": 3160.64,
+        "TotalTarifa": 2451.96,
+        "TotalTarifaNet": 2451.96,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 708.68,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 14,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "05:40",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "H",
+              "Codigo": "HYQ0BALA",
+              "Familia": "LIGHT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "LIGHT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "AF",
+            "Descricao": "Air France"
+          },
+          "CiaOperacional": null,
+          "Classe": "H",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783032600000-0300)/",
+          "DataSaida": "/Date(1783025100000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "CDG",
+            "Descricao": "CDG - PARIS, FR"
+          },
+          "Duracao": "02:05",
+          "DuracaoDaConexao": null,
+          "Equipamento": "320",
+          "Escalas": null,
+          "Familia": "LIGHT",
+          "FamiliaCodigo": "LIG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1950",
+          "HoraSaida": "1745",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico10.png",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1801",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "H",
+              "Codigo": "HYQ0BALA",
+              "Familia": "LIGHT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "LIGHT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "AF",
+            "Descricao": "Air France"
+          },
+          "CiaOperacional": null,
+          "Classe": "H",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783041900000-0300)/",
+          "DataSaida": "/Date(1783035900000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "02:40",
+          "DuracaoDaConexao": "00:55",
+          "Equipamento": "320",
+          "Escalas": null,
+          "Familia": "LIGHT",
+          "FamiliaCodigo": "LIG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2225",
+          "HoraSaida": "2045",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico10.png",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1124",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "CDG",
+            "Descricao": "CDG - PARIS, FR"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "BA",
+        "Descricao": "British Airways"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 405,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "06:45"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 5570588,
+      "IdentificacaoDaViagem": "8AgAAB+LCAAAAAAABADtVltvmzAU/iuTn3MxUFLKG0mUFi0XlqSRtmkPJ+CkVsFGBtZUVf/7jg1Nsm5d02nTXiah+Nz8+Zzj80EeSEB8u0UGxKct0je/ox3xS1WxFlnwgviWWcME4zwM5EB80g9Ii0xuc+JvIC0wMjIK7eD2OfpDdC9lpQYyYWES5CmPIZGI5aCd59KgDllRciHxiM8PZIa7JsEQ9w1RGocLlCKUbGr32vS8Te0lpb55SH0GpdRqm+fgefyC+KD4BpayhJT4DvXcjqWzClZNfsPrRhgx1kiRkpmMMdfiKVWd1B5rljOFNgWHcgENUDdnEOqM7XV84bjgYToXrH1GE7t94cRe2/Hsc5d5Fjish4mvZFPv5FJhw4iFtnGzHrUWxZl2o5gUjV3xkhc37wKu7uC+QE9w6FlgmnY11+1bvNi1K+2yzh0tDwcvh2mX5bmuDqsUxCB1u23f1pZplaF21tMZL9g2Y6KUzY2PQLHlfc50hWQeEWzgQIpD075TDgPTxy4jwmz4iUZ6boZ14f1BqjuMk4HyCIXprB9caiU6VubTqo4PYynwQslNWeaF3+2iWrIqkZ1SwVeWplzcdmKZddaqeyflGgoQyVruumO5lRmoGArckuUgbjjwWFpWJxdbU1XGU30FD2QqM3Z0Nk4338ojQ6TYhu8aC3nECJyTuGSK46THUN/8fv5DkZhZw+KRFh8qECVPIGHNOESskBPY8Uw2fboWxj1hCa4Y9P4Sj9jj/RrQfjug/WcyxCFIsXxT+gpSjUU+6muGLUprxeA2klyUmtVswxQTMYcIds2lio0+NG3mRqOFmvwm0Wccsn+XQzVxgsOL5zUOocs9gUO2Y/3AIZfWFsMFQi3fsLEmlUu900lVv6Ff4dT4amXPf8Kp8ROnjhj17/j0jE3PuaT1/1z6m1w6xq2xnj7epyG1Dun0nH0+ZaWaIgrzBY25FMCLIGZFIfUfirdij7RhD6+JMctLBF3gKJ9W8eM33z2ZG/AIAAA=",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 268,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 1542.55,
+          "ValorTarifaNet": 1542.55,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 274.02,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 548.04,
+        "TaxasConsolidador": 0,
+        "Total": 3633.14,
+        "TotalGeral": 3633.14,
+        "TotalTarifa": 3085.1,
+        "TotalTarifaNet": 3085.1,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 548.04,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 13,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "06:45",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 2,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "O",
+              "Codigo": "ODZ0P",
+              "Familia": "NOBAG",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "NOBAG"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "BA",
+            "Descricao": "British Airways"
+          },
+          "CiaOperacional": null,
+          "Classe": "O",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783029300000-0300)/",
+          "DataSaida": "/Date(1783024200000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LHR",
+            "Descricao": "LHR - LONDRES"
+          },
+          "Duracao": "02:25",
+          "DuracaoDaConexao": null,
+          "Equipamento": "777",
+          "Escalas": null,
+          "Familia": "NOBAG",
+          "FamiliaCodigo": "NOB",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1855",
+          "HoraSaida": "1730",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico11.png",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "461",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 2,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "L",
+              "Codigo": "LHV2R",
+              "Familia": "BAG",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "BAG"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "BA",
+            "Descricao": "British Airways"
+          },
+          "CiaOperacional": null,
+          "Classe": "L",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783044900000-0300)/",
+          "DataSaida": "/Date(1783034700000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "02:50",
+          "DuracaoDaConexao": "01:30",
+          "Equipamento": "32A",
+          "Escalas": null,
+          "Familia": "BAG",
+          "FamiliaCodigo": "BAG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2315",
+          "HoraSaida": "2025",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico11.png",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "508",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "LHR",
+            "Descricao": "LHR - LONDRES"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "BA",
+        "Descricao": "British Airways"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 405,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "06:45"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 5963804,
+      "IdentificacaoDaViagem": "6AgAAB+LCAAAAAAABADtVt9v2jAQ/lcmPwNNnIZC3gKINhqUDCjSNO3hSAy1mtiRnaxMVf/3nZ2UdD+60mmPlSJ8vrM/332+L+GBhCSgHTImgdMhI/s7PZCgVBXrkBXXJHDtGKW4boALOZCAjELSIfO7ggQ7yDSujO3E6eH2JcYjDK9lpcYyZVEaFhlPIJWI5aGfF9KiTpguuZB4xJcHssBd83CC+yZozaIVWjFa1KH9rnPRdejacQL7kPoMx3Hcrn3ayONXxAfFd7CWJWQk8Lyh3xuarMJNk9/kpjGmjDVWrGQuE8xVP6VqkjpiLQqm0KegLRfQATU548hkTLfJ0PNhgOkMWffcSWl36CWDrjegFz4buOCxPia+kU2980uFhBEXfbNmfEYtmgsTRjPVjV/xkuvbDyFX9/BdYyRsOQstaVdLQ9/qRdauTMi98Iw9Gb+8zITcge+bZZWCBKShmwbUeK6rHGfnfZPxiu1zJkrZ3PgUFFt/L5ipkCxjggSOpWhJ+2nSNswIWUaExWRDY9M3k7rw0TgzDGNnoD21zFwaM27N5XVVr40SKfAyyW1ZFjo4O8NpyapU9koF31iWcXHXS2Te26qzeym3oEGkW3k4m8m9zEEloHFLXoC45cAT6bq9QuxtRTnPDP0P5Frm7Hgy9jXfy+M0VmzHD0/zR4xjfyQlUxw7PIH6xo99H4nU9hgWjXL4VIEoeQopa9ogZlrO4cBz2fBzI2x4zlIccdFHc8QR7++A9O2A9P9kiJefYfm29A1kBot8NtcLe7S2isFdLLkojZrZjikmEg4xHJoLFTtzaNb0i0GLjOhtor9oh/6rdmrBhO0L5zXtYMg/QTvUc3/Tju/UHqsB4riBVWEtJt8ZnC6m+s38ipZmVxu6/IOWZu9aetdSq6XnuDXW00f7NKROm07fO+ZTVqopQtsvZ8KlAK7DhGktzR+Jt2JPjeMIb4SxKEoEXWErn1bx4w90PghV6AgAAA==",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 295,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 1697.95,
+          "ValorTarifaNet": 1697.95,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 274.02,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 548.04,
+        "TaxasConsolidador": 0,
+        "Total": 3943.94,
+        "TotalGeral": 3943.94,
+        "TotalTarifa": 3395.9,
+        "TotalTarifaNet": 3395.9,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 548.04,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 13,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "06:45",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 2,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "O",
+              "Codigo": "ODV2P",
+              "Familia": "BAG",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "BAG"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "BA",
+            "Descricao": "British Airways"
+          },
+          "CiaOperacional": null,
+          "Classe": "O",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783029300000-0300)/",
+          "DataSaida": "/Date(1783024200000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LHR",
+            "Descricao": "LHR - LONDRES"
+          },
+          "Duracao": "02:25",
+          "DuracaoDaConexao": null,
+          "Equipamento": "777",
+          "Escalas": null,
+          "Familia": "BAG",
+          "FamiliaCodigo": "BAG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1855",
+          "HoraSaida": "1730",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico11.png",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "461",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 2,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "L",
+              "Codigo": "LHV2R",
+              "Familia": "BAG",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "BAG"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "BA",
+            "Descricao": "British Airways"
+          },
+          "CiaOperacional": null,
+          "Classe": "L",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783044900000-0300)/",
+          "DataSaida": "/Date(1783034700000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "02:50",
+          "DuracaoDaConexao": "01:30",
+          "Equipamento": "32A",
+          "Escalas": null,
+          "Familia": "BAG",
+          "FamiliaCodigo": "BAG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2315",
+          "HoraSaida": "2025",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico11.png",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "508",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "LHR",
+            "Descricao": "LHR - LONDRES"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "LX",
+        "Descricao": "Swiss"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 660,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "11:00"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 7405596,
+      "IdentificacaoDaViagem": "/wgAAB+LCAAAAAAABADtVttuo0AM/Zd5zoVAkia8UdK0aHNhE1LtRfvgwCQdFWbQANtUVf99baCh2d1qs1IfK6Fgj+0ztsdnyBNzmG22mMtso8Uuy9/pgdm5LniLrUXG7F759iL0G6GjAGaz2RfWYvP7lNk7iDP09EvF6GD4Cu0emgNVaFdF3IucNBYhRKpED0SqStAJz3IhFe7w/YktMWjuTDBsQvDeGiUfJdMwh23jom2YgWHY5cOqLQzD6LXLp7E8/0B80GIHgcohZrY1Ngedfh8jnNs6vcmmFqac15KvVaJCTDV7yZSSOmItU65xTUNTLeACVL1xPcrY3IZjawAjTGfM230jMttjKxy1rZF5MeCjHlh8iInfqrre+bXGfrEers3q96vOorgkszlDJcoqy/pBZBnqTtMrh7b+trqhtq3f7NYNmXqGMSA39203MvVMk+RJoSEERW027R4FLoqkiqRU13yfcJmr+qSnoHnwmHIqja18hp1zlWy6daI0g3KJ7UWEzVXgztZXYxoZqgffl25M3WUbkqcouMv5dLkKSPVP1dWiqGK8UEk8UHaX52lmd7uo5ryIVCfX8JPHsZD3nVAlna3uPii1hQxktFWH7kztVQI6hAxDkhTknQARqv6wsxe7srhExHQAT2yhEn6yO4632KuTJV/znTjUa+wZfXBWwpxrgdMeQnX6Rw54MirnDftgtdjnAmQuIoh4PRI+z9QcDiJRdcs2sjTPeYRvdPp0jVsc8d4d0HwfQJyHGMsvS7+FmLDYgo4b9ihtNYd7XwmZE7P5jmsuQwE+HOqDlTvaNK5HiNA8ugDKRH/jkfl3HgX+WzyqyOM0l84/eTQ6i0dmTbeGR1ZlndClKGlhYPcbYvUHY+N8YlW38wevPnj1B6++vgOvXuNWWC/f8vOQWk06Q+uYT17ouois/KKGQkkQmRPyLFP0/+J/sae0cIQnrizTHEHXONrnVfz8C90oKez/CAAA",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 341,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 1962.72,
+          "ValorTarifaNet": 1962.72,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 849.18,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 1698.36,
+        "TaxasConsolidador": 0,
+        "Total": 5623.8,
+        "TotalGeral": 5623.8,
+        "TotalTarifa": 3925.44,
+        "TotalTarifaNet": 3925.44,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 1698.36,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 0,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "11:00",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "U",
+              "Codigo": "UETCLSE9",
+              "Familia": "COMFORT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "COMFORT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "LX",
+            "Descricao": "Swiss"
+          },
+          "CiaOperacional": {
+            "Id": 0,
+            "CodigoIata": "2L",
+            "Descricao": null
+          },
+          "Classe": "U",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783005600000-0300)/",
+          "DataSaida": "/Date(1782997500000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "ZRH",
+            "Descricao": "ZRH - ZURIQUE"
+          },
+          "Duracao": "02:15",
+          "DuracaoDaConexao": null,
+          "Equipamento": "E90",
+          "Escalas": null,
+          "Familia": "COMFORT",
+          "FamiliaCodigo": "COM",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1220",
+          "HoraSaida": "1005",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico46.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "2021",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "U",
+              "Codigo": "UETCLSE9",
+              "Familia": "COMFORT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "COMFORT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "LX",
+            "Descricao": "Swiss"
+          },
+          "CiaOperacional": {
+            "Id": 0,
+            "CodigoIata": "TP",
+            "Descricao": null
+          },
+          "Classe": "U",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783033500000-0300)/",
+          "DataSaida": "/Date(1783026300000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "03:00",
+          "DuracaoDaConexao": "05:45",
+          "Equipamento": "321",
+          "Escalas": null,
+          "Familia": "COMFORT",
+          "FamiliaCodigo": "COM",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2005",
+          "HoraSaida": "1805",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico46.gif",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "4590",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "ZRH",
+            "Descricao": "ZRH - ZURIQUE"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "LX",
+        "Descricao": "Swiss"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 370,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "06:10"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 7340060,
+      "IdentificacaoDaViagem": "/wgAAB+LCAAAAAAABADtVm1v2kAM/i/3mZe8AIV8S0Npo0HJIFR70T6Y5KCnJrnoLtmYqv732UlKyrZqTOrHShGxz/Zzts/PhUfmMsfqMI85RoddVr+zA3MKVfIOWwvNHLN6+zH6jdFRAHPY/BPrsMVDzpwdJBo9g0oxehi+QruP5lCWypMx92M3T0QEsazQQ5HLCnTKdSEyiTt8fWRLDFq4UwybEry/RilAyTKsUde46BpWaBhO9bB6C8MwzG71tJanb4gPSuwglAUkzLEn1rA3GGCEe9ekN900wozzRgqUTGWEqernTCmpI9Yy5wrXFLTVAi5A3RvPp4ytbTSxhzDGdCa8OzBiqzuxo3HXHlsXQz42weYjTPxONvUurhX2i5m4Nm/eLzqL4pLM1hyVWNeW9Q+hNepu2yuXtv6yuqG2rV/t1g2ZTMMYkpv3uhuZTMsieVoqiEBSmy3HpMDbMq0jKdU136c8K2Rz0jNQPPyZcyqNrQKGnfNk1nbrRGkH5RLbiwibq9Cbr68mNDJUD74vvYS6yzYkz1DwlovZchWSGpyqq9uyjvEjmeGBsvuiyLXT76Na8DKWvULBd54kInvoRTLtbVX/h5Rb0JDFW3noz+VepqAi0BiS5pDdCxCRHIx6e7GriktFQgfwyG5lyk92x/EWe3myFCi+E4dmjT2hD85KVHAlcNojqE//yAE/i6t5wz7YHfaxhKwQMcS8GYmAa7mAg0hl07JNVpkXPMY3On24xi2OeG8OaL0NIM5DguVXpd9BQljslo4b9ihtFYeHQIqsIGbzHVc8iwQEcGgONtvRpkkzQoTm0wVQJfobj6y/8ygMXuNRTR63vXT+ySPbPItHw9qt5ZFdW6d0KWbV/eUMW2INhmPjfGLVt/M7r9559QevPr8Br17i1ljP3/LzkDptOiP7mE9RqqYIXX1RIyEzENqNuNaS/l/8L/aMFo7wxJVlXiDoGkf7vIqffgEn0qNL/wgAAA==",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 341,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 1962.72,
+          "ValorTarifaNet": 1962.72,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 849.18,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 1698.36,
+        "TaxasConsolidador": 0,
+        "Total": 5623.8,
+        "TotalGeral": 5623.8,
+        "TotalTarifa": 3925.44,
+        "TotalTarifaNet": 3925.44,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 1698.36,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 0,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "06:10",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "U",
+              "Codigo": "UETCLSE9",
+              "Familia": "COMFORT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "COMFORT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "LX",
+            "Descricao": "Swiss"
+          },
+          "CiaOperacional": {
+            "Id": 0,
+            "CodigoIata": "2L",
+            "Descricao": null
+          },
+          "Classe": "U",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783005600000-0300)/",
+          "DataSaida": "/Date(1782997500000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "ZRH",
+            "Descricao": "ZRH - ZURIQUE"
+          },
+          "Duracao": "02:15",
+          "DuracaoDaConexao": null,
+          "Equipamento": "E90",
+          "Escalas": null,
+          "Familia": "COMFORT",
+          "FamiliaCodigo": "COM",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1220",
+          "HoraSaida": "1005",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico46.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "2021",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "U",
+              "Codigo": "UETCLSE9",
+              "Familia": "COMFORT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "COMFORT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "LX",
+            "Descricao": "Swiss"
+          },
+          "CiaOperacional": {
+            "Id": 0,
+            "CodigoIata": "TP",
+            "Descricao": null
+          },
+          "Classe": "U",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783016100000-0300)/",
+          "DataSaida": "/Date(1783008900000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "03:00",
+          "DuracaoDaConexao": "00:55",
+          "Equipamento": "32N",
+          "Escalas": null,
+          "Familia": "COMFORT",
+          "FamiliaCodigo": "COM",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1515",
+          "HoraSaida": "1315",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico46.gif",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "4580",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "ZRH",
+            "Descricao": "ZRH - ZURIQUE"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "LH",
+        "Descricao": "Lufthansa"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 430,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "07:10"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 7602204,
+      "IdentificacaoDaViagem": "AwkAAB+LCAAAAAAABADtVttuozAQ/Rc/58KlzYU3QpYWbdLQQCutVvswASf1FmxkYDdV1X/fsaGhWSlqKvWxEgrjmfGZi+eYPBOXOFaPeMQxemSmf/09cSpZ0x6JWEkcU7+DFP0m6MiAOGRxTXpk+VgQZwtZiZ6hXhgD3L5Ge4DmWNTSEykNUrfIWAKp0OgxK4QGndOyYlxghJ/PZIWblu4ct80VfBChFKJkGdaob4z7hhUbhqMf0oQwDMPs66ezvPxCfJBsC7GoICPOxWg6GoyxvrV736Y3v2sFn9JWCqXIRYKplq+ZqqQOWKuCStRJ6KoFVEDTGy9QGVubZGpfwgTTmdL+hZFa/amdTPr2xBpf0okJNh1h4veirXd5JbFfxETdon2/6SyKK2VGMS1bfb2tHoCXgDq365argvtrVzUuOtmva2Uyx9alcvNOuzUmLc9rCQkI1WjLsdXGmzpXKKapFhHd5ZRXoj1rHySNnwqqiiPrkGDvPMG7fh0tulGZYYMRIfp25y2iUIWN503ZMy9T/SVqDmY+Ct5q6a/WsVqGx8v1Td3sCRLB8UjJQ1UVpTMc4rKidSoGlYQ/NMsYfxwkIh9s5PCvEBsogacbsR8uxE7kIBMocUteAH9gwBJhjge/i50uLmeZOoRnciNyehQdB5ztxJEqlHTL9q2OvKAPTktSUclw3hNozv/AgoCneuKwD3aP3NbAK5ZCStuhCGkplrBnuWhbdse1eUlTfKPT9ysMccD7dEDrcwBxHjIsX5d+D5nCIj/UccMOpY2k8BgKxivFbbqlkvKEQQj79mD5VgXN2hFSaIG6AnSi/zHJ+jiTGvq43cXzHpMs0zLOYZKtefOGSbZjthpNCGKYjkZ6pdbYOp9azQ39DrNuTzPr9otZX8w6zay3uA3W6/f8PKRel87IPuRT1bItotRf1YQJDqx0E1qWQv3H+Ci2rxQHeMWVVVEhaISjfV7FL/8AnnPa+AMJAAA=",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 408,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 2348.36,
+          "ValorTarifaNet": 2348.36,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 716.02,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 1432.04,
+        "TaxasConsolidador": 0,
+        "Total": 6128.76,
+        "TotalGeral": 6128.76,
+        "TotalTarifa": 4696.72,
+        "TotalTarifaNet": 4696.72,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 1432.04,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 0,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "07:10",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "S",
+              "Codigo": "SEUCLSP0",
+              "Familia": "COMFORT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "COMFORT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "LH",
+            "Descricao": "Lufthansa"
+          },
+          "CiaOperacional": null,
+          "Classe": "S",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783033200000-0300)/",
+          "DataSaida": "/Date(1783023900000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "FRA",
+            "Descricao": "FRA - FRANKFURT"
+          },
+          "Duracao": "02:35",
+          "DuracaoDaConexao": null,
+          "Equipamento": "321",
+          "Escalas": null,
+          "Familia": "COMFORT",
+          "FamiliaCodigo": "COM",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2000",
+          "HoraSaida": "1725",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico17.jpg",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1115",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "Q",
+              "Codigo": "QEUCLSP0",
+              "Familia": "COMFORT",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "COMFORT"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "LH",
+            "Descricao": "Lufthansa"
+          },
+          "CiaOperacional": null,
+          "Classe": "Q",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783046100000-0300)/",
+          "DataSaida": "/Date(1783038000000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "03:15",
+          "DuracaoDaConexao": "01:20",
+          "Equipamento": "321",
+          "Escalas": null,
+          "Familia": "COMFORT",
+          "FamiliaCodigo": "COM",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2335",
+          "HoraSaida": "2120",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico17.jpg",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1172",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "FRA",
+            "Descricao": "FRA - FRANKFURT"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "LH",
+        "Descricao": "Lufthansa"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 430,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "07:10"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 8650780,
+      "IdentificacaoDaViagem": "6wgAAB+LCAAAAAAABADtVttO4zAQ/Rc/95I4Sy95S1sK0bY0tAWxWu3DNHGLl8SOHGe3CPHvO3ZCU1ZCFIlHpKgez4zPXDwn6RMJiE9bZEx8p0VG9ne6J75WJWuRFS+I79o1TNBvgI4ciE9ml6RF5g858beQFugZ2Y3TweNLtIdoXstSjWXCwiTIUx5DIi36mufSgk5YobmQGOHnE1ngoXkwwWMTAx+uUIpQog7ttZ1+26Frx/HtQ6oQjuO4bfs0ludfiA+Kb2EtNaTE77lDr0OxvmVwW6c3uamFKWO1FCmZyRhTLV4yNUkdsBY5U6hT0FQLqICqN+PQZEw38dA7gwGmM2Ttb05C20MvHrS9Ae2fsYELHuth4reyrnd+obBfxEXdrF6POoviwphRTIpaX271PYgCUBc03QpM8OkyMI1bvdmvS2Ny+/TMuI3fdqtMVp6UCmKQptHU98zBqzIzKK5rNiu2y5jQsr7rKSi2fsyZKY4sI4K9G0vR9OvVphmVETYYEVbnN9PZXWTCridV2aNxavpLzByMpqbG2fmdkaMjeXlVVt5hLAVeJrnXOi/8bhe3mpWJ7GgFf1iacvHQiWXW2ajuXyk3UIBINnLfncmdzEDFUOCRLAdxz4HH0u13fuc7W1bGU9P+J3IlM9aExrnmO9nsI8W2fF8ryDM64ITEmimOMx5DdeeHyQ9FYqcMa/da5LoEoXkCCasHIWKFnMOeZ7Ju042w5jlLcEWn7xcY4oD36YD0cwBxBlIs35Z+C6nBIj/MFcMOpY1i8BBJLrThM9syxUTMIYJ9faVia4Km9dgYtNDQ3ib6H3vox9lTUSZoXjbvsYe61DmFPZ7lyhF7PN+tNZYExHF9i/RCpz49nU7VW/kdNl2/zabrLzZ9sek1m45xK6yX7/ZpSK0mnZ53yEeXqi6isF/PmEsBvAhiVhTS/Jf4KPbUKA7whh+LXCPoCsf5tIqf/wH2jXG/6wgAAA==",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 538,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 3096.61,
+          "ValorTarifaNet": 3096.61,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 716.02,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 1432.04,
+        "TaxasConsolidador": 0,
+        "Total": 7625.26,
+        "TotalGeral": 7625.26,
+        "TotalTarifa": 6193.22,
+        "TotalTarifaNet": 6193.22,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 1432.04,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 0,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "07:10",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "S",
+              "Codigo": "SEUFLXP0",
+              "Familia": "FLEX",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "FLEX"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "LH",
+            "Descricao": "Lufthansa"
+          },
+          "CiaOperacional": null,
+          "Classe": "S",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783033200000-0300)/",
+          "DataSaida": "/Date(1783023900000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "FRA",
+            "Descricao": "FRA - FRANKFURT"
+          },
+          "Duracao": "02:35",
+          "DuracaoDaConexao": null,
+          "Equipamento": "321",
+          "Escalas": null,
+          "Familia": "FLEX",
+          "FamiliaCodigo": "FLE",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2000",
+          "HoraSaida": "1725",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico17.jpg",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1115",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "Q",
+              "Codigo": "QEUFLXP0",
+              "Familia": "FLEX",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "FLEX"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "LH",
+            "Descricao": "Lufthansa"
+          },
+          "CiaOperacional": null,
+          "Classe": "Q",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783046100000-0300)/",
+          "DataSaida": "/Date(1783038000000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "03:15",
+          "DuracaoDaConexao": "01:20",
+          "Equipamento": "321",
+          "Escalas": null,
+          "Familia": "FLEX",
+          "FamiliaCodigo": "FLE",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2335",
+          "HoraSaida": "2120",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico17.jpg",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1172",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "FRA",
+            "Descricao": "FRA - FRANKFURT"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "TK",
+        "Descricao": "Turkish Airlines"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 750,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "12:30"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 7667740,
+      "IdentificacaoDaViagem": "xQgAAB+LCAAAAAAABADtVm1v2jAQ/iuTP/OSl1Ig39Ig2qhQUkgrVdM+HImhFokd2cnGhPrfd3YCaTdVZdM+VorI+V4e353vcTgQn3hOhwTEszrkyvxO98QrZUU7ZMUU8WzzDlP0G6EjA+KR+JZ0yHxXEG8DmULPyCysHoYv0R6iORaVDERKw9QvMpZAKgx6zAphQCdUlYwL3OHrgSwwaO5PMGyC0ixcoRSh5FjOZdcadi0ntizPPKTewrIsu2ue1vLyDfFBsg3EooSMeO54aPcuMO2l/9ikN3lohCmljRRJkYsEU1XHTHVSJ6xFQSXqJLTVAiqg7k0Q6oyddTJ2BzDCdMa0e2GlTnfsJqOuO3KGAzqywaWXmPijaOqdX0vsF7FRN2verzqL4kKbUUxVo6/kjqnnLz6TGeNUoclvm+brHMJVrPu3erdtN9pkO0aeBO+7aZM9tAfarZKQgND9vvCM5q7KtXk0GOFiRbc55aVojnwKksY/C6prJMuIYAsDwdu2vVm0E3OFfUaE+5unYLbUkzOpa78KMt1kcq/lKQrBTEvRSVreVbVnmAiOp0mey7JQXr+Py5JWqeiVEr7TDDu26yUi761l/4cQa1DA07XY92diK3KQCSgMyQvgzwxYImzb6W3ZxlSUs0wfwIHciZwed8a5ZltxXEWSbti+Wb6gFccjKalkOOAJ1Ad+GvuQp2bEsGIXQ6kSc9izHI2OacYDZymkdE5TfCPk7TVCnuL/ALivgJcmohmj14hnADr/BxBPOsNyTamPkGks8qSPErYorSWFXSQYLzV56YZKyhMGEeyb4+MbvWnWDIdGCzXHTaK/UcX5Z6rU/PDbC+YjqjiWew5VHLd2a6kyqK0TfQFyrXDfcGc4HJ/Pnfom/pA68Sd1PqnzhjqvcWus4xf5PKROm86le8qnrGRThDLfxYQJDkz5CVVK6H8Jf4s91YoTvGbBoigRdIVje17FL78ANHGpmsUIAAA=",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 345,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 1985.74,
+          "ValorTarifaNet": 1985.74,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 1144.91,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 2289.82,
+        "TaxasConsolidador": 0,
+        "Total": 6261.3,
+        "TotalGeral": 6261.3,
+        "TotalTarifa": 3971.48,
+        "TotalTarifaNet": 3971.48,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 2289.82,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 0,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "12:30",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 20,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 20,
+              "BagagemQuantidade": 0,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "Q",
+              "Codigo": "QHYCLR",
+              "Familia": "CL",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "CL"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "TK",
+            "Descricao": "Turkish Airlines"
+          },
+          "CiaOperacional": null,
+          "Classe": "Q",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783023300000-0300)/",
+          "DataSaida": "/Date(1783004400000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "IST",
+            "Descricao": "IST - ISTANBUL"
+          },
+          "Duracao": "04:15",
+          "DuracaoDaConexao": null,
+          "Equipamento": "333",
+          "Escalas": null,
+          "Familia": "CL",
+          "FamiliaCodigo": "CL",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1715",
+          "HoraSaida": "1200",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico112.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1858",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 20,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 20,
+              "BagagemQuantidade": 0,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "Q",
+              "Codigo": "QHTCLR",
+              "Familia": "CL",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "CL"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "TK",
+            "Descricao": "Turkish Airlines"
+          },
+          "CiaOperacional": null,
+          "Classe": "Q",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783045800000-0300)/",
+          "DataSaida": "/Date(1783035000000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "05:00",
+          "DuracaoDaConexao": "03:15",
+          "Equipamento": "32Q",
+          "Escalas": null,
+          "Familia": "CL",
+          "FamiliaCodigo": "CL",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "2330",
+          "HoraSaida": "2030",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico112.gif",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1779",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "IST",
+            "Descricao": "IST - ISTANBUL"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "TK",
+        "Descricao": "Turkish Airlines"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 1375,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "22:55"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 7733276,
+      "IdentificacaoDaViagem": "xQgAAB+LCAAAAAAABADtVttuozAQ/ZWVn3MxkCtvlCgt2qSlCa1UrfZhAk5qBTCyYTerqv++Y0MubVRtdrWPlVA8nsvxzHgO5IV4xLVbxCcubZEr8zvdEbeUFWuRJVfEtcwaJOg3QkcOxCXRV9Ii821B3DWkCj1Ds6EdDF+gPUBzJCrpi4QFiVekPIZEGPSIF8KATpgqeS7whG8v5A6D5t4EwyYozYIlSiFKNrUHbTpsUzui1DUPqY+glFpt8xwtr98RHyRfQyRKSInbo/a4Q3sY4T026U0eGmHKWCOFUmQixlTVPlOd1AHrrmASdRKO1QIqoO6NH+iM7VU8dvowwnTGrN2jid0eO/Go7YzsYZ+NLHDYABN/FE2982uJ/SIW6mbNetJZFO+0GcVENfpKbrl6/uJxmfKcKTR5x6Z5OodgGen+LT9s2402WbaRJ/7HbtpkDa2+dqskxCB0v3uu0dxWmTaP+iPcLNkmY3kpmiufgmTRr4LpGskiJNhCX+THtr3ZHCfmCvuMCPc3T/5soSdnUtd+5ae6yeRey1MU/JmWwoO0uK1qzyAWOd4meS7LQrndLm5LViWiU0r4wVLs2LYTi6yzkt2fQqxAQZ6sxK47ExuRgYxBYUhWQP7MgcfCsuzOhq9NRRlP9QW8kFuRsf3JONd8I/a7ULI13zXbV7TieMQlkxwHPIb6wg9jH+SJGTGs2MFQpsQcdjxDo22a8ZDzBBI2ZwmuCPn1GiEP8WcA9xXkpYloxugU8QJA+/8A4k2nWK4p9RFSjUWe9FXCBqWVZLANBc9LTV62ZpLlMYcQds315Wt9aNoMh0YLNMdNou+oYv8zVWp+eMcXzFuqOGdUoYP+OVWcM6rQcf8dVfoubTRm4onluM4Jd4bG/0Lu1G/iP1In+qTOJ3XeUOcUt8baf5EvQ2od0xk4h3zKSjZFKPNdjLnIgSsvZkoJ/S/hb7GnWnGA1yy4K0oEXeLYXlbx628/3xl9xQgAAA==",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 350,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 2014.52,
+          "ValorTarifaNet": 2014.52,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 1144.91,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 2289.82,
+        "TaxasConsolidador": 0,
+        "Total": 6318.86,
+        "TotalGeral": 6318.86,
+        "TotalTarifa": 4029.04,
+        "TotalTarifaNet": 4029.04,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 2289.82,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 0,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "22:55",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 20,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 20,
+              "BagagemQuantidade": 0,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "Q",
+              "Codigo": "QHYCLR",
+              "Familia": "CL",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "CL"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "TK",
+            "Descricao": "Turkish Airlines"
+          },
+          "CiaOperacional": null,
+          "Classe": "Q",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783023300000-0300)/",
+          "DataSaida": "/Date(1783004400000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "IST",
+            "Descricao": "IST - ISTANBUL"
+          },
+          "Duracao": "04:15",
+          "DuracaoDaConexao": null,
+          "Equipamento": "333",
+          "Escalas": null,
+          "Familia": "CL",
+          "FamiliaCodigo": "CL",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1715",
+          "HoraSaida": "1200",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico112.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1858",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 20,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 20,
+              "BagagemQuantidade": 0,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "Q",
+              "Codigo": "QHTCLR",
+              "Familia": "CL",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "CL"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "TK",
+            "Descricao": "Turkish Airlines"
+          },
+          "CiaOperacional": null,
+          "Classe": "Q",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783083300000-0300)/",
+          "DataSaida": "/Date(1783072200000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "05:05",
+          "DuracaoDaConexao": "13:35",
+          "Equipamento": "32Q",
+          "Escalas": null,
+          "Familia": "CL",
+          "FamiliaCodigo": "CL",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "0955",
+          "HoraSaida": "0650",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico112.gif",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "1755",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "IST",
+            "Descricao": "IST - ISTANBUL"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "UA",
+        "Descricao": "United Airlines "
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 1350,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "22:30"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 9502748,
+      "IdentificacaoDaViagem": "DgkAAB+LCAAAAAAABADtVt9vmzAQ/lcqP+eHgSZNeKNkaVGbhCVp1mrawwWc1CpgZGDLVPV/3x3Q0KyK2k19rITC+c7+fPf5PpNH5jDbbDGX2bzFzsvf8Y7ZuS5Eiy1kxmyjfHshzhvgRAnMZjcOa7HJQ8rsDUQZzvTLAe/g8jnGPQwvVaFdFQovdNJIBhCqEn0pU1WCjkSWy0ThDt8f2QwXTZwRLhuhde0t0PLRMrnZb/OzNjeXnNvlw6otOOdGu3yayNMPxActN7BUOUS4zalhWB0D8547qzq/0U1tjIWoLV+rWAWYa/acKmW1B5ulQqNPQ1MuoAMqclyPUjbXwdDqwQDzGYr2KQ/N9tAKBm1rYJ71xMAAS/Qx85WqC55caCSMGei7rt8vqEVzRmE0w6z2JzIX4YkjdSQTkZ1gyGlYcyiHL9/mRODiKG+XFDJ4j+yRe3wahQzL6NG0QkMAiggf2CZ5pkWMoxJjIbaxSHJVn/gYtFj+TgVVyOY+QwJdlTSkHQyahjlHlqmQW357dTd1qXVGVe3nbkQkswnZY6rQnU1nkzsa+ofD+bSo1niBSvBc2X2ep5nd7eIwF0WoOrmGnyJC8h46gYo7a939pdQaMkjCtdp1r9VWxaADyHBJnEJyL0EGyuKdrdyUxcUyopN4ZFMVi4Pdsc3lVh24fC02clf72BPOwZYJcqEldn0AVRPsteAlYdl2yIPVYl8LSHIZQijqzvBFpiawk7GqKcNmoPBEhPjGSVcXuMUe78MBzY8BxH6IsPyy9BVEhMWIqyVs0VprAQ++kklOChcboUUSSPBhVx9ssqFNo7qFCM2ji6BM9C85mf8tp0pDTnMLvSUnDPVeycl6JSc+MPmhnPp2rxZYqQvGz2yD7/XVP32/vqrL+g15rS6Pymv1Ka9PeR2X10vcCuv50/4+pFaTTt/a55MXui4iK7+vgVQJyMwJRJYp+rvxr9hjcuzhSSuzNEfQBbb2+yp++gOzlmwUDgkAAA==",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 1226,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 7056.59,
+          "ValorTarifaNet": 7056.59,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 2301.9,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 4603.8,
+        "TaxasConsolidador": 0,
+        "Total": 18716.98,
+        "TotalGeral": 18716.98,
+        "TotalTarifa": 14113.18,
+        "TotalTarifaNet": 14113.18,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 4603.8,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 0,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "22:30",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "M",
+              "Codigo": "MX0XKYNC",
+              "Familia": "ECONOMY",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "ECONOMY"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "UA",
+            "Descricao": "United Airlines "
+          },
+          "CiaOperacional": null,
+          "Classe": "M",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783008900000-0300)/",
+          "DataSaida": "/Date(1783000200000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "EWR",
+            "Descricao": "EWR - NEWARK"
+          },
+          "Duracao": "08:25",
+          "DuracaoDaConexao": null,
+          "Equipamento": "764",
+          "Escalas": null,
+          "Familia": "ECONOMY",
+          "FamiliaCodigo": "ECO",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1315",
+          "HoraSaida": "1050",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico30.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "50",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "V",
+              "Codigo": "VH0XKYNC",
+              "Familia": "ECONOMY",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "ECONOMY"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "UA",
+            "Descricao": "United Airlines "
+          },
+          "CiaOperacional": null,
+          "Classe": "V",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783077600000-0300)/",
+          "DataSaida": "/Date(1783034700000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "06:55",
+          "DuracaoDaConexao": "07:10",
+          "Equipamento": "781",
+          "Escalas": null,
+          "Familia": "ECONOMY",
+          "FamiliaCodigo": "ECO",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "0820",
+          "HoraSaida": "2025",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico30.gif",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "64",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "EWR",
+            "Descricao": "EWR - NEWARK"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    },
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "UA",
+        "Descricao": "United Airlines "
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "LIS",
+        "Descricao": "LIS - LISBOA"
+      },
+      "Duracao": 1350,
+      "DuracoesSegmentos": [
+        {
+          "Key": "I",
+          "Value": "22:30"
+        }
+      ],
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 1,
+        "Label": null,
+        "Nome": "Amadeus"
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 9568284,
+      "IdentificacaoDaViagem": "JgkAAB+LCAAAAAAABADtVttuozAQ/ZXKz7kYaC7ljZCmRW0alqTZVqt9mICTWgWMDOxmVfXfdwZo0ouqZld9rITCeMY+njmeY/LAHGabLeYym7fYqPqdbJld6FK02FzmzDaqtxfhvCFOlMBsdu2wFpveZ8xeQ5zjTL8a8A4uDzDuYXihSu2qSHiRk8UyhEhV6AuZqQp0LPJCpgp3+PHAZrho6oxx2RitS2+Olo+Wyc1+mw/a3FxwblcPq7fgnBvt6tlHHn8iPmi5hoUqIMZtev3+oGMe4xJn2eQ3vm6MiRCN5WuVqBBzzZ9Spax2YLNMaPRp2JcL6ICaHNejlM1VeGL1YIj5nIj2MY/M9okVDtvW0Bz0xNAAS/Qx86VqCp6eaSSMGei7bN7PqEVzRmE0o7zxp7IQ0ZEjdSxTkR9hyNmz5lAOp98DInD+Lm/nFDJ4j+yx+/40ChmW0aNppYYQFBE+tE3yXJUJjiqMudgkIi1Uc+IT0GLxJxNUIQt8hgS6Kt2T9mKwb5gRskyF3PCbi9vApdYZ17WP3JhIZlOyJ1ShO/OdYBGcTsjjv/EEV2W90gtViqfL7ooiy+1uF4eFKCPVKTT8EjFSeN8JVdJZ6e5vpVaQQxqt1LZ7qTYqAR1CjkuSDNI7CTJUFu9s5LoqMZExnccDu1KJeJ0A9rvcqNdeX4u13DZu9ojTsH3CQmiJCgihboidLrw0qloQObFa7FsJaSEjiETTJb7I1RS2MlENfdgYFJ6KCN846eIMt9jhfTqg+TmA2Bsxll+VvoSYsNgtHT1s0FppAfe+kmlBahdroUUaSvBh2xxvuqZN46adCM2jS6FK9JW0zP+WVq0nZ38jfSQtDPXeSMt6Iy0+NPlLafXtXiO2SiOMD2yD77TWPz5ca/XF/YHUlufvSm35JbUvqR0mtee4NdbTJ/8wpNY+nb61y6codVNEXn13Q6lSkLkTijxX9DfkX7En5NjBk25mWYGg89HkwIof/wI9wbCNJgkAAA==",
+      "IsNdc": false,
+      "NumeroParadas": 1,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "MAD",
+        "Descricao": "MAD - MADRI"
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": {
+        "Id": 0,
+        "EqCambio": 5.75578511,
+        "EqMoeda": "EUR",
+        "Moeda": "BRL",
+        "PrecoAdulto": {
+          "Id": 0,
+          "EqValorTarifa": 1361,
+          "EqValorTaxaServico": 0,
+          "FaixaEtaria": "ADT",
+          "Quantidade": 2,
+          "TaxasConsolidador": 0,
+          "ValorFee": 0,
+          "ValorObFee": 0,
+          "ValorPenalidade": 0,
+          "ValorRav": 0,
+          "ValorTarifa": 7833.62,
+          "ValorTarifaNet": 7833.62,
+          "ValorTaxaAssento": 0,
+          "ValorTaxaBagagem": 0,
+          "ValorTaxaCombustivel": 0,
+          "ValorTaxaEmbarque": 2301.9,
+          "ValorTaxaMenorDesacompanhado": 0,
+          "ValorTaxaServico": 0
+        },
+        "PrecoBebe": null,
+        "PrecoCrianca": null,
+        "Tarifa": 0,
+        "TarifaOperadora": false,
+        "TarifaPrivada": false,
+        "Taxa": 4603.8,
+        "TaxasConsolidador": 0,
+        "Total": 20271.04,
+        "TotalGeral": 20271.04,
+        "TotalTarifa": 15667.24,
+        "TotalTarifaNet": 15667.24,
+        "TotalTaxaAssento": 0,
+        "TotalTaxaBagagem": 0,
+        "TotalTaxaDeCombustivel": 0,
+        "TotalTaxaEmbarque": 4603.8,
+        "TotalTaxaMenorDesacompanhado": 0,
+        "TotalTaxaServico": 0,
+        "TourCodeIdAplicado": 0,
+        "ValorComissao": null,
+        "ValorEMD": 0,
+        "ValorFEE": 0,
+        "ValorObFee": 0,
+        "ValorRAV": 0
+      },
+      "Rota": null,
+      "Segmento": "",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "22:30",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "M",
+              "Codigo": "MX0XKYRC",
+              "Familia": "ECOPARTREF",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "ECOPARTREF"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "UA",
+            "Descricao": "United Airlines "
+          },
+          "CiaOperacional": null,
+          "Classe": "M",
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1783008900000-0300)/",
+          "DataSaida": "/Date(1783000200000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "EWR",
+            "Descricao": "EWR - NEWARK"
+          },
+          "Duracao": "08:25",
+          "DuracaoDaConexao": null,
+          "Equipamento": "764",
+          "Escalas": null,
+          "Familia": "ECOPARTREF",
+          "FamiliaCodigo": "ECO",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1315",
+          "HoraSaida": "1050",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico30.gif",
+          "InicioDoSegmento": true,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "50",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "MAD",
+            "Descricao": "MAD - MADRI"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        },
+        {
+          "Id": 0,
+          "BagagemInclusa": true,
+          "BagagemIndicador": 3,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 1,
+          "BagagemUnidadeDeMedida": "KG",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 1,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "V",
+              "Codigo": "VH0XKYRC",
+              "Familia": "ECOPARTREF",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "ECOPARTREF"
+            }
+          ],
+          "Cabine": "Econômica",
+          "CabineTipo": "Economica",
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "UA",
+            "Descricao": "United Airlines "
+          },
+          "CiaOperacional": null,
+          "Classe": "V",
+          "Companhia": null,
+          "Conexao": true,
+          "DataChegada": "/Date(1783077600000-0300)/",
+          "DataSaida": "/Date(1783034700000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "LIS",
+            "Descricao": "LIS - LISBOA"
+          },
+          "Duracao": "06:55",
+          "DuracaoDaConexao": "07:10",
+          "Equipamento": "781",
+          "Escalas": null,
+          "Familia": "ECOPARTREF",
+          "FamiliaCodigo": "ECO",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "0820",
+          "HoraSaida": "2025",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico30.gif",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "64",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "EWR",
+            "Descricao": "EWR - NEWARK"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": "1",
+          "Status": null
+        }
+      ]
+    }
+  ],
+  "ViagensTrecho2": null
+}

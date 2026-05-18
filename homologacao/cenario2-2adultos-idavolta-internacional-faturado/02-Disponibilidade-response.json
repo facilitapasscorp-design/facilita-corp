@@ -1,0 +1,31 @@
+{
+  "Data": "/Date(1778789261125-0300)/",
+  "DataVersao": "13/05/2026",
+  "SessaoExpirada": false,
+  "Cia": null,
+  "DataIda": "/Date(1782356400000-0300)/",
+  "DataVolta": "/Date(1782961200000-0300)/",
+  "Destino": {
+    "Id": 0,
+    "CodigoIata": "MAD",
+    "Descricao": null
+  },
+  "Exception": {
+    "Message": "No availability found."
+  },
+  "ExceptionPorSistema": [],
+  "Origem": {
+    "Id": 0,
+    "CodigoIata": "LIS",
+    "Descricao": null
+  },
+  "QuantidadeAdultos": 2,
+  "QuantidadeBebes": 0,
+  "QuantidadeCriancas": 0,
+  "Recomendacoes": null,
+  "Rota": "I",
+  "TempoPesquisa": null,
+  "ViagensMultiplosTrechos": null,
+  "ViagensTrecho1": null,
+  "ViagensTrecho2": null
+}

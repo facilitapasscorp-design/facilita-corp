@@ -1,0 +1,18 @@
+{
+  "Login": "WoobaApi_Air_FacilitaPass",
+  "Senha": "@Woob@FacilitaPass@2026",
+  "QuantidadeAdultos": 2,
+  "QuantidadeCriancas": 0,
+  "QuantidadeBebes": 0,
+  "QuantidadeDeVoos": 10,
+  "Sistema": 28,
+  "ApenasVoosComBagagem": false,
+  "ApenasVoosDiretos": false,
+  "BuscarVoosComBagagem": true,
+  "BuscarVoosSemBagagem": true,
+  "Flex": false,
+  "Recomendacao": false,
+  "Origem": "LIS",
+  "Destino": "MAD",
+  "DataIda": "/Date(1782399600000-0300)/"
+}

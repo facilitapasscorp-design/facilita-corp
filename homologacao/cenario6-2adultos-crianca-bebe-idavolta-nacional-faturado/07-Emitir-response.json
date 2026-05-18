@@ -1,0 +1,71 @@
+{
+  "Data": "/Date(1778854101581-0300)/",
+  "DataVersao": "14/05/2026",
+  "SessaoExpirada": false,
+  "CobrancaDeServico": null,
+  "CodigoDeAutorizacao": "",
+  "Alertas": null,
+  "Bilhetes": [
+    {
+      "Id": 0,
+      "BilheteDoInfantil": false,
+      "DadosCorporativos": [
+        {
+          "Informacao": "Solicitante",
+          "Valor": "JOAO"
+        }
+      ],
+      "DataDeEmissao": "/Date(1778854089000-0300)/",
+      "Numero": "1272300377907",
+      "Pagamentos": null,
+      "Passageiro": "JOAO SILVA",
+      "PassageirosAdicionais": null,
+      "PaxRef": "1",
+      "Status": "Ativo",
+      "Voos": null,
+      "BilhetesAdicionais": null
+    },
+    {
+      "Id": 0,
+      "BilheteDoInfantil": false,
+      "DadosCorporativos": [
+        {
+          "Informacao": "Solicitante",
+          "Valor": "JOAO"
+        }
+      ],
+      "DataDeEmissao": "/Date(1778854089000-0300)/",
+      "Numero": "1272300377908",
+      "Pagamentos": null,
+      "Passageiro": "MARIA SANTOS",
+      "PassageirosAdicionais": null,
+      "PaxRef": "2",
+      "Status": "Ativo",
+      "Voos": null,
+      "BilhetesAdicionais": null
+    },
+    {
+      "Id": 0,
+      "BilheteDoInfantil": false,
+      "DadosCorporativos": [
+        {
+          "Informacao": "Solicitante",
+          "Valor": "JOAO"
+        }
+      ],
+      "DataDeEmissao": "/Date(1778854089000-0300)/",
+      "Numero": "1272300377909",
+      "Pagamentos": null,
+      "Passageiro": "ANA SILVA",
+      "PassageirosAdicionais": null,
+      "PaxRef": "3",
+      "Status": "Ativo",
+      "Voos": null,
+      "BilhetesAdicionais": null
+    }
+  ],
+  "EMDs": [],
+  "EmissaoEmProcessoDeFilaNoFornecedor": false,
+  "Exception": null,
+  "NivelAnaliseDeRisco": null
+}
