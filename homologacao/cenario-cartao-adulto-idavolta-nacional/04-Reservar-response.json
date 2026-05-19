@@ -1,0 +1,11 @@
+{
+  "Data": "/Date(1779206021353-0300)/",
+  "DataVersao": "15/05/2026",
+  "SessaoExpirada": false,
+  "CobrancaDeServico": null,
+  "CodigoDeAutorizacao": null,
+  "Exception": {
+    "Message": "Booking creation is blocked, for internal users, for there is another booking alike."
+  },
+  "Reservas": null
+}

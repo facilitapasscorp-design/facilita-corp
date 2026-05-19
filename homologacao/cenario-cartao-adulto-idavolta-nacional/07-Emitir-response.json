@@ -1,0 +1,15 @@
+{
+  "Data": "/Date(1779206041678-0300)/",
+  "DataVersao": "15/05/2026",
+  "SessaoExpirada": false,
+  "CobrancaDeServico": null,
+  "CodigoDeAutorizacao": "",
+  "Alertas": null,
+  "Bilhetes": [],
+  "EMDs": [],
+  "EmissaoEmProcessoDeFilaNoFornecedor": false,
+  "Exception": {
+    "Message": "An error has occurred during the issuance/recording of information, please see the booking before issuing again. Attention! Despite the error, your reservation may be processed. Contact support. Error: AUTHORIZATION TO ISSUE NOT GRANTED DECLINED DECLINED Expiry Incorrect"
+  },
+  "NivelAnaliseDeRisco": null
+}

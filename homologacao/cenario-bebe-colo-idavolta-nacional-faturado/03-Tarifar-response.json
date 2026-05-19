@@ -1,0 +1,421 @@
+{
+  "Data": "/Date(1779202073530-0300)/",
+  "DataVersao": "15/05/2026",
+  "SessaoExpirada": false,
+  "Agencia": {
+    "Id": 295,
+    "Contato": "",
+    "Email": "api.travellink@wooba.com.br",
+    "Localizacao": {
+      "Id": 295,
+      "Bairro": "",
+      "CEP": "",
+      "Cidade": "",
+      "Complemento": "",
+      "Endereco": "",
+      "Estado": "  ",
+      "Numero": "55 61 34350420",
+      "Pais": null
+    },
+    "Nome": "Desenvolvedores Facilita Pass",
+    "Unidade": null
+  },
+  "CancelamentoProibidoAposModificacao": false,
+  "Companhia": "LA",
+  "ConfiguracoesDeEmissao": null,
+  "DocumentosAceitos": [
+    {
+      "Descricao": "CPF",
+      "Id": 1
+    },
+    {
+      "Descricao": "RG",
+      "Id": 3
+    },
+    {
+      "Descricao": "Passaporte",
+      "Id": 4
+    }
+  ],
+  "Exception": null,
+  "FidelidadeAmericanAirlines": false,
+  "FidelidadeAzul": false,
+  "FidelidadeFidelidadeGenerico": true,
+  "FidelidadeGDS": false,
+  "FidelidadeGol": false,
+  "FidelidadeLatam": true,
+  "FoidObrigatorio": false,
+  "HabilitarCamposTSA": {
+    "Redress": true
+  },
+  "HabilitarNomeDoMeio": false,
+  "InformacaoTributariaTipoAceitos": null,
+  "LojaPagamentoCartoes": null,
+  "OpcoesDeDocumentoDePassageiroFOID": null,
+  "PlanosDeFinanciamento": [
+    {
+      "Bandeira": 2,
+      "Financiamentos": [
+        {
+          "Id": 41,
+          "CoeficienteJuros": 0,
+          "DemaisParcela": 0,
+          "DemaisParcelas": 0,
+          "Moeda": "BRL",
+          "Parcelas": 1,
+          "PrimeiraParcela": 427.22,
+          "vlJurosCalculado": 0
+        }
+      ]
+    },
+    {
+      "Bandeira": 5,
+      "Financiamentos": [
+        {
+          "Id": 101,
+          "CoeficienteJuros": 0,
+          "DemaisParcela": 0,
+          "DemaisParcelas": 0,
+          "Moeda": "BRL",
+          "Parcelas": 1,
+          "PrimeiraParcela": 427.22,
+          "vlJurosCalculado": 0
+        }
+      ]
+    },
+    {
+      "Bandeira": 6,
+      "Financiamentos": [
+        {
+          "Id": 121,
+          "CoeficienteJuros": 0,
+          "DemaisParcela": 0,
+          "DemaisParcelas": 0,
+          "Moeda": "BRL",
+          "Parcelas": 1,
+          "PrimeiraParcela": 427.22,
+          "vlJurosCalculado": 0
+        }
+      ]
+    },
+    {
+      "Bandeira": 3,
+      "Financiamentos": [
+        {
+          "Id": 61,
+          "CoeficienteJuros": 0,
+          "DemaisParcela": 0,
+          "DemaisParcelas": 0,
+          "Moeda": "BRL",
+          "Parcelas": 1,
+          "PrimeiraParcela": 427.22,
+          "vlJurosCalculado": 0
+        }
+      ]
+    },
+    {
+      "Bandeira": 1,
+      "Financiamentos": [
+        {
+          "Id": 21,
+          "CoeficienteJuros": 0,
+          "DemaisParcela": 0,
+          "DemaisParcelas": 0,
+          "Moeda": "BRL",
+          "Parcelas": 1,
+          "PrimeiraParcela": 427.22,
+          "vlJurosCalculado": 0
+        }
+      ]
+    },
+    {
+      "Bandeira": 7,
+      "Financiamentos": [
+        {
+          "Id": 141,
+          "CoeficienteJuros": 0,
+          "DemaisParcela": 0,
+          "DemaisParcelas": 0,
+          "Moeda": "BRL",
+          "Parcelas": 1,
+          "PrimeiraParcela": 427.22,
+          "vlJurosCalculado": 0
+        }
+      ]
+    },
+    {
+      "Bandeira": 10,
+      "Financiamentos": [
+        {
+          "Id": 201,
+          "CoeficienteJuros": 0,
+          "DemaisParcela": 0,
+          "DemaisParcelas": 0,
+          "Moeda": "BRL",
+          "Parcelas": 1,
+          "PrimeiraParcela": 427.22,
+          "vlJurosCalculado": 0
+        }
+      ]
+    }
+  ],
+  "Preco": {
+    "Id": 0,
+    "EqCambio": 0,
+    "EqMoeda": "",
+    "Moeda": "BRL",
+    "PrecoAdulto": {
+      "Id": 0,
+      "EqValorTarifa": 0,
+      "EqValorTaxaServico": 40,
+      "FaixaEtaria": "ADT",
+      "Quantidade": 1,
+      "TaxasConsolidador": 0,
+      "ValorFee": 0,
+      "ValorObFee": 0,
+      "ValorPenalidade": 0,
+      "ValorRav": 0,
+      "ValorTarifa": 313.58,
+      "ValorTarifaNet": 313.58,
+      "ValorTaxaAssento": 0,
+      "ValorTaxaBagagem": 0,
+      "ValorTaxaCombustivel": 0,
+      "ValorTaxaEmbarque": 33.64,
+      "ValorTaxaMenorDesacompanhado": 0,
+      "ValorTaxaServico": 40
+    },
+    "PrecoBebe": {
+      "Id": 0,
+      "EqValorTarifa": 0,
+      "EqValorTaxaServico": 40,
+      "FaixaEtaria": "INF",
+      "Quantidade": 1,
+      "TaxasConsolidador": 0,
+      "ValorFee": 0,
+      "ValorObFee": 0,
+      "ValorPenalidade": 0,
+      "ValorRav": 0,
+      "ValorTarifa": 0,
+      "ValorTarifaNet": 0,
+      "ValorTaxaAssento": 0,
+      "ValorTaxaBagagem": 0,
+      "ValorTaxaCombustivel": 0,
+      "ValorTaxaEmbarque": 0,
+      "ValorTaxaMenorDesacompanhado": 0,
+      "ValorTaxaServico": 40
+    },
+    "PrecoCrianca": null,
+    "Tarifa": 0,
+    "TarifaOperadora": false,
+    "TarifaPrivada": true,
+    "Taxa": 40,
+    "TaxasConsolidador": 0,
+    "Total": 427.22,
+    "TotalGeral": 427.22,
+    "TotalTarifa": 313.58,
+    "TotalTarifaNet": 313.58,
+    "TotalTaxaAssento": 0,
+    "TotalTaxaBagagem": 0,
+    "TotalTaxaDeCombustivel": 0,
+    "TotalTaxaEmbarque": 33.64,
+    "TotalTaxaMenorDesacompanhado": 0,
+    "TotalTaxaServico": 80,
+    "TourCodeIdAplicado": 0,
+    "ValorComissao": null,
+    "ValorEMD": 0,
+    "ValorFEE": 0,
+    "ValorObFee": 0,
+    "ValorRAV": 0
+  },
+  "ReemissaoDetalhes": null,
+  "ReemissaoRequerEmissaoImediata": false,
+  "RegraTarifaria": [
+    {
+      "Id": 0,
+      "BaseTarifaria": {
+        "Id": 0,
+        "Classe": "Q",
+        "Codigo": "QJKX0N1/B00",
+        "Familia": "SL",
+        "FamiliaCor": null,
+        "FamiliaCorFonte": null,
+        "FamiliaDescricao": "LIGHT"
+      },
+      "DataChegada": "/Date(1782415200000-0300)/",
+      "DataSaida": "/Date(1782411600000-0300)/",
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "GIG",
+        "Descricao": "GIG - RIO DE JANEIRO"
+      },
+      "HoraChegada": "1620",
+      "HoraSaida": "1520",
+      "Numero": "4548",
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "GRU",
+        "Descricao": "GRU - SAO PAULO"
+      },
+      "Regra": "Penalty: Change - BRL - 313.58.\r\nPenalty: Cancellation - PERCENT - 100.\r\nNonalcoholic beverages provided (Alcoholic) - Nonalcoholic beverages provided (Alcoholic) (n/a).\r\nNonalcoholic beverages provided (Non Alcoholic) - Nonalcoholic beverages provided (Non Alcoholic) (free).\r\nSnacks provided - Snacks provided (free).\r\nUSB outlet - USB outlet (free).\r\nStreaming Capable Wi-Fi (fee) - Streaming Capable Wi-Fi (fee) (paid).\r\nStreaming entertainment - Streaming entertainment (free).\r\n",
+      "RegraEstruturada": null
+    }
+  ],
+  "RequerContatoDosPassageiros": true,
+  "RequerContatoDosPassageirosPermiteRecusar": false,
+  "RequerDataDeNascimentoDosPassageirosAdultos": true,
+  "RequerDataDeNascimentoDosPassageirosCriancas": true,
+  "RequerDocumentoDosPassageiros": true,
+  "RequerInformacaoTributaria": false,
+  "ReservarParaHoje": false,
+  "RetarifacaoAutomatica": false,
+  "Telefone": {
+    "Id": 0,
+    "Contato": "Facilita Pass Viagens",
+    "DDD": "61",
+    "DsTipoTelefone": null,
+    "Linha": "34350420",
+    "Numero": null,
+    "Pais": "55",
+    "TipoTelefone": "T"
+  },
+  "UpsellOpcoes": null,
+  "Usuario": {
+    "Id": 3114,
+    "Celular": "",
+    "Email": "api.travellink@wooba.com.br",
+    "Nome": "Api_Desenvolvedores_FacilitaPass",
+    "NomeCompleto": "Facilita Pass Viagens",
+    "Telefone": "55 61 34350420"
+  },
+  "ViagensMultiplosTrechos": [],
+  "ViagensTrecho1": [
+    {
+      "CiaMandatoria": {
+        "Id": 0,
+        "CodigoIata": "LA",
+        "Descricao": "Latam"
+      },
+      "ClasseBaseReferencias": null,
+      "Combinada": false,
+      "Destino": {
+        "Id": 0,
+        "CodigoIata": "",
+        "Descricao": ""
+      },
+      "Duracao": 60,
+      "DuracoesSegmentos": null,
+      "Fornecedor": {
+        "Id": 0,
+        "Codigo": 206,
+        "Label": null,
+        "Nome": ""
+      },
+      "HouveAlteracaoDeValores": false,
+      "Id": 65587,
+      "IdentificacaoDaViagem": null,
+      "IsNdc": false,
+      "NumeroParadas": 0,
+      "Origem": {
+        "Id": 0,
+        "CodigoIata": "",
+        "Descricao": ""
+      },
+      "PossuiDetalheDeFamilia": false,
+      "Preco": null,
+      "Rota": null,
+      "Segmento": "I",
+      "SubFornecedor": null,
+      "TempoDeDuracao": "01:00",
+      "VooReferenciaIds": null,
+      "Voos": [
+        {
+          "Id": 0,
+          "BagagemInclusa": false,
+          "BagagemIndicador": 2,
+          "BagagemPeso": 0,
+          "BagagemQuantidade": 0,
+          "BagagemUnidadeDeMedida": "KG Total",
+          "Bagagens": [
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 0,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 12,
+              "BagagemUnidadeDeMedida": null
+            },
+            {
+              "BagagemInclusa": true,
+              "BagagemIndicador": 3,
+              "BagagemPeso": 12,
+              "BagagemQuantidade": 1,
+              "BagagemTipo": 11,
+              "BagagemUnidadeDeMedida": "KG"
+            }
+          ],
+          "BaseTarifaria": [
+            {
+              "Id": 0,
+              "Classe": "Q",
+              "Codigo": "QJKX0N1/B00",
+              "Familia": "SL",
+              "FamiliaCor": null,
+              "FamiliaCorFonte": null,
+              "FamiliaDescricao": "LIGHT"
+            }
+          ],
+          "Cabine": null,
+          "CabineTipo": null,
+          "Campo1": null,
+          "CiaMandatoria": {
+            "Id": 0,
+            "CodigoIata": "LA",
+            "Descricao": "Latam"
+          },
+          "CiaOperacional": {
+            "Id": 0,
+            "CodigoIata": "LA",
+            "Descricao": "Latam"
+          },
+          "Classe": null,
+          "Companhia": null,
+          "Conexao": false,
+          "DataChegada": "/Date(1782415200000-0300)/",
+          "DataSaida": "/Date(1782411600000-0300)/",
+          "Destino": {
+            "Id": 0,
+            "CodigoIata": "GIG",
+            "Descricao": "RIO DE JANEIRO (GIG)"
+          },
+          "Duracao": "01:00",
+          "DuracaoDaConexao": null,
+          "Equipamento": null,
+          "Escalas": null,
+          "Familia": "LIGHT",
+          "FamiliaCodigo": "LIG",
+          "GrupoDeSegmento": 0,
+          "HoraChegada": "1620",
+          "HoraSaida": "1520",
+          "Icone": "https://conteudo.travellink.com.br/woobasandbox/Logomarcas/companhiaico31.gif",
+          "InicioDoSegmento": false,
+          "Linha": null,
+          "ListaDeClasses": null,
+          "LocalizadorCompanhia": null,
+          "Numero": "4548",
+          "Origem": {
+            "Id": 0,
+            "CodigoIata": "GRU",
+            "Descricao": "SAO PAULO (GRU)"
+          },
+          "QuantidadeParadas": 0,
+          "Referencia": null,
+          "ReferenciaDoSegmento": null,
+          "Segmento": "I",
+          "SegmentoDeReferencia": null,
+          "Status": null
+        }
+      ]
+    }
+  ],
+  "ViagensTrecho2": []
+}

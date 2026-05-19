@@ -1,0 +1,68 @@
+{
+  "Login": "WoobaApi_Air_FacilitaPass",
+  "Senha": "@Woob@FacilitaPass@2026",
+  "ClienteId": 0,
+  "IdentificacaoDaViagem": "7woAAB+LCAAAAAAABAC9lt1u2jAUx1+l8m4DdSi0kLt8zDRTWhAf1aSpmtzEAashRnbYmKo+0O73Bn2xHTshlC6TBpuG2nLsc/z3OT/7JH1CLnJsC/nmr4ccbCGyRU5KM8UsNOUKOVfYGGGCnO4AQjlFDhpeIAvdPK7r0LEZ4DYET8AfgHsmNtIXCQsTd53xmCbC6M/4GoyOhQKmCp4L2OLTExpp0ckclgXaCodgjcHq4M5lCw9adm+GsWN+ULnFztPp7D3P91AFVczPqFIMgjxUTsyo5Cn86ty92w+uN+x+0Cma6ZkoaIacS3zV7uv83buqkmBeGYSxyipXjNZMQj2S7uunMEGVqdAPdQ1dnNqdq3TQwvaAtbr9fq/Vf7CTVjeO0xTHSW9gDyCFO1ERuBlKIAggLBTBty7zFWswR+vdIFGVR2RnEc+XVJ25L98lg/0t5O5RunuWwfQQpn1Rw7zWLvvC2IH/Jqzr4F4Vpl12F/d02EbSmAqdpu2YmdvNyqhcXcJgyhYrlhfaH+rcRb7ndDjINDJzSmM4JoBbn09Hn8+rW+X94vSq1dok8B3pvbzxzgpjkesrsCyKtXLOz2FYsE0i2oWkX1iW8fyxHYtV+0GefxXigSqaJw9iex6JhVhRGVMFS1Zrmi855bHotRc8BVlCVzzT9J/QrVgxs9vwembKTPhC7LYvRyHsKfN6cixZyrflcGiCdE3vMO5jwxjGRKepJ4n5oGeYNbe5vCX+pOLlu55p2kAZC72H+l5+rKDPdJL+ISpCJZt9W4PuJ+iQGtb4hsrHzY7w2Hcrf1liUHXN/yz1sPf6b5ov46rQKT5bJ4C4aAbhR6eA8CN3Og391yiM0FsUpXqNApbtUfQxIb+gwObTgMJu2/1/xqLbzIKcxIJE7z++BkGaQJBDELBmD4KQI+6EjfHvSNzX9hO6o5kRv+yZx/wCzGIj5zlPaMKUeX7HXOSUKzdmSgn9foOtWMoky2NOx3RbPlrCPKV5wbPqoaVx77TtWppkfLEswjxh2z9TgVRDfWioMelad/cKPTq1w7LLEj+fUOJwFJ1dj25G0WjYIGguwNGSk7kXNIjN1QZuljheD44ya9CbsHgj1Z/rvV3vS5aYRdkJ3JrouzP3aB2iJxrEyh51C/7leGC3LF/C2/p3oub/s2M1sWUauFmxDPq7K/wPOvf++Sf4rliD7woAAA==",
+  "ClassesSelecionadas": [
+    {
+      "BaseTarifaria": "BNJAAG2JCH",
+      "Classe": "B",
+      "Familia": "LI",
+      "NumeroDoVoo": "1376"
+    }
+  ],
+  "ClassesSelecionadasVolta": [
+    {
+      "BaseTarifaria": "ONJABG2J",
+      "Classe": "O",
+      "Familia": "LI",
+      "NumeroDoVoo": "1381"
+    }
+  ],
+  "Passageiros": [
+    {
+      "Nome": "JOAO",
+      "Sobrenome": "SILVA",
+      "CPF": "12345678901",
+      "Nascimento": "/Date(631152000000-0300)/",
+      "Email": "teste@facilitapass.com",
+      "FaixaEtaria": "ADT",
+      "Sexo": "M",
+      "Linha": "1"
+    },
+    {
+      "Nome": "ANA",
+      "Sobrenome": "SILVA",
+      "CPF": "11122233344",
+      "Nascimento": "/Date(1514764800000-0300)/",
+      "Email": "teste@facilitapass.com",
+      "FaixaEtaria": "CHD",
+      "Sexo": "F",
+      "Linha": "2"
+    }
+  ],
+  "InformacoesComplementaresPassageiro": [
+    {
+      "Nome": "JOAO",
+      "Sobrenome": "SILVA",
+      "Tipo": "ADT"
+    },
+    {
+      "Nome": "ANA",
+      "Sobrenome": "SILVA",
+      "Tipo": "CHD"
+    }
+  ],
+  "Contatos": [
+    {
+      "Nome": "JOAO SILVA",
+      "Email": "teste@facilitapass.com",
+      "NumeroDDD": "11",
+      "NumeroTelefone": "999999999",
+      "NumeroDDI": "55",
+      "Tipo": 0
+    }
+  ],
+  "Solicitante": "JOAO",
+  "ValidarAnaliseRisco": false
+}

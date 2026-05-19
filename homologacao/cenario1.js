@@ -263,12 +263,13 @@ async function chamar(etapa, nomeEndpoint, corpo, { tolerarErro } = {}) {
     Sistema:     sistema.Sistema,
   })
 
-  // 9. ConsultarEticket
+  // 9. ConsultarEticket — GOL usa SistemaId 70 neste endpoint
+  const sistemaEticket = sistema.Sistema === 49 ? 70 : sistema.Sistema
   if (eticket) {
     await chamar(9, 'ConsultarEticket', {
       Login: LOGIN, Senha: SENHA,
       Eticket: eticket,
-      Sistema: sistema.Sistema,
+      Sistema: sistemaEticket,
     })
   } else {
     console.log('\n[9] ConsultarEticket — pulado (sem e-ticket retornado)')

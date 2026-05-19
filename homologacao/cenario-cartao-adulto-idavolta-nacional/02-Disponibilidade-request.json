@@ -1,0 +1,19 @@
+{
+  "Login": "WoobaApi_Air_FacilitaPass",
+  "Senha": "@Woob@FacilitaPass@2026",
+  "Origem": "GRU",
+  "Destino": "GIG",
+  "DataIda": "/Date(1789484400000-0300)/",
+  "DataVolta": "/Date(1790089200000-0300)/",
+  "QuantidadeAdultos": 1,
+  "QuantidadeCriancas": 1,
+  "QuantidadeBebes": 0,
+  "QuantidadeDeVoos": 10,
+  "Sistema": 49,
+  "ApenasVoosComBagagem": false,
+  "ApenasVoosDiretos": false,
+  "BuscarVoosComBagagem": true,
+  "BuscarVoosSemBagagem": true,
+  "Flex": false,
+  "Recomendacao": false
+}

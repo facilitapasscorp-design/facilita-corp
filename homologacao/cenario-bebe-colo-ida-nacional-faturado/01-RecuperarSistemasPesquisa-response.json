@@ -1,0 +1,50 @@
+{
+  "Data": "/Date(1779204435853-0300)/",
+  "DataVersao": "15/05/2026",
+  "SessaoExpirada": false,
+  "Exception": null,
+  "Sistemas": [
+    {
+      "Codigo": 4,
+      "Label": "SABRE",
+      "OrdemDeExibicao": 0,
+      "Sistema": 18
+    },
+    {
+      "Codigo": 62,
+      "Label": "LATAM",
+      "OrdemDeExibicao": 0,
+      "Sistema": 39
+    },
+    {
+      "Codigo": 70,
+      "Label": "GOL  GWS",
+      "OrdemDeExibicao": 0,
+      "Sistema": 49
+    },
+    {
+      "Codigo": 206,
+      "Label": "NDC LATAM",
+      "OrdemDeExibicao": 0,
+      "Sistema": 51
+    },
+    {
+      "Codigo": 216,
+      "Label": "AZUL Novo",
+      "OrdemDeExibicao": 0,
+      "Sistema": 52
+    },
+    {
+      "Codigo": 208,
+      "Label": "NDC_COPA_HML",
+      "OrdemDeExibicao": 0,
+      "Sistema": 53
+    },
+    {
+      "Codigo": 1,
+      "Label": "Amadeus",
+      "OrdemDeExibicao": 0,
+      "Sistema": 28
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "Login": "WoobaApi_Air_FacilitaPass",
+  "Senha": "@Woob@FacilitaPass@2026",
+  "ClienteId": 0,
+  "Localizador": "QQGSHE",
+  "Pagamento": {
+    "FormaDePagamento": 2,
+    "CartaoDeCredito": {
+      "Bandeira": 3,
+      "Numero": "5555555555554444",
+      "CodigoDeSeguranca": "123",
+      "Validade": "12/2027",
+      "TitularNome": "JOAO SILVA",
+      "FinanciamentoId": 61,
+      "Parcelas": 1
+    }
+  }
+}
