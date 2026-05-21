@@ -48,11 +48,12 @@ export default function Home() {
     setCarregandoLogin(true)
     setErroLogin('')
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password: senha })
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password: senha })
     if (error) {
       setErroLogin('E-mail ou senha incorretos.')
     } else {
-      router.push('/busca')
+      const destino = data.user?.email === 'corp@facilitapass.com.br' ? '/admin' : '/busca'
+      router.push(destino)
     }
     setCarregandoLogin(false)
   }
