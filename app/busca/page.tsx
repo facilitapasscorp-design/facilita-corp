@@ -409,6 +409,7 @@ export default function Busca() {
       }
     }
     setCarregandoReserva(true); setErroReserva('')
+    let loc = 'SANDBOX'
     try {
       const res = await fetch('/api/tarifar-reservar', {
         method: 'POST',
@@ -416,10 +417,30 @@ export default function Busca() {
         body: JSON.stringify({ vooIda: vooIdaSelecionado, vooVolta: vooVoltaSelecionado, passageiros }),
       })
       const data = await res.json()
-      setLocalizador(data.localizador || 'SANDBOX')
-    } catch {
-      setLocalizador('SANDBOX')
-    }
+      loc = data.localizador || 'SANDBOX'
+    } catch {}
+    setLocalizador(loc)
+
+    // Salvar reserva no Supabase
+    try {
+      const supabase = createClient()
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData.session) {
+        const primAdulto = passageiros.find(p => p.tipo === 'ADT')
+        const valorTotal = (vooIdaSelecionado?.Preco?.Total ?? 0) + (vooVoltaSelecionado?.Preco?.Total ?? 0)
+        await supabase.from('reservas').insert({
+          user_id:         sessionData.session.user.id,
+          localizador:     loc,
+          origem:          vooIdaSelecionado?.Origem?.CodigoIata ?? '',
+          destino:         vooIdaSelecionado?.Destino?.CodigoIata ?? '',
+          data_voo:        dataIda || null,
+          passageiro_nome: primAdulto ? `${primAdulto.nome} ${primAdulto.sobrenome}`.trim() : null,
+          valor:           valorTotal > 0 ? valorTotal : null,
+          status:          'Ativa',
+        })
+      }
+    } catch {}
+
     setCarregandoReserva(false)
     setEtapa('pagamento')
   }
@@ -444,7 +465,13 @@ export default function Busca() {
     const data = await res.json()
     setCarregandoEmissao(false)
     if (data.erro) { setErroEmissao(data.erro) }
-    else { setNumeroBilhete(data.bilhete); setNomeBilhete(data.passageiro); setEtapa('confirmacao') }
+    else {
+      setNumeroBilhete(data.bilhete); setNomeBilhete(data.passageiro); setEtapa('confirmacao')
+      // Atualiza status da reserva para Emitida
+      try {
+        await createClient().from('reservas').update({ status: 'Emitida' }).eq('localizador', localizador)
+      } catch {}
+    }
   }
 
   // ── Nova busca ────────────────────────────────────────────────
