@@ -33,9 +33,10 @@
 
 .logo {
   display: flex;
-  align-items: center;
-  width: 165px;
+  align-items: flex-start;
+  width: 180px;
   background: transparent;
+  align-self: flex-start;
 }
 
 .logo img {
