@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { createClient } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
+import s from './login.module.css'
 
 type GastoMensal = '' | 'ate-5k' | '5k-20k' | '20k-50k' | 'acima-50k'
 
@@ -11,42 +12,33 @@ export default function Home() {
   const router = useRouter()
 
   // Login
-  const [email, setEmail] = useState('')
-  const [senha, setSenha] = useState('')
-  const [erroLogin, setErroLogin] = useState('')
+  const [email, setEmail]               = useState('')
+  const [senha, setSenha]               = useState('')
+  const [erroLogin, setErroLogin]       = useState('')
   const [carregandoLogin, setCarregandoLogin] = useState(false)
 
-  // Lead form
-  const [modalAberto, setModalAberto] = useState(false)
+  // Lead / modal
+  const [modalAberto, setModalAberto]   = useState(false)
   const [nomeCompleto, setNomeCompleto] = useState('')
-  const [empresa, setEmpresa] = useState('')
-  const [emailLead, setEmailLead] = useState('')
-  const [telefone, setTelefone] = useState('')
-  const [gastoMensal, setGastoMensal] = useState<GastoMensal>('')
+  const [empresa, setEmpresa]           = useState('')
+  const [emailLead, setEmailLead]       = useState('')
+  const [telefone, setTelefone]         = useState('')
+  const [gastoMensal, setGastoMensal]   = useState<GastoMensal>('')
   const [enviandoLead, setEnviandoLead] = useState(false)
-  const [sucessoLead, setSucessoLead] = useState(false)
-  const [erroLead, setErroLead] = useState('')
+  const [sucessoLead, setSucessoLead]   = useState(false)
+  const [erroLead, setErroLead]         = useState('')
 
   function abrirModal() {
-    setSucessoLead(false)
-    setErroLead('')
-    setModalAberto(true)
+    setSucessoLead(false); setErroLead(''); setModalAberto(true)
   }
-
   function fecharModal() {
-    setModalAberto(false)
-    setNomeCompleto('')
-    setEmpresa('')
-    setEmailLead('')
-    setTelefone('')
-    setGastoMensal('')
-    setErroLead('')
-    setSucessoLead(false)
+    setModalAberto(false); setNomeCompleto(''); setEmpresa('')
+    setEmailLead(''); setTelefone(''); setGastoMensal('')
+    setErroLead(''); setSucessoLead(false)
   }
 
   async function entrar() {
-    setCarregandoLogin(true)
-    setErroLogin('')
+    setCarregandoLogin(true); setErroLogin('')
     const supabase = createClient()
     const { error, data } = await supabase.auth.signInWithPassword({ email, password: senha })
     if (error) {
@@ -60,273 +52,234 @@ export default function Home() {
 
   async function solicitarAcesso() {
     if (!nomeCompleto || !empresa || !emailLead || !telefone || !gastoMensal) {
-      setErroLead('Preencha todos os campos.')
-      return
+      setErroLead('Preencha todos os campos.'); return
     }
-    setEnviandoLead(true)
-    setErroLead('')
-
+    setEnviandoLead(true); setErroLead('')
     const supabase = createClient()
-
     const { error: insertError } = await supabase.from('leads').insert({
-      nome_completo: nomeCompleto,
-      empresa,
-      email: emailLead,
-      telefone,
-      gasto_mensal: gastoMensal,
+      nome_completo: nomeCompleto, empresa, email: emailLead, telefone, gasto_mensal: gastoMensal,
     })
-
     if (insertError) {
       setErroLead('Erro ao enviar solicitação. Tente novamente.')
-      setEnviandoLead(false)
-      return
+      setEnviandoLead(false); return
     }
-
     await supabase.functions.invoke('send-lead-email', {
-      body: {
-        para: 'corp@facilitapass.com.br',
-        nome: nomeCompleto,
-        empresa,
-        email: emailLead,
-        telefone,
-        gastoMensal,
-      },
+      body: { para: 'corp@facilitapass.com.br', nome: nomeCompleto, empresa, email: emailLead, telefone, gastoMensal },
     })
-
-    setSucessoLead(true)
-    setEnviandoLead(false)
+    setSucessoLead(true); setEnviandoLead(false)
   }
 
-  const inputLeadClass =
-    'w-full px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-blue-300 focus:outline-none focus:border-blue-300 focus:bg-white/15 transition-colors'
+  const inputLeadStyle: React.CSSProperties = {
+    width: '100%', height: '40px', border: '1px solid rgba(255,255,255,.25)',
+    background: 'rgba(255,255,255,.10)', borderRadius: '10px', color: '#fff',
+    padding: '0 13px', outline: 'none', marginBottom: '12px', fontSize: '13px',
+    fontFamily: 'inherit',
+  }
 
   return (
-    <div className="flex min-h-screen">
-      {/* ── Lado esquerdo – azul escuro ── */}
-      <div
-        className="hidden lg:flex lg:w-1/2 flex-col"
-        style={{ backgroundColor: '#1a2744' }}
-      >
-        <div className="p-10">
-          <Image
-            src="/logo.png"
-            alt="Facilita Pass"
-            width={160}
-            height={48}
-            style={{ objectFit: 'contain', objectPosition: 'left' }}
-          />
+    <main className={s.page}>
+
+      {/* ── Login side ──────────────────────────────────────────── */}
+      <section className={s.loginSide}>
+        <div className={s.logo} aria-label="Facilita Pass Soluções em Viagens Corporativas">
+          <Image src="/logo.png" alt="Facilita Pass" width={165} height={50} style={{ objectFit: 'contain', objectPosition: 'left' }} />
         </div>
 
-        <div className="flex-1 flex flex-col justify-center px-12 pb-10">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-white leading-snug mb-4">
-              Soluções em viagens corporativas com controle, economia e previsibilidade
-            </h2>
-            <p className="text-blue-200 text-sm leading-relaxed max-w-sm">
-              A Facilita Pass traz soluções inteligentes em viagens para a sua empresa,
-              garantindo economia comprovada.
-            </p>
+        <div className={s.loginCard}>
+          <h1>Acesse sua conta</h1>
+          <div className={s.helper}>Entre com suas credenciais para continuar.</div>
+
+          <label htmlFor="email">E-mail</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="seu@email.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && entrar()}
+          />
+
+          <label htmlFor="senha">Senha</label>
+          <input
+            id="senha"
+            type="password"
+            placeholder="••••••••"
+            value={senha}
+            onChange={e => setSenha(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && entrar()}
+          />
+
+          {erroLogin && <p className={s.erroLogin}>{erroLogin}</p>}
+
+          <button className={s.loginButton} onClick={entrar} disabled={carregandoLogin}>
+            {carregandoLogin ? 'Entrando...' : 'Entrar'}
+          </button>
+
+          <a className={s.forgot} href="/recuperar-senha">Esqueceu sua senha?</a>
+        </div>
+
+        <div className={s.footer}>© {new Date().getFullYear()} Facilita Pass. Todos os direitos reservados.</div>
+      </section>
+
+      {/* ── Story side ──────────────────────────────────────────── */}
+      <section className={s.storySide}>
+        <div className={s.copyWrap}>
+          <div className={s.badge}>
+            <span className={s.badgeDot}></span> Sem adesão · Sem mensalidade
           </div>
 
-          <button
-            onClick={abrirModal}
-            className="self-start px-7 py-3 rounded-xl text-sm font-semibold text-white border border-white/30 transition-all"
-            style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}
-            onMouseEnter={e => { (e.target as HTMLButtonElement).style.backgroundColor = 'rgba(255,255,255,0.2)' }}
-            onMouseLeave={e => { (e.target as HTMLButtonElement).style.backgroundColor = 'rgba(255,255,255,0.12)' }}
-          >
-            Tenho interesse
-          </button>
-        </div>
-      </div>
+          <h2>Viagens corporativas com autonomia, controle e suporte humano.</h2>
 
-      {/* ── Modal de solicitação ── */}
+          <p className={s.lead}>
+            Uma plataforma para sua empresa{' '}
+            <strong>cotar, aprovar, emitir e acompanhar passagens aéreas</strong>{' '}
+            com política de viagem, relatórios e atendimento da Facilita Pass quando precisar.
+          </p>
+
+          <div className={s.ctaRow}>
+            <button className={s.primaryCta} onClick={abrirModal}>
+              Cadastrar minha empresa
+            </button>
+            <div className={s.secondaryNote}>
+              Solicite o cadastro para conectar sua empresa à Facilita Pass Corp.
+            </div>
+          </div>
+
+          <div className={s.metrics}>
+            <div className={s.metricCard}>
+              <div className={s.number}>Aéreo</div>
+              <div className={s.metricTitle}>Busca e emissão online</div>
+              <div className={s.metricText}>Cotações, aprovações, emissões e histórico de passagens em um único fluxo.</div>
+            </div>
+            <div className={s.metricCard}>
+              <div className={s.number}>30%</div>
+              <div className={s.metricTitle}>Potencial de economia</div>
+              <div className={s.metricText}>Comparação de tarifas, política de compra e antecedência para melhorar o saving.</div>
+            </div>
+            <div className={s.metricCard}>
+              <div className={s.number}>24h</div>
+              <div className={s.metricTitle}>Atendimento humano</div>
+              <div className={s.metricText}>Suporte para urgências, alterações, cancelamentos e imprevistos de viagem.</div>
+            </div>
+          </div>
+
+          <div className={s.features}>
+            <div className={s.feature}>
+              <div className={s.check}>✓</div>
+              <div><strong>Política de viagem</strong><span>Regras de compra, aprovação e conformidade aplicadas ao fluxo aéreo.</span></div>
+            </div>
+            <div className={s.feature}>
+              <div className={s.check}>✓</div>
+              <div><strong>Relatórios gerenciais</strong><span>Gastos por rota, colaborador, período e centro de custo.</span></div>
+            </div>
+            <div className={s.feature}>
+              <div className={s.check}>✓</div>
+              <div><strong>Saving mensurável</strong><span>Economia acompanhada por tarifa, antecedência e comportamento de compra.</span></div>
+            </div>
+            <div className={s.feature}>
+              <div className={s.check}>✓</div>
+              <div><strong>Pós-venda assistido</strong><span>Apoio em remarcações, cancelamentos, créditos e alterações.</span></div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Visual wrap ─────────────────────────────────────── */}
+        <div className={s.visualWrap}>
+          <div className={s.personCard} aria-label="Funcionária corporativa usando celular no saguão do aeroporto" />
+
+          <div className={s.flightCard}>
+            <div className={s.flightTop}>
+              <strong>Viagem corporativa</strong>
+              <span className={s.policy}>Dentro da política</span>
+            </div>
+            <div className={s.route}>
+              <div className={s.airport}><span>Origem</span><b>MGF</b></div>
+              <div className={s.line}></div>
+              <div className={s.airport}><span>Destino</span><b>CGH</b></div>
+            </div>
+          </div>
+
+          <div className={s.approvalCard}>
+            <strong>Aprovação em tempo real</strong>
+            <div className={s.approvalLine}><span>Centro de custo</span><b>Comercial</b></div>
+            <div className={s.approvalLine}><span>Política</span><b>Conforme</b></div>
+            <div className={s.approvalLine}><span>Economia estimada</span><b>Até 30%</b></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Modal de solicitação de acesso ──────────────────────── */}
       {modalAberto && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
           onClick={e => { if (e.target === e.currentTarget) fecharModal() }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
+            backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+          }}
         >
-          <div
-            className="w-full max-w-md rounded-2xl p-8 relative"
-            style={{ backgroundColor: '#1a2744', boxShadow: '0 25px 60px rgba(0,0,0,0.5)' }}
-          >
+          <div style={{
+            width: '100%', maxWidth: '420px', borderRadius: '20px', padding: '32px',
+            backgroundColor: '#132134', boxShadow: '0 25px 60px rgba(0,0,0,0.5)', position: 'relative',
+          }}>
             <button
               onClick={fecharModal}
-              className="absolute top-4 right-4 text-blue-300 hover:text-white transition-colors"
+              style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: '#B79D7D' }}
               aria-label="Fechar"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
             {sucessoLead ? (
-              <div className="text-center py-8">
-                <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
-                  style={{ backgroundColor: '#22c55e' }}
-                >
-                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                  <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <p className="text-white font-semibold text-lg">Solicitação enviada!</p>
-                <p className="text-blue-200 text-sm mt-2 mb-6">Nossa equipe entrará em contato em breve.</p>
-                <button
-                  onClick={fecharModal}
-                  className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors"
-                  style={{ backgroundColor: '#3b82f6' }}
-                >
+                <p style={{ color: '#fff', fontWeight: 700, fontSize: '18px', marginBottom: '8px' }}>Solicitação enviada!</p>
+                <p style={{ color: '#93a3b8', fontSize: '13px', marginBottom: '24px' }}>Nossa equipe entrará em contato em breve.</p>
+                <button onClick={fecharModal} style={{ padding: '10px 24px', borderRadius: '10px', background: '#B79D7D', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>
                   Fechar
                 </button>
               </div>
             ) : (
               <>
-                <h3 className="text-white font-semibold text-lg mb-1">Solicitar acesso</h3>
-                <p className="text-blue-200 text-sm mb-6">Preencha os dados e nossa equipe entra em contato.</p>
+                <p style={{ color: '#fff', fontWeight: 700, fontSize: '17px', marginBottom: '4px' }}>Solicitar acesso</p>
+                <p style={{ color: '#93a3b8', fontSize: '12.5px', marginBottom: '20px' }}>Preencha os dados e nossa equipe entra em contato.</p>
 
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Nome completo"
-                    value={nomeCompleto}
-                    onChange={e => setNomeCompleto(e.target.value)}
-                    className={inputLeadClass}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Empresa"
-                    value={empresa}
-                    onChange={e => setEmpresa(e.target.value)}
-                    className={inputLeadClass}
-                  />
-                  <input
-                    type="email"
-                    placeholder="E-mail corporativo"
-                    value={emailLead}
-                    onChange={e => setEmailLead(e.target.value)}
-                    className={inputLeadClass}
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Telefone / WhatsApp"
-                    value={telefone}
-                    onChange={e => setTelefone(e.target.value)}
-                    className={inputLeadClass}
-                  />
-                  <select
-                    value={gastoMensal}
-                    onChange={e => setGastoMensal(e.target.value as GastoMensal)}
-                    className={`${inputLeadClass} ${gastoMensal === '' ? 'text-blue-300' : 'text-white'}`}
-                    style={{ appearance: 'auto' }}
-                  >
-                    <option value="" disabled style={{ color: '#374151' }}>
-                      Gasto médio mensal com viagens
-                    </option>
-                    <option value="ate-5k" style={{ color: '#374151' }}>Até R$ 5 mil</option>
-                    <option value="5k-20k" style={{ color: '#374151' }}>R$ 5 mil a R$ 20 mil</option>
-                    <option value="20k-50k" style={{ color: '#374151' }}>R$ 20 mil a R$ 50 mil</option>
-                    <option value="acima-50k" style={{ color: '#374151' }}>Acima de R$ 50 mil</option>
-                  </select>
+                <input type="text" placeholder="Nome completo" value={nomeCompleto} onChange={e => setNomeCompleto(e.target.value)} style={{ ...inputLeadStyle }} />
+                <input type="text" placeholder="Empresa" value={empresa} onChange={e => setEmpresa(e.target.value)} style={{ ...inputLeadStyle }} />
+                <input type="email" placeholder="E-mail corporativo" value={emailLead} onChange={e => setEmailLead(e.target.value)} style={{ ...inputLeadStyle }} />
+                <input type="tel" placeholder="Telefone / WhatsApp" value={telefone} onChange={e => setTelefone(e.target.value)} style={{ ...inputLeadStyle }} />
+                <select
+                  value={gastoMensal}
+                  onChange={e => setGastoMensal(e.target.value as GastoMensal)}
+                  style={{ ...inputLeadStyle, color: gastoMensal === '' ? '#9aa2b1' : '#fff' }}
+                >
+                  <option value="" disabled style={{ color: '#374151' }}>Gasto médio mensal com viagens</option>
+                  <option value="ate-5k" style={{ color: '#374151' }}>Até R$ 5 mil</option>
+                  <option value="5k-20k" style={{ color: '#374151' }}>R$ 5 mil a R$ 20 mil</option>
+                  <option value="20k-50k" style={{ color: '#374151' }}>R$ 20 mil a R$ 50 mil</option>
+                  <option value="acima-50k" style={{ color: '#374151' }}>Acima de R$ 50 mil</option>
+                </select>
 
-                  {erroLead && (
-                    <p className="text-red-300 text-xs">{erroLead}</p>
-                  )}
+                {erroLead && <p style={{ color: '#fca5a5', fontSize: '12px', marginBottom: '8px' }}>{erroLead}</p>}
 
-                  <button
-                    onClick={solicitarAcesso}
-                    disabled={enviandoLead}
-                    className="w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50 mt-1"
-                    style={{ backgroundColor: '#3b82f6' }}
-                    onMouseEnter={e => { (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb' }}
-                    onMouseLeave={e => { (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6' }}
-                  >
-                    {enviandoLead ? 'Enviando...' : 'Solicitar acesso'}
-                  </button>
-                </div>
+                <button
+                  onClick={solicitarAcesso}
+                  disabled={enviandoLead}
+                  style={{ width: '100%', height: '42px', border: 'none', borderRadius: '10px', background: '#B79D7D', color: '#fff', fontWeight: 800, cursor: 'pointer', fontSize: '13.5px', opacity: enviandoLead ? 0.6 : 1, marginTop: '4px' }}
+                >
+                  {enviandoLead ? 'Enviando...' : 'Solicitar acesso'}
+                </button>
               </>
             )}
           </div>
         </div>
       )}
-
-      {/* ── Lado direito – branco ── */}
-      <div className="w-full lg:w-1/2 flex flex-col bg-white">
-        <div className="flex-1 flex items-center justify-center px-8 sm:px-12 lg:px-16">
-          <div className="w-full max-w-sm">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Acesse sua conta</h1>
-            <p className="text-gray-500 text-sm mb-8">
-              Entre com suas credenciais para continuar.
-            </p>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1.5">
-                  E-mail
-                </label>
-                <input
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && entrar()}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1.5">
-                  Senha
-                </label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={senha}
-                  onChange={e => setSenha(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && entrar()}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-                />
-              </div>
-
-              {erroLogin && (
-                <p className="text-red-500 text-sm">{erroLogin}</p>
-              )}
-
-              <button
-                onClick={entrar}
-                disabled={carregandoLogin}
-                className="w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-opacity disabled:opacity-50"
-                style={{ backgroundColor: '#1a2744' }}
-              >
-                {carregandoLogin ? 'Entrando...' : 'Entrar'}
-              </button>
-
-              <div className="text-center">
-                <a
-                  href="/recuperar-senha"
-                  className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  Esqueceu sua senha?
-                </a>
-              </div>
-            </div>
-
-            <p className="mt-8 text-xs text-gray-400 text-center lg:hidden">
-              Não tem acesso?{' '}
-              <a href="mailto:corp@facilitapass.com.br" className="text-blue-600 underline">
-                Fale conosco
-              </a>
-            </p>
-          </div>
-        </div>
-
-        <div className="p-8 text-center">
-          <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} Facilita Pass. Todos os direitos reservados.
-          </p>
-        </div>
-      </div>
-    </div>
+    </main>
   )
 }
