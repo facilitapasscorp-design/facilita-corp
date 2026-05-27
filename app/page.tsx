@@ -82,7 +82,7 @@ export default function Home() {
       {/* ── Login side ──────────────────────────────────────────── */}
       <section className={s.loginSide}>
         <div className={s.logo} aria-label="Facilita Pass Soluções em Viagens Corporativas">
-          <Image src="/logo.png" alt="Facilita Pass" width={180} height={54} style={{ objectFit: 'contain', objectPosition: 'left' }} />
+          <Image src="/logo.png" alt="Facilita Pass" width={200} height={60} style={{ objectFit: 'contain', objectPosition: 'left' }} />
         </div>
 
         <div className={s.loginCard}>
