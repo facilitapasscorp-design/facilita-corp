@@ -3,52 +3,51 @@ import { gerarAccessCode } from '../../../lib/wooba-auth'
 
 const URL_BRT = 'http://wsbrt.brtcorp.com.br/WCF/wcfTravellinkJSON/AereoNoSession.svc/RecuperarSistemasPesquisa'
 
-export async function GET() {
+const BODY = JSON.stringify({
+  Login: process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN,
+  Senha: process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA,
+  Origem: 'GRU',
+  Destino: 'CGH',
+  Timeout: 10,
+})
+
+async function chamar(headers: Record<string, string>, label: string) {
   try {
-    const token = process.env.WOOBA_TOKEN!
-    const login = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
-    const senha = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
-    const accessCode = gerarAccessCode()
-
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Developer-Token': token,
-      'Developer-Access-Code': accessCode,
-    }
-
-    console.log('[TESTE-AUTH] URL:', URL_BRT)
-    console.log('[TESTE-AUTH] Developer-Token:', token)
-    console.log('[TESTE-AUTH] Developer-Access-Code:', accessCode.slice(0, 40) + '...')
-
-    const res = await fetch(URL_BRT, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        Login: login,
-        Senha: senha,
-        Origem: 'GRU',
-        Destino: 'CGH',
-        Timeout: 10,
-      }),
-    })
-
+    console.log(`[TESTE-AUTH] ${label} headers:`, Object.keys(headers))
+    const res = await fetch(URL_BRT, { method: 'POST', headers, body: BODY })
     const raw = await res.text()
     const resHeaders: Record<string, string> = {}
-    res.headers.forEach((value, key) => { resHeaders[key] = value })
-
-    console.log('[TESTE-AUTH] status:', res.status)
-    console.log('[TESTE-AUTH] raw:', raw.slice(0, 1000))
-
-    return NextResponse.json({
-      status: res.status,
-      statusText: res.statusText,
-      headers: resHeaders,
-      preview: raw.slice(0, 1000),
-    })
+    res.headers.forEach((v, k) => { resHeaders[k] = v })
+    console.log(`[TESTE-AUTH] ${label} status:`, res.status, '| raw:', raw.slice(0, 500))
+    return { status: res.status, statusText: res.statusText, headers: resHeaders, preview: raw.slice(0, 1000) }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido'
-    console.error('[TESTE-AUTH] erro:', message)
-    return NextResponse.json({ erro: message }, { status: 500 })
+    console.error(`[TESTE-AUTH] ${label} erro:`, message)
+    return { erro: message }
   }
+}
+
+export async function POST() {
+  const token = process.env.WOOBA_TOKEN!
+  const accessCode = gerarAccessCode()
+
+  const headersCompletos = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Developer-Token': token,
+    'Developer-Access-Code': accessCode,
+  }
+
+  const headersSemAccessCode = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Developer-Token': token,
+  }
+
+  const [comAccessCode, semAccessCode] = await Promise.all([
+    chamar(headersCompletos, 'COM Developer-Access-Code'),
+    chamar(headersSemAccessCode, 'SEM Developer-Access-Code'),
+  ])
+
+  return NextResponse.json({ comAccessCode, semAccessCode })
 }
