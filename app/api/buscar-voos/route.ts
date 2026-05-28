@@ -29,7 +29,9 @@ export async function POST(request: NextRequest) {
     const credenciais = { Login: login, Senha: senha }
 
     // Passo 1: Recuperar sistemas disponíveis para o trecho
-    const sistemasRes = await fetch(`${BASE_URL}/RecuperarSistemasPesquisa`, {
+    const urlSistemas = `${BASE_URL}/RecuperarSistemasPesquisa`
+    console.log('[WOOBA] URL RecuperarSistemasPesquisa:', urlSistemas)
+    const sistemasRes = await fetch(urlSistemas, {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -39,8 +41,10 @@ export async function POST(request: NextRequest) {
         Timeout: 15,
       }),
     })
-
-    const sistemasData = await sistemasRes.json()
+    const sistemasRaw = await sistemasRes.text()
+    console.log('[WOOBA] RecuperarSistemasPesquisa status:', sistemasRes.status)
+    console.log('[WOOBA] RecuperarSistemasPesquisa raw:', sistemasRaw)
+    const sistemasData = JSON.parse(sistemasRaw)
 
     if (sistemasData.SessaoExpirada) {
       return NextResponse.json({ erro: 'Sessão expirada' }, { status: 401 })
@@ -53,9 +57,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Passo 2: Buscar disponibilidade em todos os sistemas em paralelo
+    const urlDisponibilidade = `${BASE_URL}/Disponibilidade`
+    console.log('[WOOBA] URL Disponibilidade:', urlDisponibilidade)
     const disponibilidades = await Promise.all(
-      sistemasData.Sistemas.map((s: { Sistema: number }) =>
-        fetch(`${BASE_URL}/Disponibilidade`, {
+      sistemasData.Sistemas.map(async (s: { Sistema: number }) => {
+        const dispRes = await fetch(urlDisponibilidade, {
           method: 'POST',
           headers,
           body: JSON.stringify({
@@ -76,8 +82,12 @@ export async function POST(request: NextRequest) {
             Flex: false,
             Recomendacao: false,
           }),
-        }).then(r => r.json())
-      )
+        })
+        const dispRaw = await dispRes.text()
+        console.log(`[WOOBA] Disponibilidade sistema ${s.Sistema} status:`, dispRes.status)
+        console.log(`[WOOBA] Disponibilidade sistema ${s.Sistema} raw:`, dispRaw.slice(0, 500))
+        return JSON.parse(dispRaw)
+      })
     )
 
     // Combina voos de todos os sistemas, ignorando os que retornaram erro
