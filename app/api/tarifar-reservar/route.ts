@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
 
-const BASE = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
+const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
 
 function getLegs(viagem: any): any[] {
   return viagem.Voos?.length
@@ -36,8 +36,9 @@ export async function POST(req: NextRequest) {
     const { vooIda, vooVolta, passageiros: passageirosRaw } = await req.json()
     const passageiros: any[] = Array.isArray(passageirosRaw) ? passageirosRaw : [passageirosRaw]
 
-    const login = process.env.WOOBA_LOGIN!
-    const senha = process.env.WOOBA_SENHA!
+    const BASE  = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
+    const login = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
+    const senha = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
     const token = process.env.WOOBA_TOKEN!
     const cred  = { Login: login, Senha: senha }
 
