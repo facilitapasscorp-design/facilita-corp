@@ -1,53 +1,41 @@
 import { NextResponse } from 'next/server'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
 
-const URL_BRT = 'http://wsbrt.brtcorp.com.br/WCF/wcfTravellinkJSON/AereoNoSession.svc/RecuperarSistemasPesquisa'
+const URLS = [
+  'http://wsbrt.brtcorp.com.br/WCF/wcfTravellinkJSON/AereoNoSession.svc/RecuperarSistemasPesquisa',
+  'http://wsbrt.brtcorp.com.br/WCF/wcfTravellinkJSON/AereoNoSession.svc/recuperarSistemasPesquisa',
+  'http://wsbrt.brtcorp.com.br/WCF/wcfTravellinkJSON/AereoNoSession.svc',
+]
 
-const BODY = JSON.stringify({
-  Login: process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN,
-  Senha: process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA,
-  Origem: 'GRU',
-  Destino: 'CGH',
-  Timeout: 10,
-})
-
-async function chamar(headers: Record<string, string>, label: string) {
+async function chamar(url: string, headers: Record<string, string>, body: string) {
   try {
-    console.log(`[TESTE-AUTH] ${label} headers:`, Object.keys(headers))
-    const res = await fetch(URL_BRT, { method: 'POST', headers, body: BODY })
+    const res = await fetch(url, { method: 'POST', headers, body })
     const raw = await res.text()
-    const resHeaders: Record<string, string> = {}
-    res.headers.forEach((v, k) => { resHeaders[k] = v })
-    console.log(`[TESTE-AUTH] ${label} status:`, res.status, '| raw:', raw.slice(0, 500))
-    return { status: res.status, statusText: res.statusText, headers: resHeaders, preview: raw.slice(0, 1000) }
+    console.log(`[TESTE-AUTH] ${url} → ${res.status} | ${raw.slice(0, 200)}`)
+    return { url, status: res.status, statusText: res.statusText, preview: raw.slice(0, 500) }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Erro desconhecido'
-    console.error(`[TESTE-AUTH] ${label} erro:`, message)
-    return { erro: message }
+    console.error(`[TESTE-AUTH] ${url} → erro: ${message}`)
+    return { url, erro: message }
   }
 }
 
 export async function POST() {
   const token = process.env.WOOBA_TOKEN!
+  const login = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
+  const senha = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
   const accessCode = gerarAccessCode()
 
-  const headersCompletos = {
+  const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Developer-Token': token,
     'Developer-Access-Code': accessCode,
   }
 
-  const headersSemAccessCode = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Developer-Token': token,
-  }
+  const body = JSON.stringify({ Login: login, Senha: senha, Origem: 'GRU', Destino: 'CGH', Timeout: 10 })
 
-  const [comAccessCode, semAccessCode] = await Promise.all([
-    chamar(headersCompletos, 'COM Developer-Access-Code'),
-    chamar(headersSemAccessCode, 'SEM Developer-Access-Code'),
-  ])
+  const resultados = await Promise.all(URLS.map(url => chamar(url, headers, body)))
 
-  return NextResponse.json({ comAccessCode, semAccessCode })
+  return NextResponse.json({ resultados })
 }
