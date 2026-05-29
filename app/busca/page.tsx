@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '../../lib/supabase'
+import { buscarAeroportos, Aeroporto } from '../../lib/aeroportos'
 
 // ── Tipos ─────────────────────────────────────────────────────────
 interface VooLeg {
@@ -37,6 +38,7 @@ interface Trecho { origem: string; destino: string; data: string }
 type TipoViagem = 'ida' | 'idavolta' | 'multiplos'
 type FaseSeleção = 'ida' | 'volta'
 type Etapa = 'selecao' | 'passageiro' | 'pagamento' | 'confirmacao'
+type Ordenacao = 'preco' | 'duracao' | 'custo' | 'escalas'
 
 interface PassageiroForm {
   nome: string; sobrenome: string; cpf: string
@@ -48,6 +50,11 @@ function passageiroVazio(tipo: 'ADT' | 'CHD' | 'INF' = 'ADT'): PassageiroForm {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────
+function getLegs(viagem: Viagem): VooLeg[] {
+  return viagem.Voos?.length
+    ? viagem.Voos
+    : (viagem.Segmentos ?? []).flatMap(s => s.Voos ?? [])
+}
 function formatHora(hora: number): string {
   const s = String(hora).padStart(4, '0')
   return `${s.slice(0, 2)}:${s.slice(2)}`
@@ -56,6 +63,7 @@ function formatPreco(valor: number): string {
   return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 function formatDuracao(tempo: string): string {
+  if (!tempo) return ''
   const [h, m] = tempo.split(':')
   const mm = parseInt(m, 10)
   return mm === 0 ? `${parseInt(h, 10)}h` : `${parseInt(h, 10)}h ${mm}m`
@@ -65,6 +73,43 @@ function diaSeguinte(data: string): string {
   const d = new Date(data + 'T12:00:00')
   d.setDate(d.getDate() + 1)
   return d.toISOString().split('T')[0]
+}
+function nomeCompanhia(iata: string): string {
+  return iata === 'JJ' ? 'LATAM' : iata
+}
+function duracaoMinutos(tempo: string): number {
+  if (!tempo) return 0
+  const [h, m] = tempo.split(':').map(Number)
+  return (h || 0) * 60 + (m || 0)
+}
+function legMinutos(leg: VooLeg): number {
+  const s = Math.floor(leg.HoraSaida / 100) * 60 + (leg.HoraSaida % 100)
+  const c = Math.floor(leg.HoraChegada / 100) * 60 + (leg.HoraChegada % 100)
+  let d = c - s; if (d < 0) d += 1440; return d
+}
+function conexaoMinutos(prev: VooLeg, next: VooLeg): number {
+  const c = Math.floor(prev.HoraChegada / 100) * 60 + (prev.HoraChegada % 100)
+  const s = Math.floor(next.HoraSaida / 100) * 60 + (next.HoraSaida % 100)
+  let d = s - c; if (d < 0) d += 1440; return d
+}
+function formatMinutos(m: number): string {
+  const h = Math.floor(m / 60), min = m % 60
+  return min === 0 ? `${h}h` : `${h}h ${min}m`
+}
+function ordenarVoos(voos: Viagem[], ord: Ordenacao): Viagem[] {
+  return [...voos].sort((a, b) => {
+    switch (ord) {
+      case 'preco': return (a.Preco?.Total ?? 0) - (b.Preco?.Total ?? 0)
+      case 'duracao': return duracaoMinutos(a.TempoDeDuracao) - duracaoMinutos(b.TempoDeDuracao)
+      case 'custo': {
+        const da = duracaoMinutos(a.TempoDeDuracao) || 1
+        const db = duracaoMinutos(b.TempoDeDuracao) || 1
+        return ((a.Preco?.Total ?? 0) / da) - ((b.Preco?.Total ?? 0) / db)
+      }
+      case 'escalas': return (a.NumeroParadas ?? 0) - (b.NumeroParadas ?? 0)
+      default: return 0
+    }
+  })
 }
 
 // Máscaras de entrada
@@ -89,15 +134,102 @@ function mascaraValidade(v: string): string {
 const CIA: Record<string, { label: string; bg: string }> = {
   G3: { label: 'GOL',    bg: '#F97316' },
   LA: { label: 'LATAM',  bg: '#7B1022' },
+  JJ: { label: 'LATAM',  bg: '#7B1022' },
   AD: { label: 'AZUL',   bg: '#1D4ED8' },
   IB: { label: 'Iberia', bg: '#8B1A1A' },
 }
 
 const INPUT = 'mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 
+// ── AeroportoInput ────────────────────────────────────────────────
+function AeroportoInput({
+  value, onChange, placeholder,
+}: { value: string; onChange: (iata: string) => void; placeholder: string }) {
+  const [query, setQuery] = useState(value)
+  const [aberto, setAberto] = useState(false)
+  const [sugestoes, setSugestoes] = useState<Aeroporto[]>([])
+  const [focusIdx, setFocusIdx] = useState(-1)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => { setQuery(value) }, [value])
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setAberto(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  function abrir(v: string) {
+    const r = buscarAeroportos(v)
+    setSugestoes(r)
+    setAberto(r.length > 0)
+  }
+
+  function handleChange(v: string) {
+    const upper = v.toUpperCase()
+    setQuery(upper)
+    abrir(v)
+    setFocusIdx(-1)
+    if (upper.length === 3) {
+      const exact = buscarAeroportos(v).find(a => a.iata === upper)
+      if (exact) { selecionar(exact); return }
+    }
+    onChange(upper)
+  }
+
+  function selecionar(a: Aeroporto) {
+    setQuery(a.iata); onChange(a.iata); setAberto(false); setSugestoes([])
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (!aberto) return
+    if (e.key === 'ArrowDown') { e.preventDefault(); setFocusIdx(i => Math.min(i + 1, sugestoes.length - 1)) }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setFocusIdx(i => Math.max(i - 1, 0)) }
+    else if (e.key === 'Enter' && focusIdx >= 0) { e.preventDefault(); selecionar(sugestoes[focusIdx]) }
+    else if (e.key === 'Escape') setAberto(false)
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={query}
+        onChange={e => handleChange(e.target.value)}
+        onFocus={() => { if (query.length >= 2) abrir(query) }}
+        onKeyDown={handleKeyDown}
+        autoComplete="off"
+        className={INPUT}
+      />
+      {aberto && sugestoes.length > 0 && (
+        <div className="absolute z-50 mt-1 left-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+          {sugestoes.map((a, i) => (
+            <button key={a.iata} type="button" onMouseDown={() => selecionar(a)}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                i === focusIdx ? 'bg-blue-50' : 'hover:bg-gray-50'
+              }`}>
+              <span className="shrink-0 inline-flex items-center justify-center bg-blue-600 text-white font-bold text-xs rounded-lg px-2 py-1 min-w-[44px]">
+                {a.iata}
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{a.nome}</p>
+                <p className="text-xs text-gray-400">{a.cidade}{a.estado ? `, ${a.estado}` : ''} · {a.pais}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Componentes ──────────────────────────────────────────────────
 function AirlineBadge({ iata }: { iata: string }) {
-  const c = CIA[iata] ?? { label: iata, bg: '#4B5563' }
+  const c = CIA[iata] ?? { label: nomeCompanhia(iata), bg: '#4B5563' }
   return (
     <span className="inline-flex items-center justify-center rounded-lg text-white font-bold text-xs px-2.5 py-1.5 min-w-[52px]"
       style={{ backgroundColor: c.bg }}>
@@ -128,10 +260,16 @@ function CardSkeleton() {
 }
 
 function VooCard({
-  viagem, onSelecionar, labelBotao = 'Selecionar',
-}: { viagem: Viagem; onSelecionar: (v: Viagem) => void; labelBotao?: string }) {
-  const first = viagem.Voos?.[0]
-  const last  = viagem.Voos?.[viagem.Voos.length - 1]
+  viagem, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes,
+}: {
+  viagem: Viagem
+  onSelecionar: (v: Viagem) => void
+  labelBotao?: string
+  onVerDetalhes?: (v: Viagem) => void
+}) {
+  const legs  = getLegs(viagem)
+  const first = legs[0]
+  const last  = legs[legs.length - 1]
   const iata  = viagem.CiaMandatoria?.CodigoIata ?? ''
   const escalas = viagem.NumeroParadas
   const escalasLabel = escalas === 0 ? 'Direto' : escalas === 1 ? '1 escala' : `${escalas} escalas`
@@ -186,20 +324,30 @@ function VooCard({
 
       <div className="mt-3 flex items-center gap-3 border-t border-gray-50 pt-3">
         <span className="text-xs text-gray-400">
-          {first?.Numero ? `Voo ${iata} ${first.Numero}` : iata}
+          {first?.Numero ? `Voo ${nomeCompanhia(iata)} ${first.Numero}` : nomeCompanhia(iata)}
         </span>
         <span className="text-gray-200">·</span>
         <span className="text-xs text-gray-400">
           {first?.BagagemInclusa ? '✓ Bagagem inclusa' : 'Sem bagagem despachada'}
         </span>
+        {escalas > 0 && onVerDetalhes && (
+          <>
+            <span className="text-gray-200">·</span>
+            <button onClick={() => onVerDetalhes(viagem)}
+              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors underline">
+              Ver detalhes
+            </button>
+          </>
+        )}
       </div>
     </div>
   )
 }
 
 function ResumoIdaSelecionada({ viagem, onAlterar }: { viagem: Viagem; onAlterar: () => void }) {
-  const first = viagem.Voos?.[0]
-  const last  = viagem.Voos?.[viagem.Voos.length - 1]
+  const legs  = getLegs(viagem)
+  const first = legs[0]
+  const last  = legs[legs.length - 1]
   return (
     <div className="rounded-2xl px-5 py-4 flex items-center gap-4 mb-5"
       style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
@@ -225,10 +373,10 @@ function ResumoIdaSelecionada({ viagem, onAlterar }: { viagem: Viagem; onAlterar
   )
 }
 
-// Resumo compacto de 1 voo para as etapas 2 e 3
 function ResumoVoo({ viagem, label }: { viagem: Viagem; label: string }) {
-  const first = viagem.Voos?.[0]
-  const last  = viagem.Voos?.[viagem.Voos.length - 1]
+  const legs  = getLegs(viagem)
+  const first = legs[0]
+  const last  = legs[legs.length - 1]
   return (
     <div className="flex items-center gap-3 py-2">
       <AirlineBadge iata={viagem.CiaMandatoria?.CodigoIata ?? ''} />
@@ -279,6 +427,117 @@ function IndicadorEtapas({ etapa }: { etapa: Etapa }) {
   )
 }
 
+// ── Modal detalhes do voo ─────────────────────────────────────────
+function VooDetalhesModal({ viagem, onFechar }: { viagem: Viagem; onFechar: () => void }) {
+  const legs = getLegs(viagem)
+  const iata = viagem.CiaMandatoria?.CodigoIata ?? ''
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+      onClick={e => { if (e.target === e.currentTarget) onFechar() }}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Detalhes do voo</h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {viagem.Origem?.CodigoIata} → {viagem.Destino?.CodigoIata} · {formatDuracao(viagem.TempoDeDuracao)} no total
+            </p>
+          </div>
+          <button onClick={onFechar}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="px-6 py-5">
+          {legs.map((leg, i) => {
+            const isLast = i === legs.length - 1
+            const connMin = !isLast ? conexaoMinutos(leg, legs[i + 1]) : 0
+            const connCurta = connMin > 0 && connMin < 60
+
+            return (
+              <div key={i}>
+                {/* Partida (só para o 1º trecho; os demais compartilham o ponto de chegada anterior) */}
+                {i === 0 && (
+                  <div className="flex gap-4 mb-2">
+                    <div className="flex flex-col items-center w-7">
+                      <div className="w-3 h-3 rounded-full border-2 border-blue-600 bg-white mt-0.5 shrink-0" />
+                      <div className="w-0.5 bg-gray-200 flex-1 my-1" style={{ minHeight: 36 }} />
+                    </div>
+                    <div className="pb-2">
+                      <p className="text-base font-bold text-gray-900">{formatHora(leg.HoraSaida)}</p>
+                      <p className="text-sm text-gray-700">
+                        {leg.Origem?.CodigoIata}
+                        {leg.Origem?.Descricao ? <span className="text-gray-400"> · {leg.Origem.Descricao}</span> : ''}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {nomeCompanhia(iata)} {leg.Numero || leg.NumeroDoVoo || ''}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Duração do trecho */}
+                <div className="flex gap-4 mb-2">
+                  <div className="flex justify-center w-7">
+                    <div className="w-0.5 bg-gray-200" style={{ height: 20 }} />
+                  </div>
+                  <span className="text-xs text-gray-400 bg-gray-50 px-2.5 py-0.5 rounded-full self-center">
+                    {formatMinutos(legMinutos(leg))}
+                  </span>
+                </div>
+
+                {/* Chegada / conexão / destino final */}
+                <div className="flex gap-4 mb-2">
+                  <div className="flex flex-col items-center w-7">
+                    <div className={`w-3 h-3 rounded-full border-2 mt-0.5 shrink-0 ${
+                      isLast ? 'bg-blue-600 border-blue-600' : 'bg-white border-orange-400'
+                    }`} />
+                    {!isLast && <div className="w-0.5 bg-gray-200 flex-1 my-1" style={{ minHeight: 36 }} />}
+                  </div>
+                  <div className="pb-2">
+                    <p className="text-base font-bold text-gray-900">{formatHora(leg.HoraChegada)}</p>
+                    <p className="text-sm text-gray-700">
+                      {leg.Destino?.CodigoIata}
+                      {leg.Destino?.Descricao ? <span className="text-gray-400"> · {leg.Destino.Descricao}</span> : ''}
+                    </p>
+                    {!isLast && (
+                      <div className="mt-1.5">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${
+                          connCurta ? 'bg-orange-50 text-orange-600' : 'bg-gray-50 text-gray-500'
+                        }`}>
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Conexão · {formatMinutos(connMin)}
+                          {connCurta && ' · Conexão curta'}
+                        </span>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Próximo: {nomeCompanhia(iata)} {legs[i + 1].Numero || legs[i + 1].NumeroDoVoo || ''} · parte às {formatHora(legs[i + 1].HoraSaida)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+
+          <div className="mt-3 pt-4 border-t border-gray-100 flex items-center justify-between">
+            <span className="text-sm text-gray-500">
+              Duração total: <span className="font-semibold text-gray-800">{formatDuracao(viagem.TempoDeDuracao)}</span>
+            </span>
+            <AirlineBadge iata={iata} />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Página principal ──────────────────────────────────────────────
 export default function Busca() {
   const router = useRouter()
@@ -297,27 +556,29 @@ export default function Busca() {
     { origem: '', destino: '', data: '' },
   ])
 
-  // Resultados da busca
+  // Resultados
   const [carregando, setCarregando] = useState(false)
   const [erroVoo, setErroVoo]       = useState('')
   const [voosIda, setVoosIda]       = useState<Viagem[] | null>(null)
   const [voosVolta, setVoosVolta]   = useState<Viagem[] | null>(null)
 
-  // Seleção de voos
-  const [fase, setFase]                           = useState<FaseSeleção>('ida')
-  const [vooIdaSelecionado, setVooIdaSelecionado] = useState<Viagem | null>(null)
+  // Seleção / ordenação / detalhes
+  const [fase, setFase]                               = useState<FaseSeleção>('ida')
+  const [vooIdaSelecionado, setVooIdaSelecionado]     = useState<Viagem | null>(null)
   const [vooVoltaSelecionado, setVooVoltaSelecionado] = useState<Viagem | null>(null)
+  const [ordenacao, setOrdenacao]                     = useState<Ordenacao>('preco')
+  const [vooDetalhes, setVooDetalhes]                 = useState<Viagem | null>(null)
 
-  // Etapa do fluxo
+  // Etapa
   const [etapa, setEtapa] = useState<Etapa>('selecao')
 
-  // Dados dos passageiros
-  const [passageiros, setPassageiros] = useState<PassageiroForm[]>([passageiroVazio()])
+  // Passageiros
+  const [passageiros, setPassageiros]         = useState<PassageiroForm[]>([passageiroVazio()])
   const [carregandoReserva, setCarregandoReserva] = useState(false)
   const [erroReserva,       setErroReserva]       = useState('')
   const [localizador,       setLocalizador]        = useState('')
 
-  // Dados do cartão
+  // Cartão
   const [cartaoNumero,   setCartaoNumero]   = useState('')
   const [cartaoTitular,  setCartaoTitular]  = useState('')
   const [cartaoValidade, setCartaoValidade] = useState('')
@@ -327,13 +588,16 @@ export default function Busca() {
   const [numeroBilhete,     setNumeroBilhete]      = useState('')
   const [nomeBilhete,       setNomeBilhete]        = useState('')
 
-  // Formas de financiamento vindas da API (IniciarEmissao + RecuperarFormasDeFinanciamento)
+  // Financiamento
   const [formasFinanciamento, setFormasFinanciamento] = useState<{ FinanciamentoId: number; Parcelas: number }[]>([])
   const [financiamentoId,     setFinanciamentoId]     = useState<number>(61)
   const [parcelas,            setParcelas]            = useState<number>(1)
   const [chaveDeSeguranca,    setChaveDeSeguranca]    = useState<string | null>(null)
   const [codigoPagamento,     setCodigoPagamento]     = useState<number>(2)
   const [carregandoFormas,    setCarregandoFormas]    = useState(false)
+
+  // Ref para focar campo de volta após selecionar ida
+  const dataVoltaRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     createClient().auth.getSession().then(({ data }) => {
@@ -365,16 +629,12 @@ export default function Busca() {
         setCodigoPagamento(data.codigoPagamento ?? 2)
         const formas: { FinanciamentoId: number; Parcelas: number }[] = data.formasFinanciamento ?? []
         setFormasFinanciamento(formas)
-        if (formas.length > 0) {
-          setFinanciamentoId(formas[0].FinanciamentoId)
-          setParcelas(formas[0].Parcelas)
-        }
+        if (formas.length > 0) { setFinanciamentoId(formas[0].FinanciamentoId); setParcelas(formas[0].Parcelas) }
       })
       .catch(() => setErroEmissao('Erro ao carregar opções de pagamento'))
       .finally(() => setCarregandoFormas(false))
   }, [etapa, localizador])
 
-  // ── Múltiplos trechos ─────────────────────────────────────────
   function atualizarTrecho(idx: number, campo: keyof Trecho, v: string) {
     setTrechos(prev => prev.map((t, i) => i === idx ? { ...t, [campo]: v } : t))
   }
@@ -388,7 +648,6 @@ export default function Busca() {
     setPassageiros(prev => prev.map((p, i) => i === idx ? { ...p, [campo]: valor } : p))
   }
 
-  // ── Busca ─────────────────────────────────────────────────────
   async function buscarVoos() {
     if (tipo === 'multiplos') {
       if (trechos.some(t => !t.origem || !t.destino || !t.data)) {
@@ -397,48 +656,39 @@ export default function Busca() {
     } else if (!origem || !destino || !dataIda) {
       setErroVoo('Preencha origem, destino e data de ida.'); return
     }
-
     setCarregando(true); setErroVoo(''); setVoosIda(null); setVoosVolta(null)
     setFase('ida'); setVooIdaSelecionado(null); setVooVoltaSelecionado(null)
-
     const res = await fetch('/api/buscar-voos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        origem:   tipo === 'multiplos' ? trechos[0].origem  : origem,
-        destino:  tipo === 'multiplos' ? trechos[0].destino : destino,
-        dataIda:  tipo === 'multiplos' ? trechos[0].data    : dataIda,
-        dataVolta: tipo === 'idavolta' ? dataVolta : undefined,
+        origem:    tipo === 'multiplos' ? trechos[0].origem  : origem,
+        destino:   tipo === 'multiplos' ? trechos[0].destino : destino,
+        dataIda:   tipo === 'multiplos' ? trechos[0].data    : dataIda,
+        dataVolta: tipo === 'idavolta'  ? dataVolta           : undefined,
         adultos, criancas, bebes, tipo,
       }),
     })
     const data = await res.json()
     setCarregando(false)
-    if (data.erro) { setErroVoo(data.erro) }
+    if (data.erro) setErroVoo(data.erro)
     else { setVoosIda(data.voos ?? []); setVoosVolta(data.voosVolta ?? []) }
   }
 
-  // ── Seleção de voos → avança etapa ───────────────────────────
   function selecionarVooIda(viagem: Viagem) {
     setVooIdaSelecionado(viagem)
-    if (tipo === 'idavolta') { setFase('volta') }
-    else { setEtapa('passageiro') }
+    if (tipo === 'idavolta') setFase('volta')
+    else setEtapa('passageiro')
   }
-
   function selecionarVooVolta(viagem: Viagem) {
-    setVooVoltaSelecionado(viagem)
-    setEtapa('passageiro')
+    setVooVoltaSelecionado(viagem); setEtapa('passageiro')
   }
 
-  // ── Gerar reserva ─────────────────────────────────────────────
   async function gerarReserva() {
     for (const p of passageiros) {
-      const camposBase = !p.nome || !p.sobrenome || !p.nascimento
-      const faltaCPF   = p.tipo !== 'INF' && !p.cpf
-      const faltaContato = p.tipo === 'ADT' && (!p.email || !p.telefone)
-      if (camposBase || faltaCPF || faltaContato) {
-        setErroReserva('Preencha todos os campos obrigatórios de todos os passageiros.'); return
-      }
+      if (!p.nome || !p.sobrenome || !p.nascimento) { setErroReserva('Preencha todos os campos obrigatórios.'); return }
+      if (p.tipo !== 'INF' && !p.cpf) { setErroReserva('Preencha todos os campos obrigatórios.'); return }
+      if (p.tipo === 'ADT' && (!p.email || !p.telefone)) { setErroReserva('Preencha todos os campos obrigatórios.'); return }
     }
     setCarregandoReserva(true); setErroReserva('')
     let loc = ''
@@ -449,25 +699,14 @@ export default function Busca() {
         body: JSON.stringify({ vooIda: vooIdaSelecionado, vooVolta: vooVoltaSelecionado, passageiros }),
       })
       const data = await res.json()
-      if (data.erro) {
-        setErroReserva(data.erro)
-        setCarregandoReserva(false)
-        return
-      }
+      if (data.erro) { setErroReserva(data.erro); setCarregandoReserva(false); return }
       loc = data.localizador || ''
     } catch (err: unknown) {
-      setErroReserva(err instanceof Error ? err.message : 'Erro ao conectar com o servidor')
-      setCarregandoReserva(false)
-      return
+      setErroReserva(err instanceof Error ? err.message : 'Erro ao conectar')
+      setCarregandoReserva(false); return
     }
-    if (!loc) {
-      setErroReserva('Não foi possível gerar a reserva')
-      setCarregandoReserva(false)
-      return
-    }
+    if (!loc) { setErroReserva('Não foi possível gerar a reserva'); setCarregandoReserva(false); return }
     setLocalizador(loc)
-
-    // Salvar reserva no Supabase
     try {
       const supabase = createClient()
       const { data: sessionData } = await supabase.auth.getSession()
@@ -486,12 +725,9 @@ export default function Busca() {
         })
       }
     } catch {}
-
-    setCarregandoReserva(false)
-    setEtapa('pagamento')
+    setCarregandoReserva(false); setEtapa('pagamento')
   }
 
-  // ── Emitir passagem ───────────────────────────────────────────
   async function emitirPassagem() {
     if (!cartaoNumero || !cartaoTitular || !cartaoValidade || !cartaoCVV) {
       setErroEmissao('Preencha todos os dados do cartão.'); return
@@ -501,10 +737,7 @@ export default function Busca() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        localizador,
-        chaveDeSeguranca,
-        codigoPagamento,
-        financiamentoId,
+        localizador, chaveDeSeguranca, codigoPagamento, financiamentoId,
         cartao: { numero: cartaoNumero, titular: cartaoTitular, validade: cartaoValidade, cvv: cartaoCVV, parcelas },
       }),
     })
@@ -513,26 +746,22 @@ export default function Busca() {
     if (data.erro) { setErroEmissao(data.erro) }
     else {
       setNumeroBilhete(data.bilhete); setNomeBilhete(data.passageiro); setEtapa('confirmacao')
-      // Atualiza status da reserva para Emitida
-      try {
-        await createClient().from('reservas').update({ status: 'Emitida' }).eq('localizador', localizador)
-      } catch {}
+      try { await createClient().from('reservas').update({ status: 'Emitida' }).eq('localizador', localizador) } catch {}
     }
   }
 
-  // ── Nova busca ────────────────────────────────────────────────
   function novaBusca() {
     setEtapa('selecao'); setVoosIda(null); setVoosVolta(null)
     setVooIdaSelecionado(null); setVooVoltaSelecionado(null); setFase('ida')
     setLocalizador(''); setNumeroBilhete(''); setNomeBilhete('')
     setAdultos(1); setCriancas(0); setBebes(0)
     setPassageiros([passageiroVazio('ADT')])
+    setOrigem(''); setDestino(''); setDataIda(''); setDataVolta('')
     setCartaoNumero(''); setCartaoTitular(''); setCartaoValidade(''); setCartaoCVV('')
     setFormasFinanciamento([]); setFinanciamentoId(61); setParcelas(1)
     setChaveDeSeguranca(null); setCodigoPagamento(2)
   }
 
-  // Busca formas de financiamento com dados do cartão (2ª chamada, sem IniciarEmissao)
   async function buscarFormasComCartao(numero: string, validade: string) {
     if (!localizador) return
     try {
@@ -545,36 +774,34 @@ export default function Busca() {
       if (data.erro) return
       const formas: { FinanciamentoId: number; Parcelas: number }[] = data.formasFinanciamento ?? []
       setFormasFinanciamento(formas)
-      if (formas.length > 0) {
-        setFinanciamentoId(formas[0].FinanciamentoId)
-        setParcelas(formas[0].Parcelas)
-      }
+      if (formas.length > 0) { setFinanciamentoId(formas[0].FinanciamentoId); setParcelas(formas[0].Parcelas) }
     } catch {}
   }
 
   const minDataVolta    = diaSeguinte(dataIda)
   const voosExibidos    = fase === 'volta' ? voosVolta : voosIda
+  const voosOrdenados   = voosExibidos ? ordenarVoos(voosExibidos, ordenacao) : null
   const totalEncontrado = voosExibidos?.length ?? 0
+  const precoTotal      = (vooIdaSelecionado?.Preco?.Total ?? 0) + (vooVoltaSelecionado?.Preco?.Total ?? 0)
 
-  const precoTotal = (vooIdaSelecionado?.Preco?.Total ?? 0) + (vooVoltaSelecionado?.Preco?.Total ?? 0)
+  const ORDENACAO_OPTS: { id: Ordenacao; label: string }[] = [
+    { id: 'preco',   label: 'Menor preço' },
+    { id: 'duracao', label: 'Menor duração' },
+    { id: 'custo',   label: 'Melhor custo-benefício' },
+    { id: 'escalas', label: 'Menos escalas' },
+  ]
 
-  // ── Render ────────────────────────────────────────────────────
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f0f4f8' }}>
       {/* Header */}
       <div className="px-8 py-4 flex items-center justify-between" style={{ backgroundColor: '#1a2744' }}>
         <Image src="/logo.png" alt="Facilita Pass" width={130} height={40} style={{ objectFit: 'contain' }} />
         <div className="flex items-center gap-5">
-          <button
-            onClick={() => router.push('/painel')}
-            className="text-sm text-white/60 hover:text-white transition-colors"
-          >
+          <button onClick={() => router.push('/painel')} className="text-sm text-white/60 hover:text-white transition-colors">
             Minhas reservas
           </button>
-          <button
-            onClick={async () => { await createClient().auth.signOut(); router.replace('/') }}
-            className="text-sm text-white/60 hover:text-white transition-colors"
-          >
+          <button onClick={async () => { await createClient().auth.signOut(); router.replace('/') }}
+            className="text-sm text-white/60 hover:text-white transition-colors">
             Sair
           </button>
         </div>
@@ -582,14 +809,11 @@ export default function Busca() {
 
       <div className="max-w-3xl mx-auto px-6">
 
-        {/* ════════════════════════════════════════════════════════
-            ETAPA 1 — SELEÇÃO DO VOO
-        ════════════════════════════════════════════════════════ */}
+        {/* ════ ETAPA 1 — SELEÇÃO DO VOO ════ */}
         {etapa === 'selecao' && (
           <div className="py-8 space-y-6">
-            {/* Formulário */}
             <div className="bg-white rounded-2xl p-6 shadow-sm space-y-5">
-              {/* Tipo */}
+              {/* Tipo de viagem */}
               <div className="flex gap-2 flex-wrap">
                 {([
                   { v: 'idavolta',  l: 'Ida e volta' },
@@ -610,26 +834,29 @@ export default function Busca() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700">Origem</label>
-                      <input type="text" placeholder="Ex: GRU" value={origem} maxLength={3}
-                        onChange={e => setOrigem(e.target.value.toUpperCase())} className={INPUT} />
+                      <AeroportoInput value={origem} onChange={setOrigem} placeholder="Ex: GRU ou São Paulo" />
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-700">Destino</label>
-                      <input type="text" placeholder="Ex: GIG" value={destino} maxLength={3}
-                        onChange={e => setDestino(e.target.value.toUpperCase())} className={INPUT} />
+                      <AeroportoInput value={destino} onChange={setDestino} placeholder="Ex: GIG ou Rio" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700">Data de ida</label>
                       <input type="date" value={dataIda}
-                        onChange={e => { setDataIda(e.target.value); if (dataVolta && dataVolta <= e.target.value) setDataVolta('') }}
+                        onChange={e => {
+                          const v = e.target.value
+                          setDataIda(v)
+                          if (dataVolta && dataVolta <= v) setDataVolta('')
+                          if (tipo === 'idavolta') setTimeout(() => dataVoltaRef.current?.focus(), 80)
+                        }}
                         className={INPUT} />
                     </div>
                     {tipo === 'idavolta' && (
                       <div>
                         <label className="text-sm font-medium text-gray-700">Data de volta</label>
-                        <input type="date" value={dataVolta} min={minDataVolta}
+                        <input ref={dataVoltaRef} type="date" value={dataVolta} min={minDataVolta}
                           onChange={e => setDataVolta(e.target.value)} className={INPUT} />
                       </div>
                     )}
@@ -721,9 +948,7 @@ export default function Busca() {
                   ))}
                 </div>
                 {adultos + criancas + bebes >= 9 && (
-                  <p className="text-amber-600 text-xs mt-2 font-medium">
-                    Máximo de 9 passageiros por busca atingido.
-                  </p>
+                  <p className="text-amber-600 text-xs mt-2 font-medium">Máximo de 9 passageiros por busca atingido.</p>
                 )}
               </div>
 
@@ -744,7 +969,7 @@ export default function Busca() {
                     onAlterar={() => { setFase('ida'); setVooIdaSelecionado(null) }} />
                 )}
 
-                <div className="flex items-baseline justify-between mb-4">
+                <div className="flex items-baseline justify-between mb-3">
                   <h2 className="text-gray-700 font-semibold text-lg">
                     {carregando ? 'Buscando os melhores voos...'
                       : fase === 'volta' ? 'Selecione a melhor opção de volta'
@@ -758,9 +983,24 @@ export default function Busca() {
                   )}
                 </div>
 
-                {carregando && (
-                  <div className="space-y-3">{[1,2,3].map(i => <CardSkeleton key={i} />)}</div>
+                {/* Barra de ordenação */}
+                {!carregando && totalEncontrado > 0 && (
+                  <div className="flex gap-2 flex-wrap mb-4">
+                    {ORDENACAO_OPTS.map(op => (
+                      <button key={op.id} onClick={() => setOrdenacao(op.id)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                          ordenacao === op.id
+                            ? 'text-white'
+                            : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
+                        }`}
+                        style={ordenacao === op.id ? { backgroundColor: '#1a2744' } : {}}>
+                        {op.label}
+                      </button>
+                    ))}
+                  </div>
                 )}
+
+                {carregando && <div className="space-y-3">{[1,2,3].map(i => <CardSkeleton key={i} />)}</div>}
 
                 {!carregando && voosExibidos?.length === 0 && (
                   <div className="bg-white rounded-2xl px-8 py-16 text-center shadow-sm">
@@ -772,11 +1012,12 @@ export default function Busca() {
                   </div>
                 )}
 
-                {!carregando && voosExibidos && voosExibidos.length > 0 && (
+                {!carregando && voosOrdenados && voosOrdenados.length > 0 && (
                   <div className="space-y-3">
-                    {voosExibidos.map((v, idx) => (
+                    {voosOrdenados.map((v, idx) => (
                       <VooCard key={v.Id || idx} viagem={v}
                         onSelecionar={fase === 'volta' ? selecionarVooVolta : selecionarVooIda}
+                        onVerDetalhes={setVooDetalhes}
                         labelBotao={fase === 'volta' ? 'Selecionar volta'
                           : tipo === 'idavolta' ? 'Selecionar ida' : 'Selecionar'} />
                     ))}
@@ -787,22 +1028,17 @@ export default function Busca() {
           </div>
         )}
 
-        {/* ════════════════════════════════════════════════════════
-            ETAPA 2 — DADOS DO PASSAGEIRO E RESERVA
-        ════════════════════════════════════════════════════════ */}
+        {/* ════ ETAPA 2 — PASSAGEIRO ════ */}
         {etapa === 'passageiro' && (
           <div className="py-4">
             <IndicadorEtapas etapa={etapa} />
-
             <div className="bg-white rounded-2xl p-6 shadow-sm space-y-6">
-              {/* Resumo dos voos selecionados */}
               <div className="border-b border-gray-100 pb-5">
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Sua viagem</h3>
                 {vooIdaSelecionado && <ResumoVoo viagem={vooIdaSelecionado} label="Ida" />}
                 {vooVoltaSelecionado && <ResumoVoo viagem={vooVoltaSelecionado} label="Volta" />}
               </div>
 
-              {/* Formulário */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-5">
                   {passageiros.length === 1 ? 'Dados do passageiro' : 'Dados dos passageiros'}
@@ -814,9 +1050,7 @@ export default function Busca() {
                     const cabecalho = passageiros.length > 1 ? `${tipoLabel} ${numPorTipo}` : null
                     return (
                       <div key={idx} className={passageiros.length > 1 ? 'border border-gray-100 rounded-xl p-4 space-y-4' : 'space-y-4'}>
-                        {cabecalho && (
-                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{cabecalho}</p>
-                        )}
+                        {cabecalho && <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{cabecalho}</p>}
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="text-sm font-medium text-gray-700">Nome</label>
@@ -871,7 +1105,6 @@ export default function Busca() {
                     )
                   })}
                 </div>
-
                 {erroReserva && (
                   <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
                     <p className="text-red-600 text-sm">{erroReserva}</p>
@@ -879,7 +1112,6 @@ export default function Busca() {
                 )}
               </div>
 
-              {/* Botões */}
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setEtapa('selecao')}
                   className="px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
@@ -895,15 +1127,12 @@ export default function Busca() {
           </div>
         )}
 
-        {/* ════════════════════════════════════════════════════════
-            ETAPA 3 — PAGAMENTO
-        ════════════════════════════════════════════════════════ */}
+        {/* ════ ETAPA 3 — PAGAMENTO ════ */}
         {etapa === 'pagamento' && (
           <div className="py-4">
             <IndicadorEtapas etapa={etapa} />
-
             <div className="space-y-4">
-              {/* Confirmação da reserva */}
+              {/* Resumo da reserva */}
               <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
@@ -931,29 +1160,22 @@ export default function Busca() {
               {/* Formulário de cartão */}
               <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 mb-5">Pagamento</h3>
-
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-gray-700">Número do cartão</label>
-                    <input
-                      type="text"
-                      placeholder="0000 0000 0000 0000"
-                      value={cartaoNumero}
+                    <input type="text" placeholder="0000 0000 0000 0000" value={cartaoNumero}
                       onChange={e => {
                         const val = mascaraCartao(e.target.value)
                         setCartaoNumero(val)
                         if (val.replace(/\D/g, '').length === 16) buscarFormasComCartao(val, cartaoValidade)
                       }}
-                      className={INPUT}
-                    />
+                      className={INPUT} />
                   </div>
-
                   <div>
                     <label className="text-sm font-medium text-gray-700">Nome no cartão</label>
                     <input type="text" placeholder="JOAO SILVA" value={cartaoTitular}
                       onChange={e => setCartaoTitular(e.target.value.toUpperCase())} className={INPUT} />
                   </div>
-
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700">Validade</label>
@@ -974,16 +1196,13 @@ export default function Busca() {
                       {carregandoFormas ? (
                         <div className={`${INPUT} flex items-center text-gray-400`}>Carregando...</div>
                       ) : (
-                        <select
-                          value={financiamentoId}
+                        <select value={financiamentoId}
                           onChange={e => {
                             const id = Number(e.target.value)
                             const forma = formasFinanciamento.find(f => f.FinanciamentoId === id)
-                            setFinanciamentoId(id)
-                            setParcelas(forma?.Parcelas ?? 1)
+                            setFinanciamentoId(id); setParcelas(forma?.Parcelas ?? 1)
                           }}
-                          className={`${INPUT} bg-white`}
-                        >
+                          className={`${INPUT} bg-white`}>
                           {formasFinanciamento.length > 0
                             ? formasFinanciamento.map(f => (
                                 <option key={f.FinanciamentoId} value={f.FinanciamentoId}>
@@ -1020,36 +1239,29 @@ export default function Busca() {
           </div>
         )}
 
-        {/* ════════════════════════════════════════════════════════
-            ETAPA 4 — CONFIRMAÇÃO
-        ════════════════════════════════════════════════════════ */}
+        {/* ════ ETAPA 4 — CONFIRMAÇÃO ════ */}
         {etapa === 'confirmacao' && (
           <div className="py-4">
             <IndicadorEtapas etapa={etapa} />
-
             <div className="bg-white rounded-2xl p-10 shadow-sm text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Passagem emitida!</h2>
               <p className="text-gray-500 mb-6">
                 {nomeBilhete && <><span className="font-medium text-gray-700">{nomeBilhete}</span>, sua viagem está confirmada.</>}
               </p>
-
               <div className="inline-block bg-gray-50 rounded-2xl px-8 py-5 mb-8 text-left">
                 <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">Número do bilhete</p>
                 <p className="text-3xl font-bold text-gray-900 tracking-wider">{numeroBilhete}</p>
                 <p className="text-xs text-gray-400 mt-2">Localizador: <span className="font-semibold text-gray-600">{localizador}</span></p>
               </div>
-
               <div className="space-y-2 text-sm text-gray-500 border-t border-gray-100 pt-6 mb-8">
                 {vooIdaSelecionado && <ResumoVoo viagem={vooIdaSelecionado} label="Ida" />}
                 {vooVoltaSelecionado && <ResumoVoo viagem={vooVoltaSelecionado} label="Volta" />}
               </div>
-
               <button onClick={novaBusca}
                 className="px-8 py-3 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: '#1a2744' }}>
@@ -1060,6 +1272,11 @@ export default function Busca() {
         )}
 
       </div>
+
+      {/* Modal de detalhes do voo */}
+      {vooDetalhes && (
+        <VooDetalhesModal viagem={vooDetalhes} onFechar={() => setVooDetalhes(null)} />
+      )}
     </div>
   )
 }

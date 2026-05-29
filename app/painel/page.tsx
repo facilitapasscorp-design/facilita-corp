@@ -66,6 +66,8 @@ export default function Painel() {
   const router = useRouter()
   const [reservas, setReservas] = useState<Reserva[]>([])
   const [carregando, setCarregando] = useState(true)
+  const [filtroStatus, setFiltroStatus] = useState<'todas' | 'Ativa' | 'Emitida' | 'Cancelada'>('todas')
+  const [filtroPeriodo, setFiltroPeriodo] = useState<'todos' | 'hoje' | '7dias' | '30dias'>('todos')
 
   // ── Estado do modal de pagamento ────────────────────────────────
   const [modalReserva,      setModalReserva]      = useState<Reserva | null>(null)
@@ -198,6 +200,25 @@ export default function Painel() {
     }
   }
 
+  const agora = new Date()
+  const reservasFiltradas = reservas.filter(r => {
+    if (filtroStatus !== 'todas' && r.status !== filtroStatus) return false
+    if (filtroPeriodo !== 'todos' && r.created_at) {
+      const criado = new Date(r.created_at)
+      const diffDias = (agora.getTime() - criado.getTime()) / (1000 * 60 * 60 * 24)
+      if (filtroPeriodo === 'hoje' && diffDias > 1) return false
+      if (filtroPeriodo === '7dias' && diffDias > 7) return false
+      if (filtroPeriodo === '30dias' && diffDias > 30) return false
+    }
+    return true
+  })
+
+  const contagemStatus = {
+    Ativa:     reservas.filter(r => r.status === 'Ativa').length,
+    Emitida:   reservas.filter(r => r.status === 'Emitida').length,
+    Cancelada: reservas.filter(r => r.status === 'Cancelada').length,
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#1a2744' }}>
       {/* Header */}
@@ -241,6 +262,47 @@ export default function Painel() {
             </button>
           </div>
 
+          {/* Filtros */}
+          {!carregando && reservas.length > 0 && (
+            <div className="px-6 py-4 border-b border-gray-100 space-y-3">
+              <div className="flex gap-2 flex-wrap">
+                {([
+                  { id: 'todas',     label: `Todas (${reservas.length})` },
+                  { id: 'Ativa',     label: `Reservadas (${contagemStatus.Ativa})` },
+                  { id: 'Emitida',   label: `Emitidas (${contagemStatus.Emitida})` },
+                  { id: 'Cancelada', label: `Canceladas (${contagemStatus.Cancelada})` },
+                ] as const).map(op => (
+                  <button key={op.id} onClick={() => setFiltroStatus(op.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                      filtroStatus === op.id
+                        ? 'text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    style={filtroStatus === op.id ? { backgroundColor: '#1a2744' } : {}}>
+                    {op.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {([
+                  { id: 'todos',   label: 'Qualquer data' },
+                  { id: 'hoje',    label: 'Hoje' },
+                  { id: '7dias',   label: 'Últimos 7 dias' },
+                  { id: '30dias',  label: 'Últimos 30 dias' },
+                ] as const).map(op => (
+                  <button key={op.id} onClick={() => setFiltroPeriodo(op.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                      filtroPeriodo === op.id
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}>
+                    {op.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {carregando ? (
             <div className="p-6 space-y-4">
               <Skeleton /><Skeleton /><Skeleton />
@@ -255,9 +317,13 @@ export default function Painel() {
               <p className="font-medium" style={{ color: '#9ca3af' }}>Nenhuma reserva encontrada</p>
               <p className="text-sm mt-1" style={{ color: '#d1d5db' }}>Suas reservas aparecerão aqui após a busca.</p>
             </div>
+          ) : reservasFiltradas.length === 0 ? (
+            <div className="px-6 py-12 text-center">
+              <p className="font-medium text-gray-400">Nenhuma reserva encontrada para esse filtro.</p>
+            </div>
           ) : (
             <div className="p-6 space-y-4">
-              {reservas.map(r => {
+              {reservasFiltradas.map(r => {
                 const st = STATUS[r.status] ?? STATUS.Expirada
                 return (
                   <div
