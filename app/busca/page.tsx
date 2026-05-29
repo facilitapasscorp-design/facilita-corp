@@ -333,7 +333,6 @@ export default function Busca() {
   const [parcelas,            setParcelas]            = useState<number>(1)
   const [chaveDeSeguranca,    setChaveDeSeguranca]    = useState<string | null>(null)
   const [codigoPagamento,     setCodigoPagamento]     = useState<number>(2)
-  const [usarFaturado,        setUsarFaturado]        = useState(false)
   const [carregandoFormas,    setCarregandoFormas]    = useState(false)
 
   useEffect(() => {
@@ -364,7 +363,6 @@ export default function Busca() {
         if (data.erro) { setErroEmissao(data.erro); return }
         setChaveDeSeguranca(data.chaveDeSeguranca ?? null)
         setCodigoPagamento(data.codigoPagamento ?? 2)
-        setUsarFaturado(data.usarFaturado ?? false)
         const formas: { FinanciamentoId: number; Parcelas: number }[] = data.formasFinanciamento ?? []
         setFormasFinanciamento(formas)
         if (formas.length > 0) {
@@ -495,7 +493,7 @@ export default function Busca() {
 
   // ── Emitir passagem ───────────────────────────────────────────
   async function emitirPassagem() {
-    if (!usarFaturado && (!cartaoNumero || !cartaoTitular || !cartaoValidade || !cartaoCVV)) {
+    if (!cartaoNumero || !cartaoTitular || !cartaoValidade || !cartaoCVV) {
       setErroEmissao('Preencha todos os dados do cartão.'); return
     }
     setCarregandoEmissao(true); setErroEmissao('')
@@ -506,12 +504,8 @@ export default function Busca() {
         localizador,
         chaveDeSeguranca,
         codigoPagamento,
-        usarFaturado,
         financiamentoId,
-        cartao: usarFaturado ? undefined : {
-          numero: cartaoNumero, titular: cartaoTitular,
-          validade: cartaoValidade, cvv: cartaoCVV, parcelas,
-        },
+        cartao: { numero: cartaoNumero, titular: cartaoTitular, validade: cartaoValidade, cvv: cartaoCVV, parcelas },
       }),
     })
     const data = await res.json()
@@ -535,7 +529,7 @@ export default function Busca() {
     setPassageiros([passageiroVazio('ADT')])
     setCartaoNumero(''); setCartaoTitular(''); setCartaoValidade(''); setCartaoCVV('')
     setFormasFinanciamento([]); setFinanciamentoId(61); setParcelas(1)
-    setChaveDeSeguranca(null); setCodigoPagamento(2); setUsarFaturado(false)
+    setChaveDeSeguranca(null); setCodigoPagamento(2)
   }
 
   const minDataVolta    = diaSeguinte(dataIda)

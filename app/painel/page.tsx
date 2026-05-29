@@ -75,7 +75,6 @@ export default function Painel() {
   const [parcelas,          setParcelas]          = useState<number>(1)
   const [chaveDeSeguranca,  setChaveDeSeguranca]  = useState<string | null>(null)
   const [codigoPagamento,   setCodigoPagamento]   = useState<number>(2)
-  const [usarFaturado,      setUsarFaturado]      = useState(false)
   const [cartaoNumero,      setCartaoNumero]      = useState('')
   const [cartaoTitular,     setCartaoTitular]     = useState('')
   const [cartaoValidade,    setCartaoValidade]    = useState('')
@@ -120,7 +119,6 @@ export default function Painel() {
       if (data.erro) { setErroEmissao(data.erro); return }
       setChaveDeSeguranca(data.chaveDeSeguranca ?? null)
       setCodigoPagamento(data.codigoPagamento ?? 2)
-      setUsarFaturado(data.usarFaturado ?? false)
       const formas: { FinanciamentoId: number; Parcelas: number }[] = data.formasFinanciamento ?? []
       setFormasFinanciamento(formas)
       if (formas.length > 0) {
@@ -138,11 +136,13 @@ export default function Painel() {
     setModalReserva(null)
     setBilheteEmitido(null)
     setErroEmissao('')
+    setFormasFinanciamento([]); setFinanciamentoId(61); setParcelas(1)
+    setChaveDeSeguranca(null); setCodigoPagamento(2)
   }
 
   // ── Modal: emite a passagem ──────────────────────────────────────
   async function emitir() {
-    if (!usarFaturado && (!cartaoNumero || !cartaoTitular || !cartaoValidade || !cartaoCVV)) {
+    if (!cartaoNumero || !cartaoTitular || !cartaoValidade || !cartaoCVV) {
       setErroEmissao('Preencha todos os dados do cartão.'); return
     }
     setCarregandoEmissao(true); setErroEmissao('')
@@ -154,12 +154,8 @@ export default function Painel() {
           localizador:     modalReserva!.localizador,
           chaveDeSeguranca,
           codigoPagamento,
-          usarFaturado,
           financiamentoId,
-          cartao: usarFaturado ? undefined : {
-            numero: cartaoNumero, titular: cartaoTitular,
-            validade: cartaoValidade, cvv: cartaoCVV, parcelas,
-          },
+          cartao: { numero: cartaoNumero, titular: cartaoTitular, validade: cartaoValidade, cvv: cartaoCVV, parcelas },
         }),
       })
       const data = await res.json()
@@ -402,60 +398,50 @@ export default function Painel() {
               {/* Formulário de cartão */}
               {!carregandoFormas && !bilheteEmitido && (
                 <div className="space-y-4">
-                  {!usarFaturado && (
-                    <>
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">Número do cartão</label>
-                        <input type="text" placeholder="0000 0000 0000 0000" value={cartaoNumero}
-                          onChange={e => setCartaoNumero(mascaraCartao(e.target.value))} className={INPUT} />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">Nome no cartão</label>
-                        <input type="text" placeholder="JOAO SILVA" value={cartaoTitular}
-                          onChange={e => setCartaoTitular(e.target.value.toUpperCase())} className={INPUT} />
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Validade</label>
-                          <input type="text" placeholder="MM/AA" value={cartaoValidade}
-                            onChange={e => setCartaoValidade(mascaraValidade(e.target.value))} className={INPUT} />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">CVV</label>
-                          <input type="text" placeholder="123" maxLength={4} value={cartaoCVV}
-                            onChange={e => setCartaoCVV(e.target.value.replace(/\D/g, '').slice(0, 4))} className={INPUT} />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Parcelas</label>
-                          <select
-                            value={financiamentoId}
-                            onChange={e => {
-                              const id = Number(e.target.value)
-                              const forma = formasFinanciamento.find(f => f.FinanciamentoId === id)
-                              setFinanciamentoId(id)
-                              setParcelas(forma?.Parcelas ?? 1)
-                            }}
-                            className={`${INPUT} bg-white`}
-                          >
-                            {formasFinanciamento.length > 0
-                              ? formasFinanciamento.map(f => (
-                                  <option key={f.FinanciamentoId} value={f.FinanciamentoId}>
-                                    {f.Parcelas}x {modalReserva.valor ? formatValor(modalReserva.valor! / f.Parcelas) : ''}
-                                  </option>
-                                ))
-                              : <option value={61}>1x {modalReserva.valor ? formatValor(modalReserva.valor) : ''}</option>
-                            }
-                          </select>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {usarFaturado && (
-                    <div className="rounded-lg p-4 bg-blue-50 border border-blue-100 text-sm text-blue-700">
-                      Esta reserva será emitida via pagamento faturado.
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Número do cartão</label>
+                    <input type="text" placeholder="0000 0000 0000 0000" value={cartaoNumero}
+                      onChange={e => setCartaoNumero(mascaraCartao(e.target.value))} className={INPUT} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Nome no cartão</label>
+                    <input type="text" placeholder="JOAO SILVA" value={cartaoTitular}
+                      onChange={e => setCartaoTitular(e.target.value.toUpperCase())} className={INPUT} />
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Validade</label>
+                      <input type="text" placeholder="MM/AA" value={cartaoValidade}
+                        onChange={e => setCartaoValidade(mascaraValidade(e.target.value))} className={INPUT} />
                     </div>
-                  )}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">CVV</label>
+                      <input type="text" placeholder="123" maxLength={4} value={cartaoCVV}
+                        onChange={e => setCartaoCVV(e.target.value.replace(/\D/g, '').slice(0, 4))} className={INPUT} />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Parcelas</label>
+                      <select
+                        value={financiamentoId}
+                        onChange={e => {
+                          const id = Number(e.target.value)
+                          const forma = formasFinanciamento.find(f => f.FinanciamentoId === id)
+                          setFinanciamentoId(id)
+                          setParcelas(forma?.Parcelas ?? 1)
+                        }}
+                        className={`${INPUT} bg-white`}
+                      >
+                        {formasFinanciamento.length > 0
+                          ? formasFinanciamento.map(f => (
+                              <option key={f.FinanciamentoId} value={f.FinanciamentoId}>
+                                {f.Parcelas}x {modalReserva.valor ? formatValor(modalReserva.valor! / f.Parcelas) : ''}
+                              </option>
+                            ))
+                          : <option value={61}>1x {modalReserva.valor ? formatValor(modalReserva.valor) : ''}</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
 
                   {erroEmissao && (
                     <div className="rounded-lg p-3 bg-red-50 border border-red-200">

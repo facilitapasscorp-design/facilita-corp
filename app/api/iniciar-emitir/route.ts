@@ -19,7 +19,7 @@ function expandirValidade(val: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const { localizador, chaveDeSeguranca, codigoPagamento, usarFaturado, financiamentoId, cartao } = await req.json()
+    const { localizador, chaveDeSeguranca, codigoPagamento, financiamentoId, cartao } = await req.json()
 
     const BASE  = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
     const login = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
@@ -34,9 +34,10 @@ export async function POST(req: NextRequest) {
       'Developer-Access-Code': gerarAccessCode(),
     })
 
-    const pagamento: any = { FormaDePagamento: codigoPagamento ?? 2 }
-    if (!usarFaturado && cartao) {
-      pagamento.CartaoDeCredito = {
+    // Sempre cartão de crédito (FormaDePagamento: 2)
+    const pagamento: any = {
+      FormaDePagamento: codigoPagamento ?? 2,
+      CartaoDeCredito: {
         Bandeira:          detectarBandeira(cartao.numero),
         Numero:            cartao.numero.replace(/\D/g, ''),
         CodigoDeSeguranca: cartao.cvv,
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
         TitularNome:       cartao.titular.toUpperCase(),
         FinanciamentoId:   financiamentoId ?? 61,
         Parcelas:          cartao.parcelas ?? 1,
-      }
+      },
     }
 
     const emitirBody: any = { ...cred, ClienteId: 0, Localizador: localizador, Pagamento: pagamento }

@@ -33,14 +33,12 @@ export async function POST(req: NextRequest) {
     const chaveDeSeguranca = inicioData.ChaveDeSeguranca || null
     const opcoesPagamento: any[] = inicioData.ConfiguracoesDeEmissao?.OpcoesDePagamento || []
 
-    const opcao = opcoesPagamento.find((o: any) => o.Faturado === true)
-      || opcoesPagamento.find((o: any) => o.CartaoDeCredito === true)
+    // Sempre usa cartão de crédito (FormaDePagamento: 2)
+    const opcao = opcoesPagamento.find((o: any) => o.CartaoDeCredito === true)
       || opcoesPagamento[0]
     const codigoPagamento = opcao?.CodigoFormaDeRecebimento ?? 2
-    const usarFaturado    = opcao?.Faturado === true
 
-    // 2. RecuperarFormasDeFinanciamento — necessário para FinanciamentoId do cartão
-    //    Para reservas faturadas pode retornar erro, tolerado aqui
+    // 2. RecuperarFormasDeFinanciamento — obtém opções de parcelamento
     let formasFinanciamento: any[] = []
     try {
       const formasData = await fetch(`${BASE}/RecuperarFormasDeFinanciamento`, {
@@ -52,7 +50,7 @@ export async function POST(req: NextRequest) {
       }
     } catch {}
 
-    return NextResponse.json({ chaveDeSeguranca, codigoPagamento, usarFaturado, formasFinanciamento })
+    return NextResponse.json({ chaveDeSeguranca, codigoPagamento, formasFinanciamento })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
     return NextResponse.json({ erro: msg }, { status: 500 })
