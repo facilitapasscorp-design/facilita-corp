@@ -73,9 +73,13 @@ export async function POST(req: NextRequest) {
       tarifaBody.ClassesSelecionadasVolta = classesVolta
     }
 
-    const tarifaData = await fetch(`${BASE}/Tarifar`, {
+    console.log('[TARIFAR] body:', JSON.stringify(tarifaBody, null, 2))
+    const tarifaRes  = await fetch(`${BASE}/Tarifar`, {
       method: 'POST', headers: headers(), body: JSON.stringify(tarifaBody),
-    }).then(r => r.json())
+    })
+    const tarifaData = await tarifaRes.json()
+    console.log('[TARIFAR] status:', tarifaRes.status)
+    console.log('[TARIFAR] resposta:', JSON.stringify(tarifaData, null, 2))
 
     if (tarifaData.Exception) {
       return NextResponse.json({ erro: tarifaData.Exception.Message }, { status: 400 })
@@ -85,43 +89,48 @@ export async function POST(req: NextRequest) {
       || vooIda.IdentificacaoDaViagem
 
     // 2. Reservar
-    const reservaData = await fetch(`${BASE}/Reservar`, {
-      method: 'POST', headers: headers(),
-      body: JSON.stringify({
-        ...cred, ClienteId: 0,
-        IdentificacaoDaViagem: idViagem,
-        ClassesSelecionadas: classesIda,
-        ...(vooVolta ? { ClassesSelecionadasVolta: classesVolta } : {}),
-        Passageiros: passageiros.map((p: any, i: number) => ({
-          Nome:        p.nome.toUpperCase(),
-          Sobrenome:   p.sobrenome.toUpperCase(),
-          CPF:         p.cpf ? p.cpf.replace(/\D/g, '') : undefined,
-          Nascimento:  toWcfDate(p.nascimento),
-          Email:       p.email || undefined,
-          FaixaEtaria: p.tipo || 'ADT',
-          Sexo:        p.sexo || 'M',
-          Linha:       String(i + 1),
-        })),
-        InformacoesComplementaresPassageiro: passageiros.map((p: any) => ({
-          Nome:      p.nome.toUpperCase(),
-          Sobrenome: p.sobrenome.toUpperCase(),
-          Tipo:      'ADT',
-        })),
-        Contatos: passageiros.map((p: any) => {
-          const tel  = p.telefone.replace(/\D/g, '')
-          return {
-            Nome:           `${p.nome} ${p.sobrenome}`.toUpperCase(),
-            Email:          p.email,
-            NumeroDDD:      tel.slice(0, 2) || '11',
-            NumeroTelefone: tel.slice(2) || '999999999',
-            NumeroDDI:      '55',
-            Tipo:           0,
-          }
-        }),
-        Solicitante:         passageiros[0].nome.toUpperCase(),
-        ValidarAnaliseRisco: false,
+    const reservaBody = {
+      ...cred, ClienteId: 0,
+      IdentificacaoDaViagem: idViagem,
+      ClassesSelecionadas: classesIda,
+      ...(vooVolta ? { ClassesSelecionadasVolta: classesVolta } : {}),
+      Passageiros: passageiros.map((p: any, i: number) => ({
+        Nome:        p.nome.toUpperCase(),
+        Sobrenome:   p.sobrenome.toUpperCase(),
+        CPF:         p.cpf ? p.cpf.replace(/\D/g, '') : undefined,
+        Nascimento:  toWcfDate(p.nascimento),
+        Email:       p.email || undefined,
+        FaixaEtaria: p.tipo || 'ADT',
+        Sexo:        p.sexo || 'M',
+        Linha:       String(i + 1),
+      })),
+      InformacoesComplementaresPassageiro: passageiros.map((p: any) => ({
+        Nome:      p.nome.toUpperCase(),
+        Sobrenome: p.sobrenome.toUpperCase(),
+        Tipo:      'ADT',
+      })),
+      Contatos: passageiros.map((p: any) => {
+        const tel  = p.telefone.replace(/\D/g, '')
+        return {
+          Nome:           `${p.nome} ${p.sobrenome}`.toUpperCase(),
+          Email:          p.email,
+          NumeroDDD:      tel.slice(0, 2) || '11',
+          NumeroTelefone: tel.slice(2) || '999999999',
+          NumeroDDI:      '55',
+          Tipo:           0,
+        }
       }),
-    }).then(r => r.json())
+      Solicitante:         passageiros[0].nome.toUpperCase(),
+      ValidarAnaliseRisco: false,
+    }
+
+    console.log('[RESERVAR] body:', JSON.stringify(reservaBody, null, 2))
+    const reservaRes  = await fetch(`${BASE}/Reservar`, {
+      method: 'POST', headers: headers(), body: JSON.stringify(reservaBody),
+    })
+    const reservaData = await reservaRes.json()
+    console.log('[RESERVAR] status:', reservaRes.status)
+    console.log('[RESERVAR] resposta:', JSON.stringify(reservaData, null, 2))
 
     if (reservaData.Exception) {
       return NextResponse.json({ erro: reservaData.Exception.Message }, { status: 400 })
