@@ -19,7 +19,7 @@ function expandirValidade(val: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const { localizador, cartao } = await req.json()
+    const { localizador, chaveDeSeguranca, codigoPagamento, usarFaturado, financiamentoId, cartao } = await req.json()
 
     const BASE  = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
     const login = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
@@ -34,49 +34,16 @@ export async function POST(req: NextRequest) {
       'Developer-Access-Code': gerarAccessCode(),
     })
 
-    // 1. IniciarEmissao
-    const inicioData = await fetch(`${BASE}/IniciarEmissao`, {
-      method: 'POST', headers: headers(),
-      body: JSON.stringify({ ...cred, ClienteId: 0, Localizador: localizador }),
-    }).then(r => r.json())
-
-    if (inicioData.Exception) {
-      return NextResponse.json({ erro: inicioData.Exception.Message }, { status: 400 })
-    }
-
-    const chaveDeSeguranca = inicioData.ChaveDeSeguranca || null
-    const opcoesPagamento: any[] = inicioData.ConfiguracoesDeEmissao?.OpcoesDePagamento || []
-
-    // 2. RecuperarFormasDeFinanciamento — necessário para obter FinanciamentoId do cartão
-    const formasData = await fetch(`${BASE}/RecuperarFormasDeFinanciamento`, {
-      method: 'POST', headers: headers(),
-      body: JSON.stringify({ ...cred, ClienteId: 0, Localizador: localizador }),
-    }).then(r => r.json())
-    const formasFinanciamento: any[] = formasData.FormasDeFinanciamento ?? []
-
-    // Prefere faturado; cai em cartão se não tiver
-    const opcao = opcoesPagamento.find((o: any) => o.Faturado === true)
-      || opcoesPagamento.find((o: any) => o.CartaoDeCredito === true)
-      || opcoesPagamento[0]
-    const codigoPagamento = opcao?.CodigoFormaDeRecebimento ?? 2
-    const usarFaturado    = opcao?.Faturado === true
-
-    // 3. Emitir
-    const pagamento: any = { FormaDePagamento: codigoPagamento }
+    const pagamento: any = { FormaDePagamento: codigoPagamento ?? 2 }
     if (!usarFaturado && cartao) {
-      // Encontra plano de financiamento pelo número de parcelas; fallback: à vista (FinanciamentoId 61)
-      const plano = formasFinanciamento.find((f: any) => f.Parcelas === cartao.parcelas)
-        ?? formasFinanciamento[0]
-      const financiamentoId = plano?.FinanciamentoId ?? 61
-
       pagamento.CartaoDeCredito = {
         Bandeira:          detectarBandeira(cartao.numero),
         Numero:            cartao.numero.replace(/\D/g, ''),
         CodigoDeSeguranca: cartao.cvv,
         Validade:          expandirValidade(cartao.validade),
         TitularNome:       cartao.titular.toUpperCase(),
-        FinanciamentoId:   financiamentoId,
-        Parcelas:          cartao.parcelas,
+        FinanciamentoId:   financiamentoId ?? 61,
+        Parcelas:          cartao.parcelas ?? 1,
       }
     }
 

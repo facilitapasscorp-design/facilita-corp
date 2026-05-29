@@ -322,11 +322,19 @@ export default function Busca() {
   const [cartaoTitular,  setCartaoTitular]  = useState('')
   const [cartaoValidade, setCartaoValidade] = useState('')
   const [cartaoCVV,      setCartaoCVV]      = useState('')
-  const [cartaoParcelas, setCartaoParcelas] = useState(1)
   const [carregandoEmissao, setCarregandoEmissao] = useState(false)
   const [erroEmissao,       setErroEmissao]       = useState('')
   const [numeroBilhete,     setNumeroBilhete]      = useState('')
   const [nomeBilhete,       setNomeBilhete]        = useState('')
+
+  // Formas de financiamento vindas da API (IniciarEmissao + RecuperarFormasDeFinanciamento)
+  const [formasFinanciamento, setFormasFinanciamento] = useState<{ FinanciamentoId: number; Parcelas: number }[]>([])
+  const [financiamentoId,     setFinanciamentoId]     = useState<number>(61)
+  const [parcelas,            setParcelas]            = useState<number>(1)
+  const [chaveDeSeguranca,    setChaveDeSeguranca]    = useState<string | null>(null)
+  const [codigoPagamento,     setCodigoPagamento]     = useState<number>(2)
+  const [usarFaturado,        setUsarFaturado]        = useState(false)
+  const [carregandoFormas,    setCarregandoFormas]    = useState(false)
 
   useEffect(() => {
     createClient().auth.getSession().then(({ data }) => {
@@ -341,6 +349,32 @@ export default function Busca() {
       ...Array.from({ length: bebes }, () => passageiroVazio('INF')),
     ])
   }, [adultos, criancas, bebes])
+
+  useEffect(() => {
+    if (etapa !== 'pagamento' || !localizador) return
+    setCarregandoFormas(true)
+    setErroEmissao('')
+    fetch('/api/iniciar-emissao', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ localizador }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.erro) { setErroEmissao(data.erro); return }
+        setChaveDeSeguranca(data.chaveDeSeguranca ?? null)
+        setCodigoPagamento(data.codigoPagamento ?? 2)
+        setUsarFaturado(data.usarFaturado ?? false)
+        const formas: { FinanciamentoId: number; Parcelas: number }[] = data.formasFinanciamento ?? []
+        setFormasFinanciamento(formas)
+        if (formas.length > 0) {
+          setFinanciamentoId(formas[0].FinanciamentoId)
+          setParcelas(formas[0].Parcelas)
+        }
+      })
+      .catch(() => setErroEmissao('Erro ao carregar opções de pagamento'))
+      .finally(() => setCarregandoFormas(false))
+  }, [etapa, localizador])
 
   // ── Múltiplos trechos ─────────────────────────────────────────
   function atualizarTrecho(idx: number, campo: keyof Trecho, v: string) {
@@ -461,7 +495,7 @@ export default function Busca() {
 
   // ── Emitir passagem ───────────────────────────────────────────
   async function emitirPassagem() {
-    if (!cartaoNumero || !cartaoTitular || !cartaoValidade || !cartaoCVV) {
+    if (!usarFaturado && (!cartaoNumero || !cartaoTitular || !cartaoValidade || !cartaoCVV)) {
       setErroEmissao('Preencha todos os dados do cartão.'); return
     }
     setCarregandoEmissao(true); setErroEmissao('')
@@ -470,9 +504,13 @@ export default function Busca() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         localizador,
-        cartao: {
+        chaveDeSeguranca,
+        codigoPagamento,
+        usarFaturado,
+        financiamentoId,
+        cartao: usarFaturado ? undefined : {
           numero: cartaoNumero, titular: cartaoTitular,
-          validade: cartaoValidade, cvv: cartaoCVV, parcelas: cartaoParcelas,
+          validade: cartaoValidade, cvv: cartaoCVV, parcelas,
         },
       }),
     })
@@ -496,6 +534,8 @@ export default function Busca() {
     setAdultos(1); setCriancas(0); setBebes(0)
     setPassageiros([passageiroVazio('ADT')])
     setCartaoNumero(''); setCartaoTitular(''); setCartaoValidade(''); setCartaoCVV('')
+    setFormasFinanciamento([]); setFinanciamentoId(61); setParcelas(1)
+    setChaveDeSeguranca(null); setCodigoPagamento(2); setUsarFaturado(false)
   }
 
   const minDataVolta    = diaSeguinte(dataIda)
@@ -904,12 +944,29 @@ export default function Busca() {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-700">Parcelas</label>
-                      <select value={cartaoParcelas} onChange={e => setCartaoParcelas(Number(e.target.value))}
-                        className={`${INPUT} bg-white`}>
-                        {Array.from({ length: 12 }, (_, i) => i + 1).map(n => (
-                          <option key={n} value={n}>{n}x {precoTotal > 0 ? formatPreco(precoTotal / n) : ''}</option>
-                        ))}
-                      </select>
+                      {carregandoFormas ? (
+                        <div className={`${INPUT} flex items-center text-gray-400`}>Carregando...</div>
+                      ) : (
+                        <select
+                          value={financiamentoId}
+                          onChange={e => {
+                            const id = Number(e.target.value)
+                            const forma = formasFinanciamento.find(f => f.FinanciamentoId === id)
+                            setFinanciamentoId(id)
+                            setParcelas(forma?.Parcelas ?? 1)
+                          }}
+                          className={`${INPUT} bg-white`}
+                        >
+                          {formasFinanciamento.length > 0
+                            ? formasFinanciamento.map(f => (
+                                <option key={f.FinanciamentoId} value={f.FinanciamentoId}>
+                                  {f.Parcelas}x {precoTotal > 0 ? formatPreco(precoTotal / f.Parcelas) : ''}
+                                </option>
+                              ))
+                            : <option value={61}>1x {precoTotal > 0 ? formatPreco(precoTotal) : ''}</option>
+                          }
+                        </select>
+                      )}
                     </div>
                   </div>
                 </div>
