@@ -126,7 +126,6 @@ export async function POST(req: NextRequest) {
       ValidarAnaliseRisco: false,
     }
 
-    console.log('[RESERVAR] body:', JSON.stringify(reservaBody).slice(0, 1000))
     const reservaRes  = await fetch(`${BASE}/Reservar`, {
       method: 'POST', headers: headers(), body: JSON.stringify(reservaBody),
     })
