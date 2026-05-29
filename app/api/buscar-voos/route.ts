@@ -13,7 +13,7 @@ async function buscarDisponibilidade(
   headers: Record<string, string>,
   params: Record<string, unknown>,
   comBagagem: boolean,
-): Promise<unknown> {
+): Promise<{ data: Record<string, unknown>; comBagagem: boolean }> {
   const res = await fetch(url, {
     method: 'POST',
     headers,
@@ -24,7 +24,7 @@ async function buscarDisponibilidade(
     }),
   })
   const data = await res.json()
-  return data
+  return { data, comBagagem }
 }
 
 export async function POST(request: NextRequest) {
@@ -96,14 +96,25 @@ export async function POST(request: NextRequest) {
       ])
     )
 
-    const voosIda = (todasRespostas as { Exception?: unknown; SessaoExpirada?: boolean; ViagensTrecho1?: unknown[] }[]).flatMap(d => {
-      if (d.Exception || d.SessaoExpirada) return []
-      return d.ViagensTrecho1 ?? []
-    })
-    const voosVolta = (todasRespostas as { Exception?: unknown; SessaoExpirada?: boolean; ViagensTrecho2?: unknown[] }[]).flatMap(d => {
-      if (d.Exception || d.SessaoExpirada) return []
-      return d.ViagensTrecho2 ?? []
-    })
+    type Viagem = Record<string, unknown>
+    type Resposta = { data: Record<string, unknown>; comBagagem: boolean }
+
+    // Injeta BagagemInclusa no nível da Viagem com base no tipo de chamada.
+    // Muitos GDS (GOL, Azul) não preenchem esse campo no corpo da Viagem —
+    // sem essa marcação a deduplicação não consegue distinguir as variantes.
+    function extrairViagens(respostas: Resposta[], campo: 'ViagensTrecho1' | 'ViagensTrecho2'): Viagem[] {
+      return respostas.flatMap(({ data: d, comBagagem }) => {
+        if (d.Exception || d.SessaoExpirada) return []
+        const viagens = (d[campo] as Viagem[] | null) ?? []
+        return viagens.map(v => ({
+          ...v,
+          BagagemInclusa: (v.BagagemInclusa as boolean | undefined) ?? comBagagem,
+        }))
+      })
+    }
+
+    const voosIda   = extrairViagens(todasRespostas, 'ViagensTrecho1')
+    const voosVolta = extrairViagens(todasRespostas, 'ViagensTrecho2')
 
     console.log(`[BUSCAR-VOOS] Total voosIda: ${voosIda.length} | voosVolta: ${voosVolta.length}`)
 
