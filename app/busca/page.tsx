@@ -34,6 +34,10 @@ interface Viagem {
   IdentificacaoDaViagem: string
 }
 
+interface GrupoVoo {
+  familias: { viagem: Viagem; familia: string; preco: number }[]
+}
+
 interface Trecho { origem: string; destino: string; data: string }
 type TipoViagem = 'ida' | 'idavolta' | 'multiplos'
 type FaseSeleção = 'ida' | 'volta'
@@ -95,6 +99,29 @@ function conexaoMinutos(prev: VooLeg, next: VooLeg): number {
 function formatMinutos(m: number): string {
   const h = Math.floor(m / 60), min = m % 60
   return min === 0 ? `${h}h` : `${h}h ${min}m`
+}
+function chaveVoo(v: Viagem): string {
+  const legs = getLegs(v)
+  const first = legs[0]
+  return `${v.CiaMandatoria?.CodigoIata}-${v.Origem?.CodigoIata}-${v.Destino?.CodigoIata}-${first?.HoraSaida ?? 0}`
+}
+function agruparVoos(voos: Viagem[]): GrupoVoo[] {
+  const mapa = new Map<string, GrupoVoo>()
+  for (const v of voos) {
+    const chave = chaveVoo(v)
+    const familia = getLegs(v)[0]?.BaseTarifaria?.[0]?.Familia ?? ''
+    const grupo = mapa.get(chave)
+    if (grupo) {
+      const jaExiste = grupo.familias.find(f => f.familia === familia && f.preco === (v.Preco?.Total ?? 0))
+      if (!jaExiste) {
+        grupo.familias.push({ viagem: v, familia, preco: v.Preco?.Total ?? 0 })
+        grupo.familias.sort((a, b) => a.preco - b.preco)
+      }
+    } else {
+      mapa.set(chave, { familias: [{ viagem: v, familia, preco: v.Preco?.Total ?? 0 }] })
+    }
+  }
+  return Array.from(mapa.values())
 }
 function ordenarVoos(voos: Viagem[], ord: Ordenacao): Viagem[] {
   return [...voos].sort((a, b) => {
@@ -206,7 +233,7 @@ function AeroportoInput({
         className={INPUT}
       />
       {aberto && sugestoes.length > 0 && (
-        <div className="absolute z-50 mt-1 left-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="absolute z-50 mt-1 left-0 right-0 sm:right-auto sm:w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
           {sugestoes.map((a, i) => (
             <button key={a.iata} type="button" onMouseDown={() => selecionar(a)}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
@@ -260,69 +287,97 @@ function CardSkeleton() {
 }
 
 function VooCard({
-  viagem, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes,
+  grupo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes,
 }: {
-  viagem: Viagem
+  grupo: GrupoVoo
   onSelecionar: (v: Viagem) => void
   labelBotao?: string
   onVerDetalhes?: (v: Viagem) => void
 }) {
-  const legs  = getLegs(viagem)
-  const first = legs[0]
-  const last  = legs[legs.length - 1]
-  const iata  = viagem.CiaMandatoria?.CodigoIata ?? ''
+  const [familiaIdx, setFamiliaIdx] = useState(0)
+  const idx     = Math.min(familiaIdx, grupo.familias.length - 1)
+  const selected = grupo.familias[idx]
+  const viagem  = selected.viagem
+  const legs    = getLegs(viagem)
+  const first   = legs[0]
+  const last    = legs[legs.length - 1]
+  const iata    = viagem.CiaMandatoria?.CodigoIata ?? ''
   const escalas = viagem.NumeroParadas
   const escalasLabel = escalas === 0 ? 'Direto' : escalas === 1 ? '1 escala' : `${escalas} escalas`
+  const temFamilias  = grupo.familias.length > 1
 
   return (
-    <div className="bg-white rounded-2xl px-6 py-5 hover:shadow-md transition-shadow">
-      <div className="flex items-center gap-5">
-        <div className="w-16 shrink-0"><AirlineBadge iata={iata} /></div>
+    <div className="bg-white rounded-2xl px-4 sm:px-6 py-4 sm:py-5 hover:shadow-md transition-shadow">
+      {/* Main row: stacked on mobile, side-by-side on sm+ */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+        <div className="flex items-center gap-3 sm:gap-5 flex-1 min-w-0">
+          <div className="w-14 sm:w-16 shrink-0"><AirlineBadge iata={iata} /></div>
 
-        <div className="flex-1 flex items-center gap-3 min-w-0">
-          <div className="text-right shrink-0">
-            <p className="text-xl font-semibold text-gray-900 leading-none">
-              {first ? formatHora(first.HoraSaida) : '--:--'}
-            </p>
-            <p className="text-xs text-gray-400 mt-0.5">{viagem.Origem?.CodigoIata}</p>
-          </div>
-
-          <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
-            <p className="text-xs text-gray-400">{formatDuracao(viagem.TempoDeDuracao)}</p>
-            <div className="w-full flex items-center gap-1">
-              <div className="h-px flex-1 bg-gray-300" />
-              {escalas > 0 && Array.from({ length: escalas }).map((_, i) => (
-                <div key={i} className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
-              ))}
-              {escalas > 0 && <div className="h-px flex-1 bg-gray-300" />}
-              <svg className="w-3 h-3 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2h0A1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
-              </svg>
+          <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="text-right shrink-0">
+              <p className="text-lg sm:text-xl font-semibold text-gray-900 leading-none">
+                {first ? formatHora(first.HoraSaida) : '--:--'}
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">{viagem.Origem?.CodigoIata}</p>
             </div>
-            <p className="text-xs font-medium" style={{ color: escalas === 0 ? '#22c55e' : '#f59e0b' }}>
-              {escalasLabel}
-            </p>
-          </div>
 
-          <div className="text-left shrink-0">
-            <p className="text-xl font-semibold text-gray-900 leading-none">
-              {last ? formatHora(last.HoraChegada) : '--:--'}
-            </p>
-            <p className="text-xs text-gray-400 mt-0.5">{viagem.Destino?.CodigoIata}</p>
+            <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
+              <p className="text-xs text-gray-400">{formatDuracao(viagem.TempoDeDuracao)}</p>
+              <div className="w-full flex items-center gap-1">
+                <div className="h-px flex-1 bg-gray-300" />
+                {escalas > 0 && Array.from({ length: escalas }).map((_, i) => (
+                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
+                ))}
+                {escalas > 0 && <div className="h-px flex-1 bg-gray-300" />}
+                <svg className="w-3 h-3 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2h0A1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+                </svg>
+              </div>
+              <p className="text-xs font-medium" style={{ color: escalas === 0 ? '#22c55e' : '#f59e0b' }}>
+                {escalasLabel}
+              </p>
+            </div>
+
+            <div className="text-left shrink-0">
+              <p className="text-lg sm:text-xl font-semibold text-gray-900 leading-none">
+                {last ? formatHora(last.HoraChegada) : '--:--'}
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">{viagem.Destino?.CodigoIata}</p>
+            </div>
           </div>
         </div>
 
-        <div className="shrink-0 text-right flex flex-col items-end gap-2 ml-4">
-          <p className="text-xl font-bold text-gray-900">{formatPreco(viagem.Preco?.Total ?? 0)}</p>
+        {/* Price + button: row on mobile, column on desktop */}
+        <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 sm:ml-4 shrink-0">
+          <p className="text-xl font-bold text-gray-900">{formatPreco(selected.preco)}</p>
           <button onClick={() => onSelecionar(viagem)}
-            className="px-5 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-80 transition-opacity"
+            className="px-4 sm:px-5 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-80 transition-opacity"
             style={{ backgroundColor: '#1a2744' }}>
             {labelBotao}
           </button>
         </div>
       </div>
 
-      <div className="mt-3 flex items-center gap-3 border-t border-gray-50 pt-3">
+      {/* Fare family pills */}
+      {temFamilias && (
+        <div className="mt-3 pt-3 border-t border-gray-50">
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {grupo.familias.map((f, i) => (
+              <button key={i} type="button" onClick={() => setFamiliaIdx(i)}
+                className={`shrink-0 flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg border text-xs transition-colors ${
+                  i === idx
+                    ? 'border-blue-300 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'
+                }`}>
+                {f.familia && <span className="font-semibold uppercase tracking-wide">{f.familia}</span>}
+                <span className={f.familia ? 'text-gray-500' : 'font-semibold'}>{formatPreco(f.preco)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className={`mt-3 flex items-center gap-3 ${!temFamilias ? 'border-t border-gray-50 pt-3' : ''}`}>
         <span className="text-xs text-gray-400">
           {first?.Numero ? `Voo ${nomeCompanhia(iata)} ${first.Numero}` : nomeCompanhia(iata)}
         </span>
@@ -419,7 +474,7 @@ function IndicadorEtapas({ etapa }: { etapa: Etapa }) {
             </span>
           </div>
           {i < steps.length - 1 && (
-            <div className={`w-20 h-px mx-3 mb-5 ${i < idx ? 'bg-green-400' : 'bg-gray-200'}`} />
+            <div className={`w-8 sm:w-20 h-px mx-2 sm:mx-3 mb-5 ${i < idx ? 'bg-green-400' : 'bg-gray-200'}`} />
           )}
         </div>
       ))}
@@ -781,6 +836,7 @@ export default function Busca() {
   const minDataVolta    = diaSeguinte(dataIda)
   const voosExibidos    = fase === 'volta' ? voosVolta : voosIda
   const voosOrdenados   = voosExibidos ? ordenarVoos(voosExibidos, ordenacao) : null
+  const gruposOrdenados = voosOrdenados ? agruparVoos(voosOrdenados) : null
   const totalEncontrado = voosExibidos?.length ?? 0
   const precoTotal      = (vooIdaSelecionado?.Preco?.Total ?? 0) + (vooVoltaSelecionado?.Preco?.Total ?? 0)
 
@@ -794,20 +850,20 @@ export default function Busca() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f0f4f8' }}>
       {/* Header */}
-      <div className="px-8 py-4 flex items-center justify-between" style={{ backgroundColor: '#1a2744' }}>
-        <Image src="/logo.png" alt="Facilita Pass" width={130} height={40} style={{ objectFit: 'contain' }} />
-        <div className="flex items-center gap-5">
-          <button onClick={() => router.push('/painel')} className="text-sm text-white/60 hover:text-white transition-colors">
+      <div className="px-4 sm:px-8 py-4 flex items-center justify-between" style={{ backgroundColor: '#1a2744' }}>
+        <Image src="/logo.png" alt="Facilita Pass" width={120} height={38} style={{ objectFit: 'contain' }} />
+        <div className="flex items-center gap-3 sm:gap-5">
+          <button onClick={() => router.push('/painel')} className="text-xs sm:text-sm text-white/60 hover:text-white transition-colors">
             Minhas reservas
           </button>
           <button onClick={async () => { await createClient().auth.signOut(); router.replace('/') }}
-            className="text-sm text-white/60 hover:text-white transition-colors">
+            className="text-xs sm:text-sm text-white/60 hover:text-white transition-colors">
             Sair
           </button>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-6">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
 
         {/* ════ ETAPA 1 — SELEÇÃO DO VOO ════ */}
         {etapa === 'selecao' && (
@@ -831,7 +887,7 @@ export default function Busca() {
               {/* Campos simples */}
               {tipo !== 'multiplos' && (
                 <>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700">Origem</label>
                       <AeroportoInput value={origem} onChange={setOrigem} placeholder="Ex: GRU ou São Paulo" />
@@ -841,7 +897,7 @@ export default function Busca() {
                       <AeroportoInput value={destino} onChange={setDestino} placeholder="Ex: GIG ou Rio" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700">Data de ida</label>
                       <input type="date" value={dataIda}
@@ -985,10 +1041,10 @@ export default function Busca() {
 
                 {/* Barra de ordenação */}
                 {!carregando && totalEncontrado > 0 && (
-                  <div className="flex gap-2 flex-wrap mb-4">
+                  <div className="flex gap-2 overflow-x-auto pb-1 mb-4">
                     {ORDENACAO_OPTS.map(op => (
                       <button key={op.id} onClick={() => setOrdenacao(op.id)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                        className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                           ordenacao === op.id
                             ? 'text-white'
                             : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
@@ -1012,10 +1068,10 @@ export default function Busca() {
                   </div>
                 )}
 
-                {!carregando && voosOrdenados && voosOrdenados.length > 0 && (
+                {!carregando && gruposOrdenados && gruposOrdenados.length > 0 && (
                   <div className="space-y-3">
-                    {voosOrdenados.map((v, idx) => (
-                      <VooCard key={v.Id || idx} viagem={v}
+                    {gruposOrdenados.map((grupo, idx) => (
+                      <VooCard key={grupo.familias[0].viagem.Id || idx} grupo={grupo}
                         onSelecionar={fase === 'volta' ? selecionarVooVolta : selecionarVooIda}
                         onVerDetalhes={setVooDetalhes}
                         labelBotao={fase === 'volta' ? 'Selecionar volta'
@@ -1051,7 +1107,7 @@ export default function Busca() {
                     return (
                       <div key={idx} className={passageiros.length > 1 ? 'border border-gray-100 rounded-xl p-4 space-y-4' : 'space-y-4'}>
                         {cabecalho && <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{cabecalho}</p>}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <label className="text-sm font-medium text-gray-700">Nome</label>
                             <input type="text" placeholder="JOAO" value={p.nome}
@@ -1063,7 +1119,7 @@ export default function Busca() {
                               onChange={e => atualizarPassageiro(idx, 'sobrenome', e.target.value.toUpperCase())} className={INPUT} />
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {p.tipo !== 'INF' && (
                             <div>
                               <label className="text-sm font-medium text-gray-700">CPF</label>
@@ -1084,7 +1140,7 @@ export default function Busca() {
                               onChange={e => atualizarPassageiro(idx, 'email', e.target.value)} className={INPUT} />
                           </div>
                         )}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {p.tipo === 'ADT' && (
                             <div>
                               <label className="text-sm font-medium text-gray-700">Telefone</label>
@@ -1112,9 +1168,9 @@ export default function Busca() {
                 )}
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <button onClick={() => setEtapa('selecao')}
-                  className="px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+                  className="sm:w-auto w-full px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
                   ← Voltar
                 </button>
                 <button onClick={gerarReserva} disabled={carregandoReserva}
@@ -1176,7 +1232,7 @@ export default function Busca() {
                     <input type="text" placeholder="JOAO SILVA" value={cartaoTitular}
                       onChange={e => setCartaoTitular(e.target.value.toUpperCase())} className={INPUT} />
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700">Validade</label>
                       <input type="text" placeholder="MM/AA" value={cartaoValidade}
@@ -1223,9 +1279,9 @@ export default function Busca() {
                   </div>
                 )}
 
-                <div className="flex gap-3 mt-6">
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
                   <button onClick={() => setEtapa('passageiro')}
-                    className="px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+                    className="sm:w-auto w-full px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
                     ← Voltar
                   </button>
                   <button onClick={emitirPassagem} disabled={carregandoEmissao}

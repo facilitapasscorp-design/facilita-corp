@@ -267,11 +267,11 @@ export default function Painel() {
     <div className="min-h-screen" style={{ backgroundColor: '#1a2744' }}>
       {/* Header */}
       <div
-        className="px-8 py-4 flex items-center justify-between"
+        className="px-4 sm:px-8 py-4 flex items-center justify-between"
         style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
       >
-        <Image src="/logo.png" alt="Facilita Pass" width={130} height={40} style={{ objectFit: 'contain' }} />
-        <div className="flex items-center gap-6">
+        <Image src="/logo.png" alt="Facilita Pass" width={120} height={38} style={{ objectFit: 'contain' }} />
+        <div className="flex items-center gap-4 sm:gap-6">
           <button
             onClick={() => router.push('/busca')}
             className="text-sm font-medium transition-colors"
@@ -293,13 +293,13 @@ export default function Painel() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-            <h1 className="text-xl font-bold text-gray-900">Minhas reservas</h1>
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Minhas reservas</h1>
             <button
               onClick={() => router.push('/busca')}
-              className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-80"
+              className="px-4 sm:px-5 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-80"
               style={{ backgroundColor: '#1a2744' }}
             >
               + Nova busca
@@ -308,8 +308,8 @@ export default function Painel() {
 
           {/* Filtros */}
           {!carregando && reservas.length > 0 && (
-            <div className="px-6 py-4 border-b border-gray-100 space-y-3">
-              <div className="flex gap-2 flex-wrap">
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-100 space-y-3">
+              <div className="flex gap-2 overflow-x-auto pb-1">
                 {([
                   { id: 'todas',     label: `Todas (${reservas.length})` },
                   { id: 'Ativa',     label: `Reservadas (${contagemStatus.Ativa})` },
@@ -317,7 +317,7 @@ export default function Painel() {
                   { id: 'Cancelada', label: `Canceladas (${contagemStatus.Cancelada})` },
                 ] as const).map(op => (
                   <button key={op.id} onClick={() => setFiltroStatus(op.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                       filtroStatus === op.id
                         ? 'text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -327,7 +327,7 @@ export default function Painel() {
                   </button>
                 ))}
               </div>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2 overflow-x-auto pb-1">
                 {([
                   { id: 'todos',   label: 'Qualquer data' },
                   { id: 'hoje',    label: 'Hoje' },
@@ -335,7 +335,7 @@ export default function Painel() {
                   { id: '30dias',  label: 'Últimos 30 dias' },
                 ] as const).map(op => (
                   <button key={op.id} onClick={() => { setFiltroPeriodo(op.id); setCarregando(true) }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                       filtroPeriodo === op.id
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -366,7 +366,7 @@ export default function Painel() {
               <p className="font-medium text-gray-400">Nenhuma reserva encontrada para esse filtro.</p>
             </div>
           ) : (
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               {reservasFiltradas.map(r => {
                 const st = STATUS[r.status] ?? STATUS.Expirada
                 return (
@@ -377,10 +377,10 @@ export default function Painel() {
                     onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#e5e7eb' }}
                     onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#f3f4f6' }}
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <span className="text-lg font-bold text-gray-900 tracking-widest font-mono">
+                    <div className="flex items-start justify-between mb-3 gap-2">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className="text-base sm:text-lg font-bold text-gray-900 tracking-widest font-mono">
                             {r.localizador}
                           </span>
                           <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
@@ -388,9 +388,9 @@ export default function Painel() {
                             {st.label}
                           </span>
                         </div>
-                        <p className="text-base font-semibold text-gray-700">{r.origem} → {r.destino}</p>
+                        <p className="text-sm sm:text-base font-semibold text-gray-700">{r.origem} → {r.destino}</p>
                       </div>
-                      <p className="text-lg font-bold text-gray-900 shrink-0 ml-4">{formatValor(r.valor)}</p>
+                      <p className="text-base sm:text-lg font-bold text-gray-900 shrink-0">{formatValor(r.valor)}</p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-4">
@@ -619,7 +619,7 @@ export default function Painel() {
                     <input type="text" placeholder="JOAO SILVA" value={cartaoTitular}
                       onChange={e => setCartaoTitular(e.target.value.toUpperCase())} className={INPUT} />
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="text-sm font-medium text-gray-700">Validade</label>
                       <input type="text" placeholder="MM/AA" value={cartaoValidade}

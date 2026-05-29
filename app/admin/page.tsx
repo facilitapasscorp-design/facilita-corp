@@ -109,6 +109,7 @@ function TableHead({ cols }: { cols: string[] }) {
 export default function Admin() {
   const router = useRouter()
   const [secao, setSecao] = useState<Secao>('empresas')
+  const [menuAberto, setMenuAberto] = useState(false)
   const [accessToken, setAccessToken] = useState('')
 
   // Empresas
@@ -238,10 +239,22 @@ export default function Admin() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#1a2744' }}>
       {/* Header */}
       <div
-        className="px-8 py-4 flex items-center justify-between shrink-0"
+        className="px-4 sm:px-8 py-4 flex items-center justify-between shrink-0"
         style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
       >
-        <Image src="/logo.png" alt="Facilita Pass" width={130} height={40} style={{ objectFit: 'contain' }} />
+        <div className="flex items-center gap-3">
+          {/* Hamburger (mobile only) */}
+          <button
+            className="sm:hidden w-8 h-8 flex flex-col items-center justify-center gap-1.5"
+            onClick={() => setMenuAberto(v => !v)}
+            aria-label="Menu"
+          >
+            <span className="w-5 h-0.5 bg-white/70 rounded" />
+            <span className="w-5 h-0.5 bg-white/70 rounded" />
+            <span className="w-5 h-0.5 bg-white/70 rounded" />
+          </button>
+          <Image src="/logo.png" alt="Facilita Pass" width={120} height={38} style={{ objectFit: 'contain' }} />
+        </div>
         <button
           onClick={async () => { await createClient().auth.signOut(); router.replace('/') }}
           className="text-sm transition-colors"
@@ -253,18 +266,26 @@ export default function Admin() {
         </button>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Mobile overlay */}
+        {menuAberto && (
+          <div
+            className="sm:hidden fixed inset-0 z-40 bg-black/50"
+            onClick={() => setMenuAberto(false)}
+          />
+        )}
+
+        {/* Sidebar — hidden on mobile unless menuAberto */}
         <aside
-          className="w-52 shrink-0 flex flex-col py-6 px-3 gap-1"
-          style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}
+          className={`${menuAberto ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0 fixed sm:static z-50 sm:z-auto top-0 sm:top-auto left-0 sm:left-auto h-full sm:h-auto w-52 shrink-0 flex flex-col py-6 px-3 gap-1 transition-transform duration-200`}
+          style={{ backgroundColor: '#1a2744', borderRight: '1px solid rgba(255,255,255,0.06)' }}
         >
           {navItems.map(item => {
             const active = secao === item.id
             return (
               <button
                 key={item.id}
-                onClick={() => setSecao(item.id)}
+                onClick={() => { setSecao(item.id); setMenuAberto(false) }}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-left transition-colors"
                 style={{
                   backgroundColor: active ? 'rgba(255,255,255,0.12)' : 'transparent',
@@ -281,7 +302,7 @@ export default function Admin() {
         </aside>
 
         {/* Conteúdo */}
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-4 sm:p-6">
 
           {/* ── EMPRESAS ─────────────────────────────────────────── */}
           {secao === 'empresas' && (
