@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
         CPF:         p.cpf ? p.cpf.replace(/\D/g, '') : undefined,
         Nascimento:  toWcfDate(p.nascimento),
         Email:       p.email || undefined,
-        Telefone:    p.telefone ? p.telefone.replace(/\D/g, '') : undefined,
+        Telefone: (() => { const tel = p.telefone ? p.telefone.replace(/\D/g, '') : ''; return { Id: 0, NumeroDDD: tel.slice(0, 2) || '11', NumeroDDI: '55', NumeroTelefone: tel.slice(2) || '999999999', Tipo: 1 } })(),
         FaixaEtaria: p.tipo || 'ADT',
         Sexo:        p.sexo || 'M',
         Linha:       String(i + 1),
