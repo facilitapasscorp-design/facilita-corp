@@ -156,9 +156,11 @@ function agruparVoos(voos: Viagem[]): GrupoVoo[] {
         if (f.viagem.Id === v.Id) return true
         const fBt     = baseTarifaria(f.viagem)
         const fBagagem = bagagemViagem(f.viagem)
-        // Se ambos têm BaseTarifaria, usa ela como chave única de deduplicação
-        if (bt && fBt) return bt === fBt
-        // Fallback: mesma família + mesmo indicador de bagagem = duplicata entre sistemas
+        // Chave composta: BaseTarifaria + BagagemInclusa
+        // Mesmo código tarifário + mesma bagagem = duplicata entre sistemas
+        // Mesmo código + bagagem diferente = variante legítima (sem vs com bagagem)
+        if (bt && fBt) return bt === fBt && bagagem === fBagagem
+        // Sem BaseTarifaria: mesma família + mesma bagagem = duplicata
         return f.familia === familia && fBagagem === bagagem
       })
       if (!jaExiste) {
