@@ -98,7 +98,6 @@ export async function POST(req: NextRequest) {
         CPF:         p.cpf ? p.cpf.replace(/\D/g, '') : undefined,
         Nascimento:  toWcfDate(p.nascimento),
         Email:       p.email || undefined,
-        Telefone:    p.telefone ? p.telefone.replace(/\D/g, '') : undefined,
         FaixaEtaria: p.tipo || 'ADT',
         Sexo:        p.sexo || 'M',
         Linha:       String(i + 1),
@@ -113,6 +112,7 @@ export async function POST(req: NextRequest) {
         return {
           Nome:           `${p.nome} ${p.sobrenome}`.toUpperCase(),
           Email:          p.email,
+          Telefone:       tel,
           NumeroDDD:      tel.slice(0, 2) || '11',
           NumeroTelefone: tel.slice(2) || '999999999',
           NumeroDDI:      '55',
@@ -130,6 +130,7 @@ export async function POST(req: NextRequest) {
       PassageirosCount: reservaBody.Passageiros?.length,
       ContatosCount: reservaBody.Contatos?.length,
       Solicitante: reservaBody.Solicitante,
+      Contatos: reservaBody.Contatos,
     }))
 
     const reservaRes  = await fetch(`${BASE}/Reservar`, {
