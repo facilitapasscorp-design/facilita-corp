@@ -267,26 +267,22 @@ export default function Painel() {
     <div className="min-h-screen" style={{ backgroundColor: '#1a2744' }}>
       {/* Header */}
       <div
-        className="px-4 sm:px-8 py-4 flex items-center justify-between"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+        className="px-4 sm:px-8 py-4 flex items-center justify-between border-b border-gray-200"
+        style={{ backgroundColor: '#F4F5F3' }}
       >
         <Image src="/logo.png" alt="Facilita Pass" width={120} height={38} style={{ objectFit: 'contain' }} />
         <div className="flex items-center gap-4 sm:gap-6">
           <button
             onClick={() => router.push('/busca')}
-            className="text-sm font-medium transition-colors"
-            style={{ color: 'rgba(255,255,255,0.65)' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#fff' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.65)' }}
+            className="text-sm font-medium transition-colors hover:opacity-60"
+            style={{ color: '#1a2744' }}
           >
             Buscar voos
           </button>
           <button
             onClick={sair}
-            className="text-sm transition-colors"
-            style={{ color: 'rgba(255,255,255,0.45)' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#fff' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.45)' }}
+            className="text-sm transition-colors hover:opacity-60"
+            style={{ color: '#1a2744' }}
           >
             Sair
           </button>
