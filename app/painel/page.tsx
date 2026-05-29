@@ -69,6 +69,12 @@ export default function Painel() {
   const [filtroStatus, setFiltroStatus] = useState<'todas' | 'Ativa' | 'Emitida' | 'Cancelada'>('todas')
   const [filtroPeriodo, setFiltroPeriodo] = useState<'todos' | 'hoje' | '7dias' | '30dias'>('todos')
 
+  // ── Estado do modal de cancelamento ────────────────────────────
+  const [cancelarReserva,        setCancelarReserva]        = useState<Reserva | null>(null)
+  const [carregandoCancelamento, setCarregandoCancelamento] = useState(false)
+  const [erroCancelamento,       setErroCancelamento]       = useState('')
+  const [sucessoCancelamento,    setSucessoCancelamento]    = useState(false)
+
   // ── Estado do modal de pagamento ────────────────────────────────
   const [modalReserva,      setModalReserva]      = useState<Reserva | null>(null)
   const [carregandoFormas,  setCarregandoFormas]  = useState(false)
@@ -89,14 +95,30 @@ export default function Painel() {
     const supabase = createClient()
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) { router.replace('/'); return }
-      const { data: rows } = await supabase
+
+      let query = supabase
         .from('reservas')
         .select('*')
         .order('created_at', { ascending: false })
+
+      if (filtroPeriodo !== 'todos') {
+        const agora = new Date()
+        let desde: Date
+        if (filtroPeriodo === 'hoje') {
+          desde = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate())
+        } else if (filtroPeriodo === '7dias') {
+          desde = new Date(agora.getTime() - 7 * 24 * 60 * 60 * 1000)
+        } else {
+          desde = new Date(agora.getTime() - 30 * 24 * 60 * 60 * 1000)
+        }
+        query = query.gte('created_at', desde.toISOString()) as typeof query
+      }
+
+      const { data: rows } = await query
       setReservas((rows as Reserva[]) ?? [])
       setCarregando(false)
     })
-  }, [router])
+  }, [router, filtroPeriodo])
 
   async function sair() {
     await createClient().auth.signOut()
@@ -200,18 +222,40 @@ export default function Painel() {
     }
   }
 
-  const agora = new Date()
-  const reservasFiltradas = reservas.filter(r => {
-    if (filtroStatus !== 'todas' && r.status !== filtroStatus) return false
-    if (filtroPeriodo !== 'todos' && r.created_at) {
-      const criado = new Date(r.created_at)
-      const diffDias = (agora.getTime() - criado.getTime()) / (1000 * 60 * 60 * 24)
-      if (filtroPeriodo === 'hoje' && diffDias > 1) return false
-      if (filtroPeriodo === '7dias' && diffDias > 7) return false
-      if (filtroPeriodo === '30dias' && diffDias > 30) return false
+  async function confirmarCancelamento() {
+    if (!cancelarReserva) return
+    setCarregandoCancelamento(true); setErroCancelamento('')
+    try {
+      const res = await fetch('/api/cancelar-reserva', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ localizador: cancelarReserva.localizador }),
+      })
+      const data = await res.json()
+      if (data.erro) { setErroCancelamento(data.erro); return }
+      setSucessoCancelamento(true)
+      setReservas(prev => prev.map(r =>
+        r.id === cancelarReserva.id ? { ...r, status: 'Cancelada' } : r
+      ))
+      try {
+        await createClient().from('reservas')
+          .update({ status: 'Cancelada' })
+          .eq('localizador', cancelarReserva.localizador)
+      } catch {}
+    } catch {
+      setErroCancelamento('Erro ao cancelar reserva')
+    } finally {
+      setCarregandoCancelamento(false)
     }
-    return true
-  })
+  }
+
+  function fecharModalCancelamento() {
+    setCancelarReserva(null); setErroCancelamento(''); setSucessoCancelamento(false)
+  }
+
+  const reservasFiltradas = filtroStatus === 'todas'
+    ? reservas
+    : reservas.filter(r => r.status === filtroStatus)
 
   const contagemStatus = {
     Ativa:     reservas.filter(r => r.status === 'Ativa').length,
@@ -290,7 +334,7 @@ export default function Painel() {
                   { id: '7dias',   label: 'Últimos 7 dias' },
                   { id: '30dias',  label: 'Últimos 30 dias' },
                 ] as const).map(op => (
-                  <button key={op.id} onClick={() => setFiltroPeriodo(op.id)}
+                  <button key={op.id} onClick={() => { setFiltroPeriodo(op.id); setCarregando(true) }}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                       filtroPeriodo === op.id
                         ? 'bg-blue-600 text-white'
@@ -379,6 +423,12 @@ export default function Painel() {
                         >
                           Pagar e emitir
                         </button>
+                        <button
+                          onClick={() => { setCancelarReserva(r); setErroCancelamento(''); setSucessoCancelamento(false) }}
+                          className="px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
+                        >
+                          Cancelar
+                        </button>
                         <span className="text-xs font-medium text-amber-600">
                           ⚠️ Expira às 23:00 de hoje
                         </span>
@@ -397,6 +447,70 @@ export default function Painel() {
           )}
         </div>
       </div>
+
+      {/* ── Modal de cancelamento ───────────────────────────────── */}
+      {cancelarReserva && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+          onClick={e => { if (e.target === e.currentTarget) fecharModalCancelamento() }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+            <div className="px-6 py-5">
+              {sucessoCancelamento ? (
+                <div className="text-center py-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="font-semibold text-gray-900 mb-1">Reserva cancelada</p>
+                  <p className="text-sm text-gray-500 mb-5">
+                    O localizador <span className="font-mono font-bold">{cancelarReserva.localizador}</span> foi cancelado com sucesso.
+                  </p>
+                  <button onClick={fecharModalCancelamento}
+                    className="w-full py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: '#1a2744' }}>
+                    Fechar
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+                      <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Cancelar reserva</p>
+                      <p className="text-xs text-gray-400 font-mono">{cancelarReserva.localizador}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-5">
+                    Deseja realmente cancelar esta reserva? Esta ação não pode ser desfeita.
+                  </p>
+                  {erroCancelamento && (
+                    <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200">
+                      <p className="text-red-600 text-sm">{erroCancelamento}</p>
+                    </div>
+                  )}
+                  <div className="flex gap-3">
+                    <button onClick={fecharModalCancelamento}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+                      Não, voltar
+                    </button>
+                    <button onClick={confirmarCancelamento} disabled={carregandoCancelamento}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-50">
+                      {carregandoCancelamento ? 'Cancelando...' : 'Sim, cancelar'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Modal de pagamento ──────────────────────────────────── */}
       {modalReserva && (
