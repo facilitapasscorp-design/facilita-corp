@@ -17,11 +17,15 @@ interface VooLeg {
   BagagemQuantidade?: number
   BagagemPeso?: number
   BagagemUnidadeDeMedida?: string
+  BagagemIndicador?: number
   Origem: { CodigoIata: string; Descricao: string }
   Destino: { CodigoIata: string; Descricao: string }
   Classe?: string
-  BaseTarifaria?: { Codigo: string; Familia: string }[]
+  BaseTarifaria?: string
   Familia?: string
+  FamiliaCodigo?: string
+  Cabine?: string
+  CabineTipo?: string
 }
 
 interface Viagem {
@@ -118,9 +122,8 @@ function chaveVoo(v: Viagem): string {
   return `${cia}-${v.Origem?.CodigoIata}-${v.Destino?.CodigoIata}-${first?.HoraSaida ?? 0}`
 }
 function nomeFamilia(v: Viagem): string {
-  const bt = getLegs(v)[0]?.BaseTarifaria
-  if (bt && bt.length > 0) return bt[0].Familia || bt[0].Codigo || ''
-  return ''
+  const leg = getLegs(v)[0]
+  return leg?.Familia || leg?.FamiliaCodigo || ''
 }
 function agruparVoos(voos: Viagem[]): GrupoVoo[] {
   const mapa = new Map<string, GrupoVoo>()
@@ -427,16 +430,19 @@ function FamiliaModal({ grupo, onSelecionar, onFechar, labelBotao }: {
     if (!leg?.BagagemInclusa) return 'Sem bagagem despachada'
     const qtd  = leg.BagagemQuantidade
     const peso = leg.BagagemPeso
-    if (qtd && peso) return `${qtd} mala${qtd > 1 ? 's' : ''} até ${peso}kg`
+    const unit = leg.BagagemUnidadeDeMedida
+    // Remove texto redundante da unidade (ex: "KG POR PEÇA" → "kg")
+    const pesoStr = peso ? `${peso}kg` : null
+    if (qtd && pesoStr) return `${qtd} mala${qtd > 1 ? 's' : ''} despachada${qtd > 1 ? 's' : ''} · ${pesoStr}${unit ? ' por peça' : ''}`
     if (qtd) return `${qtd} mala${qtd > 1 ? 's' : ''} despachada${qtd > 1 ? 's' : ''}`
-    if (peso) return `Bagagem até ${peso}kg`
+    if (pesoStr) return `Bagagem até ${pesoStr}`
     return 'Bagagem despachada inclusa'
   }
 
   function nomeTarifa(f: { viagem: Viagem; familia: string }, i: number): string {
     if (f.familia) return f.familia
-    const bt = getLegs(f.viagem)[0]?.BaseTarifaria
-    if (bt?.[0]?.Codigo) return bt[0].Codigo
+    const leg = getLegs(f.viagem)[0]
+    if (leg?.FamiliaCodigo) return leg.FamiliaCodigo
     return i === 0 ? 'Básica' : `Opção ${i + 1}`
   }
 
@@ -488,43 +494,44 @@ function FamiliaModal({ grupo, onSelecionar, onFechar, labelBotao }: {
               const nome       = nomeTarifa(f, i)
               const isCheapest = i === 0
 
+              const cabine = getLegs(f.viagem)[0]?.Cabine
+              const classe = getLegs(f.viagem)[0]?.Classe
+
               return (
                 <div key={f.viagem.Id ?? i}
                   className={`relative flex flex-col rounded-2xl border-2 overflow-hidden transition-all ${
-                    isCheapest && grupo.familias.length > 1
-                      ? 'border-gray-200'
-                      : temBagagem
-                        ? 'border-blue-200'
-                        : 'border-gray-200'
+                    temBagagem ? 'border-blue-200' : 'border-gray-200'
                   }`}>
 
                   {/* Badge */}
-                  {temBagagem && grupo.familias.length > 1 && (
-                    <div className="bg-blue-600 text-white text-xs font-semibold text-center py-1 tracking-wide">
-                      Com bagagem
-                    </div>
-                  )}
-                  {!temBagagem && grupo.familias.length > 1 && (
-                    <div className="bg-gray-100 text-gray-500 text-xs font-semibold text-center py-1 tracking-wide">
-                      Básica
-                    </div>
-                  )}
+                  <div className={`text-xs font-semibold text-center py-1.5 tracking-wide ${
+                    temBagagem ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'
+                  }`}>
+                    {temBagagem ? 'Com bagagem' : 'Sem bagagem'}
+                  </div>
 
                   <div className="flex flex-col flex-1 p-4 gap-3">
                     {/* Nome da família */}
-                    <p className="font-bold text-gray-900 text-base uppercase tracking-wide">{nome}</p>
+                    <p className="font-bold text-gray-900 text-base uppercase tracking-wide leading-tight">{nome}</p>
+
+                    {/* Cabine e classe */}
+                    {(cabine || classe) && (
+                      <p className="text-xs text-gray-400 -mt-1">
+                        {cabine || ''}
+                        {cabine && classe ? ` · Classe ${classe}` : classe ? `Classe ${classe}` : ''}
+                      </p>
+                    )}
 
                     {/* Preço */}
                     <p className="text-2xl font-bold text-gray-900 leading-none">{formatPreco(f.preco)}</p>
 
                     {/* Atributos */}
                     <div className="space-y-2 flex-1">
-                      {/* Bagagem */}
                       <div className="flex items-start gap-2">
-                        <span className={`mt-0.5 text-sm font-bold shrink-0 ${temBagagem ? 'text-green-500' : 'text-gray-300'}`}>
+                        <span className={`mt-0.5 text-sm font-bold shrink-0 ${temBagagem ? 'text-green-500' : 'text-red-400'}`}>
                           {temBagagem ? '✓' : '✗'}
                         </span>
-                        <span className={`text-xs ${temBagagem ? 'text-gray-700' : 'text-gray-400'}`}>
+                        <span className={`text-xs leading-relaxed ${temBagagem ? 'text-gray-700' : 'text-gray-400'}`}>
                           {bagagemLabel(f.viagem)}
                         </span>
                       </div>
@@ -533,12 +540,8 @@ function FamiliaModal({ grupo, onSelecionar, onFechar, labelBotao }: {
                     {/* Botão */}
                     <button
                       onClick={() => { onSelecionar(f.viagem); onFechar() }}
-                      className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-80 mt-1 ${
-                        temBagagem && grupo.familias.length > 1
-                          ? 'text-white'
-                          : 'text-white'
-                      }`}
-                      style={{ backgroundColor: temBagagem && grupo.familias.length > 1 ? '#1d4ed8' : '#1a2744' }}>
+                      className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-80 mt-1"
+                      style={{ backgroundColor: temBagagem ? '#1d4ed8' : '#1a2744' }}>
                       {labelBotao}
                     </button>
                   </div>
