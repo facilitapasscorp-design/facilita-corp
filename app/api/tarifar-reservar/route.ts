@@ -112,10 +112,11 @@ export async function POST(req: NextRequest) {
         return {
           Nome:           `${p.nome} ${p.sobrenome}`.toUpperCase(),
           Email:          p.email,
+          Telefone:       tel,
           NumeroDDD:      tel.slice(0, 2) || '11',
           NumeroTelefone: tel.slice(2) || '999999999',
           NumeroDDI:      '55',
-          Tipo:           1,
+          Tipo:           0,
         }
       }),
       Solicitante:         passageiros[0].nome.toUpperCase(),
