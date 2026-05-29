@@ -73,13 +73,13 @@ export async function POST(req: NextRequest) {
       tarifaBody.ClassesSelecionadasVolta = classesVolta
     }
 
-    console.log('[TARIFAR] body:', JSON.stringify(tarifaBody, null, 2))
+    console.log('[TARIFAR] body:', JSON.stringify(tarifaBody).slice(0, 1000))
     const tarifaRes  = await fetch(`${BASE}/Tarifar`, {
       method: 'POST', headers: headers(), body: JSON.stringify(tarifaBody),
     })
     const tarifaData = await tarifaRes.json()
-    console.log('[TARIFAR] status:', tarifaRes.status)
-    console.log('[TARIFAR] resposta:', JSON.stringify(tarifaData, null, 2))
+    console.log('[TARIFAR] status:', tarifaRes.status, '| Exception:', tarifaData.Exception?.Message ?? null)
+    console.log('[TARIFAR] ViagensTrecho1 count:', tarifaData.ViagensTrecho1?.length ?? 0)
 
     if (tarifaData.Exception) {
       return NextResponse.json({ erro: tarifaData.Exception.Message }, { status: 400 })
@@ -114,6 +114,7 @@ export async function POST(req: NextRequest) {
         return {
           Nome:           `${p.nome} ${p.sobrenome}`.toUpperCase(),
           Email:          p.email,
+          Telefone:       tel,
           NumeroDDD:      tel.slice(0, 2) || '11',
           NumeroTelefone: tel.slice(2) || '999999999',
           NumeroDDI:      '55',
@@ -124,13 +125,13 @@ export async function POST(req: NextRequest) {
       ValidarAnaliseRisco: false,
     }
 
-    console.log('[RESERVAR] body:', JSON.stringify(reservaBody, null, 2))
+    console.log('[RESERVAR] body:', JSON.stringify(reservaBody).slice(0, 1000))
     const reservaRes  = await fetch(`${BASE}/Reservar`, {
       method: 'POST', headers: headers(), body: JSON.stringify(reservaBody),
     })
     const reservaData = await reservaRes.json()
-    console.log('[RESERVAR] status:', reservaRes.status)
-    console.log('[RESERVAR] resposta:', JSON.stringify(reservaData, null, 2))
+    console.log('[RESERVAR] status:', reservaRes.status, '| Exception:', reservaData.Exception?.Message ?? null)
+    console.log('[RESERVAR] Localizador:', reservaData.Reservas?.[0]?.Localizador ?? null)
 
     if (reservaData.Exception) {
       return NextResponse.json({ erro: reservaData.Exception.Message }, { status: 400 })
