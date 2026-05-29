@@ -13,7 +13,8 @@ async function buscarDisponibilidade(
   headers: Record<string, string>,
   params: Record<string, unknown>,
   comBagagem: boolean,
-): Promise<{ data: Record<string, unknown>; comBagagem: boolean }> {
+  sistema: number,
+): Promise<{ data: Record<string, unknown>; comBagagem: boolean; sistema: number }> {
   const res = await fetch(url, {
     method: 'POST',
     headers,
@@ -24,7 +25,7 @@ async function buscarDisponibilidade(
     }),
   })
   const data = await res.json()
-  return { data, comBagagem }
+  return { data, comBagagem, sistema }
 }
 
 export async function POST(request: NextRequest) {
@@ -91,17 +92,30 @@ export async function POST(request: NextRequest) {
 
     const todasRespostas = await Promise.all(
       sistemasData.Sistemas.flatMap((s: { Sistema: number }) => [
-        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), false),
-        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), true),
+        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), false, s.Sistema),
+        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), true,  s.Sistema),
       ])
     )
 
     type Viagem = Record<string, unknown>
-    type Resposta = { data: Record<string, unknown>; comBagagem: boolean }
+    type Resposta = { data: Record<string, unknown>; comBagagem: boolean; sistema: number }
 
-    // Injeta BagagemInclusa no nível da Viagem com base no tipo de chamada.
-    // Muitos GDS (GOL, Azul) não preenchem esse campo no corpo da Viagem —
-    // sem essa marcação a deduplicação não consegue distinguir as variantes.
+    // Log diagnóstico por sistema — mostra o que cada chamada retornou
+    for (const { data: d, comBagagem, sistema } of todasRespostas) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const viagens: Viagem[] = (!d.Exception && !d.SessaoExpirada) ? ((d.ViagensTrecho1 as Viagem[]) ?? []) : []
+      const v0 = viagens[0] as Record<string, unknown> | undefined
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const voo0 = (v0?.Voos as any[])?.[0] ?? {}
+      console.log(
+        `[DIAG] s=${sistema} com=${comBagagem} count=${viagens.length} err=${!!d.Exception}` +
+        (v0 ? ` | viagemKeys=${Object.keys(v0).join(',')}` : '') +
+        (v0 ? ` | voo0Keys=${Object.keys(voo0).join(',')}` : '') +
+        (v0 ? ` | v.BagInclusa=${v0.BagagemInclusa} voo.BagInclusa=${voo0.BagagemInclusa}` : '') +
+        (v0 ? ` | v.Familia=${v0.Familia} voo.Familia=${voo0.Familia} voo.FamiliaCodigo=${voo0.FamiliaCodigo}` : '')
+      )
+    }
+
     function extrairViagens(respostas: Resposta[], campo: 'ViagensTrecho1' | 'ViagensTrecho2'): Viagem[] {
       return respostas.flatMap(({ data: d, comBagagem }) => {
         if (d.Exception || d.SessaoExpirada) return []
