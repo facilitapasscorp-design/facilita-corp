@@ -105,9 +105,14 @@ function normalizarCia(iata: string): string {
   return iata
 }
 function chaveVoo(v: Viagem): string {
-  const legs = getLegs(v)
+  const legs  = getLegs(v)
   const first = legs[0]
-  return `${normalizarCia(v.CiaMandatoria?.CodigoIata ?? '')}-${v.Origem?.CodigoIata}-${v.Destino?.CodigoIata}-${first?.HoraSaida ?? 0}`
+  const cia   = normalizarCia(v.CiaMandatoria?.CodigoIata ?? '')
+  // Usa número do voo como chave primária — garante agrupamento de tarifas do mesmo voo
+  const num   = first?.Numero || first?.NumeroDoVoo
+  if (num) return `${cia}-${num}`
+  // Fallback: rota + horário de saída
+  return `${cia}-${v.Origem?.CodigoIata}-${v.Destino?.CodigoIata}-${first?.HoraSaida ?? 0}`
 }
 function nomeFamilia(v: Viagem): string {
   const bt = getLegs(v)[0]?.BaseTarifaria
