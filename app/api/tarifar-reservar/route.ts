@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
           NumeroDDD:      tel.slice(0, 2) || '11',
           NumeroTelefone: tel.slice(2) || '999999999',
           NumeroDDI:      '55',
-          Tipo:           0,
+          Tipo:           1,
         }
       }),
       Solicitante:         passageiros[0].nome.toUpperCase(),
