@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
         CPF:         p.cpf ? p.cpf.replace(/\D/g, '') : undefined,
         Nascimento:  toWcfDate(p.nascimento),
         Email:       p.email || undefined,
+        Telefone:    p.telefone ? p.telefone.replace(/\D/g, '') : undefined,
         FaixaEtaria: p.tipo || 'ADT',
         Sexo:        p.sexo || 'M',
         Linha:       String(i + 1),
@@ -115,7 +116,6 @@ export async function POST(req: NextRequest) {
         {
           Nome:           `${primAdulto.nome} ${primAdulto.sobrenome}`.toUpperCase(),
           Email:          primAdulto.email,
-          Telefone:       telContato || '999999999',
           NumeroDDD:      telContato.slice(0, 2) || '11',
           NumeroTelefone: telContato.slice(2) || '999999999',
           NumeroDDI:      '55',
