@@ -141,12 +141,15 @@ export default function Painel() {
   }
 
   // Busca formas de financiamento com dados do cartão (2ª chamada, sem IniciarEmissao)
-  async function buscarFormasComCartao(numero: string, localizador: string) {
+  // Requer número completo (16 dígitos) e validade (MM/AA) para a API aceitar
+  async function buscarFormasComCartao(numero: string, validade: string, localizador: string) {
+    if (numero.replace(/\D/g, '').length < 16) return
+    if (validade.length < 5) return
     try {
       const res = await fetch('/api/iniciar-emissao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ localizador, cartao: { numero } }),
+        body: JSON.stringify({ localizador, cartao: { numero, validade } }),
       })
       const data = await res.json()
       if (data.erro) return
@@ -426,9 +429,7 @@ export default function Painel() {
                       onChange={e => {
                         const val = mascaraCartao(e.target.value)
                         setCartaoNumero(val)
-                        if (val.replace(/\D/g, '').length === 16 && modalReserva) {
-                          buscarFormasComCartao(val, modalReserva.localizador)
-                        }
+                        if (modalReserva) buscarFormasComCartao(val, cartaoValidade, modalReserva.localizador)
                       }}
                       className={INPUT}
                     />
@@ -442,7 +443,11 @@ export default function Painel() {
                     <div>
                       <label className="text-sm font-medium text-gray-700">Validade</label>
                       <input type="text" placeholder="MM/AA" value={cartaoValidade}
-                        onChange={e => setCartaoValidade(mascaraValidade(e.target.value))} className={INPUT} />
+                        onChange={e => {
+                          const val = mascaraValidade(e.target.value)
+                          setCartaoValidade(val)
+                          if (modalReserva && val.length >= 5) buscarFormasComCartao(cartaoNumero, val, modalReserva.localizador)
+                        }} className={INPUT} />
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-700">CVV</label>
