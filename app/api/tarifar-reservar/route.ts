@@ -15,7 +15,7 @@ function extrairClasses(viagem: any) {
     .filter((leg: any) => leg.Numero || leg.NumeroDoVoo)
     .map((leg: any) => {
       const bt = leg.BaseTarifaria?.[0]
-      const classe = leg.Classe || classeRef
+      const classe = leg.Classe || bt?.Classe || classeRef
       if (classe) classeRef = classe
       return {
         BaseTarifaria: bt?.Codigo || '',

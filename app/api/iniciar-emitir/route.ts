@@ -11,6 +11,12 @@ function detectarBandeira(numero: string): number {
   return 1
 }
 
+// Converte "MM/AA" (máscara do frontend) para "MM/YYYY" (formato WOOBA)
+function expandirValidade(val: string): string {
+  const m = val.match(/^(\d{2})\/(\d{2})$/)
+  return m ? `${m[1]}/20${m[2]}` : val
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { localizador, cartao } = await req.json()
@@ -41,22 +47,35 @@ export async function POST(req: NextRequest) {
     const chaveDeSeguranca = inicioData.ChaveDeSeguranca || null
     const opcoesPagamento: any[] = inicioData.ConfiguracoesDeEmissao?.OpcoesDePagamento || []
 
+    // 2. RecuperarFormasDeFinanciamento — necessário para obter FinanciamentoId do cartão
+    const formasData = await fetch(`${BASE}/RecuperarFormasDeFinanciamento`, {
+      method: 'POST', headers: headers(),
+      body: JSON.stringify({ ...cred, ClienteId: 0, Localizador: localizador }),
+    }).then(r => r.json())
+    const formasFinanciamento: any[] = formasData.FormasDeFinanciamento ?? []
+
     // Prefere faturado; cai em cartão se não tiver
     const opcao = opcoesPagamento.find((o: any) => o.Faturado === true)
       || opcoesPagamento.find((o: any) => o.CartaoDeCredito === true)
       || opcoesPagamento[0]
-    const codigoPagamento = opcao?.CodigoFormaDeRecebimento ?? 1
+    const codigoPagamento = opcao?.CodigoFormaDeRecebimento ?? 2
     const usarFaturado    = opcao?.Faturado === true
 
-    // 2. Emitir
+    // 3. Emitir
     const pagamento: any = { FormaDePagamento: codigoPagamento }
-    if (!usarFaturado) {
+    if (!usarFaturado && cartao) {
+      // Encontra plano de financiamento pelo número de parcelas; fallback: à vista (FinanciamentoId 61)
+      const plano = formasFinanciamento.find((f: any) => f.Parcelas === cartao.parcelas)
+        ?? formasFinanciamento[0]
+      const financiamentoId = plano?.FinanciamentoId ?? 61
+
       pagamento.CartaoDeCredito = {
+        Bandeira:          detectarBandeira(cartao.numero),
         Numero:            cartao.numero.replace(/\D/g, ''),
-        BandeiraId:        detectarBandeira(cartao.numero),
-        Validade:          cartao.validade,
         CodigoDeSeguranca: cartao.cvv,
-        NomeTitular:       cartao.titular.toUpperCase(),
+        Validade:          expandirValidade(cartao.validade),
+        TitularNome:       cartao.titular.toUpperCase(),
+        FinanciamentoId:   financiamentoId,
         Parcelas:          cartao.parcelas,
       }
     }
