@@ -83,6 +83,8 @@ export async function POST(req: NextRequest) {
 
     const idViagem = tarifaData.ViagensTrecho1?.[0]?.IdentificacaoDaViagem
       || vooIda.IdentificacaoDaViagem
+    console.log('[RESERVAR] idViagem:', JSON.stringify(idViagem))
+    console.log('[RESERVAR] classesIda:', JSON.stringify(classesIda))
 
     // 2. Reservar
     const reservaBody = {
