@@ -109,20 +109,24 @@ function chaveVoo(v: Viagem): string {
   const first = legs[0]
   return `${normalizarCia(v.CiaMandatoria?.CodigoIata ?? '')}-${v.Origem?.CodigoIata}-${v.Destino?.CodigoIata}-${first?.HoraSaida ?? 0}`
 }
+function nomeFamilia(v: Viagem): string {
+  const bt = getLegs(v)[0]?.BaseTarifaria
+  if (bt && bt.length > 0) return bt[0].Familia || bt[0].Codigo || ''
+  return ''
+}
 function agruparVoos(voos: Viagem[]): GrupoVoo[] {
   const mapa = new Map<string, GrupoVoo>()
   for (const v of voos) {
     const chave = chaveVoo(v)
-    const familia = getLegs(v)[0]?.BaseTarifaria?.[0]?.Familia ?? ''
     const grupo = mapa.get(chave)
     if (grupo) {
-      const jaExiste = grupo.familias.find(f => f.familia === familia && f.preco === (v.Preco?.Total ?? 0))
-      if (!jaExiste) {
-        grupo.familias.push({ viagem: v, familia, preco: v.Preco?.Total ?? 0 })
+      // deduplica pelo Id da Viagem (identificador único da WOOBA)
+      if (!grupo.familias.find(f => f.viagem.Id === v.Id)) {
+        grupo.familias.push({ viagem: v, familia: nomeFamilia(v), preco: v.Preco?.Total ?? 0 })
         grupo.familias.sort((a, b) => a.preco - b.preco)
       }
     } else {
-      mapa.set(chave, { familias: [{ viagem: v, familia, preco: v.Preco?.Total ?? 0 }] })
+      mapa.set(chave, { familias: [{ viagem: v, familia: nomeFamilia(v), preco: v.Preco?.Total ?? 0 }] })
     }
   }
   return Array.from(mapa.values())
@@ -445,10 +449,14 @@ function FamiliaModal({ grupo, onSelecionar, onFechar, labelBotao }: {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Escolha sua tarifa</p>
           {grupo.familias.map((f, i) => {
             const familiaLegs = getLegs(f.viagem)
-            const bagagem     = familiaLegs[0]?.BagagemInclusa ?? false
-            const nome        = f.familia || (i === 0 ? 'Básica' : `Opção ${i + 1}`)
+            const firstLeg    = familiaLegs[0]
+            const bagagem     = firstLeg?.BagagemInclusa ?? false
+            const bt          = firstLeg?.BaseTarifaria
+            const nome        = f.familia
+              || (bt && bt[0]?.Codigo ? bt[0].Codigo : '')
+              || (i === 0 ? 'Básica' : `Opção ${i + 1}`)
             return (
-              <div key={i}
+              <div key={f.viagem.Id ?? i}
                 className="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
