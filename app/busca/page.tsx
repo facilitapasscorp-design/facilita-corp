@@ -409,7 +409,7 @@ export default function Busca() {
       }
     }
     setCarregandoReserva(true); setErroReserva('')
-    let loc = 'SANDBOX'
+    let loc = ''
     try {
       const res = await fetch('/api/tarifar-reservar', {
         method: 'POST',
@@ -417,8 +417,22 @@ export default function Busca() {
         body: JSON.stringify({ vooIda: vooIdaSelecionado, vooVolta: vooVoltaSelecionado, passageiros }),
       })
       const data = await res.json()
-      loc = data.localizador || 'SANDBOX'
-    } catch {}
+      if (data.erro) {
+        setErroReserva(data.erro)
+        setCarregandoReserva(false)
+        return
+      }
+      loc = data.localizador || ''
+    } catch (err: unknown) {
+      setErroReserva(err instanceof Error ? err.message : 'Erro ao conectar com o servidor')
+      setCarregandoReserva(false)
+      return
+    }
+    if (!loc) {
+      setErroReserva('Não foi possível gerar a reserva')
+      setCarregandoReserva(false)
+      return
+    }
     setLocalizador(loc)
 
     // Salvar reserva no Supabase
