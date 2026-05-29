@@ -100,17 +100,10 @@ export async function POST(request: NextRequest) {
       return d.ViagensTrecho2 ?? []
     })
 
-    // Log resumo por voo para diagnóstico de agrupamento de tarifas
-    const resumo = voosIda.map((v: { Id: number; CiaMandatoria?: { CodigoIata?: string }; Voos?: { Numero?: number; HoraSaida?: number; BagagemInclusa?: boolean; BaseTarifaria?: { Familia?: string }[] }[]; Preco?: { Total?: number } }) => ({
-      Id:      v.Id,
-      Cia:     v.CiaMandatoria?.CodigoIata,
-      Voo:     v.Voos?.[0]?.Numero,
-      Saida:   v.Voos?.[0]?.HoraSaida,
-      Bagagem: v.Voos?.[0]?.BagagemInclusa,
-      Familia: v.Voos?.[0]?.BaseTarifaria?.[0]?.Familia,
-      Preco:   v.Preco?.Total,
-    }))
-    console.log('[BUSCAR-VOOS] Resumo voosIda:', JSON.stringify(resumo, null, 2))
+    // Log estrutura completa da primeira Viagem para diagnóstico
+    if (voosIda.length > 0) {
+      console.log('[BUSCAR-VOOS] Primeira Viagem (estrutura completa):', JSON.stringify(voosIda[0], null, 2))
+    }
 
     return NextResponse.json({ sistemas: sistemasData.Sistemas, voos: voosIda, voosVolta })
 
