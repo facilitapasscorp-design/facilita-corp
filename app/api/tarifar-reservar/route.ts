@@ -42,6 +42,11 @@ export async function POST(req: NextRequest) {
     const token = process.env.WOOBA_TOKEN!
     const cred  = { Login: login, Senha: senha }
 
+    console.log('[TARIFAR-RESERVAR] BASE_URL:', BASE)
+    console.log('[TARIFAR-RESERVAR] login:', login)
+    console.log('[TARIFAR-RESERVAR] URL Tarifar:', `${BASE}/Tarifar`)
+    console.log('[TARIFAR-RESERVAR] URL Reservar:', `${BASE}/Reservar`)
+
     const headers = () => ({
       'Content-Type': 'application/json',
       'Accept': 'application/json',
