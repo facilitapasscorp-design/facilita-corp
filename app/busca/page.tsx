@@ -850,14 +850,17 @@ export default function Busca() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f0f4f8' }}>
       {/* Header */}
-      <div className="px-4 sm:px-8 py-4 flex items-center justify-between" style={{ backgroundColor: '#1a2744' }}>
+      <div className="px-4 sm:px-8 py-4 flex items-center justify-between border-b border-gray-200" style={{ backgroundColor: '#F4F5F3' }}>
         <Image src="/logo.png" alt="Facilita Pass" width={120} height={38} style={{ objectFit: 'contain' }} />
         <div className="flex items-center gap-3 sm:gap-5">
-          <button onClick={() => router.push('/painel')} className="text-xs sm:text-sm text-white/60 hover:text-white transition-colors">
+          <button onClick={() => router.push('/painel')}
+            className="text-xs sm:text-sm font-medium transition-colors hover:opacity-60"
+            style={{ color: '#1a2744' }}>
             Minhas reservas
           </button>
           <button onClick={async () => { await createClient().auth.signOut(); router.replace('/') }}
-            className="text-xs sm:text-sm text-white/60 hover:text-white transition-colors">
+            className="text-xs sm:text-sm transition-colors hover:opacity-60"
+            style={{ color: '#1a2744' }}>
             Sair
           </button>
         </div>
