@@ -39,6 +39,10 @@ interface Viagem {
   Voos: VooLeg[]
   Segmentos?: { Voos: VooLeg[] }[]
   IdentificacaoDaViagem: string
+  // Campos de família que a WOOBA pode expor no nível da Viagem
+  Familia?: string
+  FamiliaCodigo?: string
+  BagagemInclusa?: boolean
 }
 
 interface GrupoVoo {
@@ -122,22 +126,41 @@ function chaveVoo(v: Viagem): string {
   return `${cia}-${v.Origem?.CodigoIata}-${v.Destino?.CodigoIata}-${first?.HoraSaida ?? 0}`
 }
 function nomeFamilia(v: Viagem): string {
+  // A WOOBA pode expor Familia no nível da Viagem ou dentro de Voos[]
+  if (v.Familia) return v.Familia
+  if (v.FamiliaCodigo) return v.FamiliaCodigo
   const leg = getLegs(v)[0]
   return leg?.Familia || leg?.FamiliaCodigo || ''
+}
+
+function baseTarifaria(v: Viagem): string {
+  // BaseTarifaria é string (ex: "SJEX0N2/B19") — identifica unicamente a tarifa
+  return getLegs(v)[0]?.BaseTarifaria ?? ''
+}
+
+function bagagemViagem(v: Viagem): boolean {
+  // BagagemInclusa pode estar no nível da Viagem ou no primeiro leg
+  return v.BagagemInclusa ?? getLegs(v)[0]?.BagagemInclusa ?? false
 }
 function agruparVoos(voos: Viagem[]): GrupoVoo[] {
   const mapa = new Map<string, GrupoVoo>()
   for (const v of voos) {
-    const chave  = chaveVoo(v)
+    const chave   = chaveVoo(v)
     const familia = nomeFamilia(v)
     const preco   = v.Preco?.Total ?? 0
+    const bt      = baseTarifaria(v)
+    const bagagem = bagagemViagem(v)
     const grupo   = mapa.get(chave)
     if (grupo) {
-      // Deduplica por Id OU por (família + preço) para filtrar duplicatas entre sistemas
-      const jaExiste = grupo.familias.find(f =>
-        f.viagem.Id === v.Id ||
-        (f.familia === familia && Math.abs(f.preco - preco) < 0.01)
-      )
+      const jaExiste = grupo.familias.find(f => {
+        if (f.viagem.Id === v.Id) return true
+        const fBt     = baseTarifaria(f.viagem)
+        const fBagagem = bagagemViagem(f.viagem)
+        // Se ambos têm BaseTarifaria, usa ela como chave única de deduplicação
+        if (bt && fBt) return bt === fBt
+        // Fallback: mesma família + mesmo indicador de bagagem = duplicata entre sistemas
+        return f.familia === familia && fBagagem === bagagem
+      })
       if (!jaExiste) {
         grupo.familias.push({ viagem: v, familia, preco })
         grupo.familias.sort((a, b) => a.preco - b.preco)
@@ -396,7 +419,7 @@ function VooCard({
         </span>
         <span className="text-gray-200">·</span>
         <span className="text-xs text-gray-400">
-          {first?.BagagemInclusa ? '✓ Bagagem inclusa' : 'Sem bagagem despachada'}
+          {bagagemViagem(viagem) ? '✓ Bagagem inclusa' : 'Sem bagagem despachada'}
         </span>
         {escalas > 0 && onVerDetalhes && (
           <>
@@ -426,14 +449,13 @@ function FamiliaModal({ grupo, onSelecionar, onFechar, labelBotao }: {
   const escalas = base.NumeroParadas
 
   function bagagemLabel(viagem: Viagem): string {
-    const leg = getLegs(viagem)[0]
-    if (!leg?.BagagemInclusa) return 'Sem bagagem despachada'
-    const qtd  = leg.BagagemQuantidade
-    const peso = leg.BagagemPeso
-    const unit = leg.BagagemUnidadeDeMedida
-    // Remove texto redundante da unidade (ex: "KG POR PEÇA" → "kg")
+    const inclusa = bagagemViagem(viagem)
+    if (!inclusa) return 'Sem bagagem despachada'
+    const leg  = getLegs(viagem)[0]
+    const qtd  = leg?.BagagemQuantidade
+    const peso = leg?.BagagemPeso
     const pesoStr = peso ? `${peso}kg` : null
-    if (qtd && pesoStr) return `${qtd} mala${qtd > 1 ? 's' : ''} despachada${qtd > 1 ? 's' : ''} · ${pesoStr}${unit ? ' por peça' : ''}`
+    if (qtd && pesoStr) return `${qtd} mala${qtd > 1 ? 's' : ''} despachada${qtd > 1 ? 's' : ''} · ${pesoStr} por peça`
     if (qtd) return `${qtd} mala${qtd > 1 ? 's' : ''} despachada${qtd > 1 ? 's' : ''}`
     if (pesoStr) return `Bagagem até ${pesoStr}`
     return 'Bagagem despachada inclusa'
@@ -441,9 +463,8 @@ function FamiliaModal({ grupo, onSelecionar, onFechar, labelBotao }: {
 
   function nomeTarifa(f: { viagem: Viagem; familia: string }, i: number): string {
     if (f.familia) return f.familia
-    const leg = getLegs(f.viagem)[0]
-    if (leg?.FamiliaCodigo) return leg.FamiliaCodigo
-    return i === 0 ? 'Básica' : `Opção ${i + 1}`
+    // Fallback: nomear pela bagagem quando a família não vem da API
+    return bagagemViagem(f.viagem) ? 'Com bagagem' : 'Sem bagagem'
   }
 
   return (
@@ -490,7 +511,7 @@ function FamiliaModal({ grupo, onSelecionar, onFechar, labelBotao }: {
         <div className="overflow-y-auto flex-1 px-5 pb-5">
           <div className={`grid gap-3 ${grupo.familias.length === 2 ? 'grid-cols-2' : grupo.familias.length >= 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1'}`}>
             {grupo.familias.map((f, i) => {
-              const temBagagem = getLegs(f.viagem)[0]?.BagagemInclusa ?? false
+              const temBagagem = bagagemViagem(f.viagem)
               const nome       = nomeTarifa(f, i)
               const isCheapest = i === 0
 
