@@ -125,7 +125,9 @@ export async function POST(req: NextRequest) {
     const reservaRes  = await fetch(`${BASE}/Reservar`, {
       method: 'POST', headers: headers(), body: JSON.stringify(reservaBody),
     })
-    const reservaData = await reservaRes.json()
+    const reservaRaw = await reservaRes.text()
+    console.log('[RESERVAR] raw:', reservaRaw.slice(0, 500))
+    const reservaData = JSON.parse(reservaRaw)
     console.log('[RESERVAR] status:', reservaRes.status, '| Exception:', reservaData.Exception?.Message ?? null)
     console.log('[RESERVAR] Localizador:', reservaData.Reservas?.[0]?.Localizador ?? null)
 
