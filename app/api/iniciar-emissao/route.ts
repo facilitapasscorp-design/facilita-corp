@@ -11,9 +11,15 @@ function detectarBandeira(numero: string): number {
   return 1
 }
 
+function expandirValidade(val: string): string {
+  const m = val.match(/^(\d{2})\/(\d{2})$/)
+  return m ? `${m[1]}/20${m[2]}` : val
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { localizador, cartao } = await req.json()
+    // cartao?: { numero: string, validade?: string }
 
     const BASE  = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
     const login = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
@@ -60,6 +66,7 @@ export async function POST(req: NextRequest) {
         formasBody.CartaoDeCredito = {
           Bandeira: detectarBandeira(num),
           Numero:   num,
+          ...(cartao.validade ? { Validade: expandirValidade(cartao.validade) } : {}),
         }
       }
 
@@ -70,8 +77,9 @@ export async function POST(req: NextRequest) {
 
       console.log('[INICIAR-EMISSAO] RecuperarFormasDeFinanciamento response:', JSON.stringify(formasData, null, 2))
 
+      // Campo correto na resposta da WOOBA é "Financiamentos", não "FormasDeFinanciamento"
       if (!formasData.Exception) {
-        formasFinanciamento = formasData.FormasDeFinanciamento ?? []
+        formasFinanciamento = formasData.Financiamentos ?? []
       }
     } catch {}
 

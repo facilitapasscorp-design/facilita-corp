@@ -14,6 +14,9 @@ interface VooLeg {
   HoraChegada: number
   CiaMandatoria: { CodigoIata: string; Descricao: string }
   BagagemInclusa: boolean
+  BagagemQuantidade?: number
+  BagagemPeso?: number
+  BagagemUnidadeDeMedida?: string
   Origem: { CodigoIata: string; Descricao: string }
   Destino: { CodigoIata: string; Descricao: string }
   Classe?: string
@@ -412,79 +415,137 @@ function FamiliaModal({ grupo, onSelecionar, onFechar, labelBotao }: {
   onFechar: () => void
   labelBotao: string
 }) {
-  const base   = grupo.familias[0].viagem
-  const legs   = getLegs(base)
-  const first  = legs[0]
-  const last   = legs[legs.length - 1]
-  const iata   = base.CiaMandatoria?.CodigoIata ?? ''
+  const base    = grupo.familias[0].viagem
+  const legs    = getLegs(base)
+  const first   = legs[0]
+  const last    = legs[legs.length - 1]
+  const iata    = base.CiaMandatoria?.CodigoIata ?? ''
   const escalas = base.NumeroParadas
+
+  function bagagemLabel(viagem: Viagem): string {
+    const leg = getLegs(viagem)[0]
+    if (!leg?.BagagemInclusa) return 'Sem bagagem despachada'
+    const qtd  = leg.BagagemQuantidade
+    const peso = leg.BagagemPeso
+    if (qtd && peso) return `${qtd} mala${qtd > 1 ? 's' : ''} até ${peso}kg`
+    if (qtd) return `${qtd} mala${qtd > 1 ? 's' : ''} despachada${qtd > 1 ? 's' : ''}`
+    if (peso) return `Bagagem até ${peso}kg`
+    return 'Bagagem despachada inclusa'
+  }
+
+  function nomeTarifa(f: { viagem: Viagem; familia: string }, i: number): string {
+    if (f.familia) return f.familia
+    const bt = getLegs(f.viagem)[0]?.BaseTarifaria
+    if (bt?.[0]?.Codigo) return bt[0].Codigo
+    return i === 0 ? 'Básica' : `Opção ${i + 1}`
+  }
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+      style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
       onClick={e => { if (e.target === e.currentTarget) onFechar() }}
     >
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[88vh] flex flex-col">
-        {/* Header */}
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[92vh] flex flex-col">
+
+        {/* Header do voo */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <AirlineBadge iata={iata} />
-            <div>
+            <div className="min-w-0">
               <p className="font-semibold text-gray-900 text-sm">
                 {first ? formatHora(first.HoraSaida) : '--'} → {last ? formatHora(last.HoraChegada) : '--'}
+                <span className="font-normal text-gray-400 ml-2">
+                  {base.Origem?.CodigoIata} → {base.Destino?.CodigoIata}
+                </span>
               </p>
               <p className="text-xs text-gray-400 mt-0.5">
-                {base.Origem?.CodigoIata} → {base.Destino?.CodigoIata}
-                {' · '}{formatDuracao(base.TempoDeDuracao)}
+                {formatDuracao(base.TempoDeDuracao)}
                 {' · '}{escalas === 0 ? 'Direto' : `${escalas} escala${escalas > 1 ? 's' : ''}`}
+                {first?.Numero ? ` · Voo ${nomeCompanhia(iata)} ${first.Numero}` : ''}
               </p>
             </div>
           </div>
           <button onClick={onFechar}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 shrink-0">
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 shrink-0 ml-3">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Families list */}
-        <div className="overflow-y-auto flex-1 px-5 py-4 space-y-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Escolha sua tarifa</p>
-          {grupo.familias.map((f, i) => {
-            const familiaLegs = getLegs(f.viagem)
-            const firstLeg    = familiaLegs[0]
-            const bagagem     = firstLeg?.BagagemInclusa ?? false
-            const bt          = firstLeg?.BaseTarifaria
-            const nome        = f.familia
-              || (bt && bt[0]?.Codigo ? bt[0].Codigo : '')
-              || (i === 0 ? 'Básica' : `Opção ${i + 1}`)
-            return (
-              <div key={f.viagem.Id ?? i}
-                className="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm uppercase tracking-wide">{nome}</p>
-                    <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                      {bagagem
-                        ? <><span className="text-green-600 font-bold">✓</span> Bagagem despachada inclusa</>
-                        : <><span className="text-red-400 font-bold">✗</span> Sem bagagem despachada</>}
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-lg font-bold text-gray-900">{formatPreco(f.preco)}</p>
+        {/* Título */}
+        <div className="px-5 pt-4 pb-2 shrink-0">
+          <p className="text-sm font-semibold text-gray-800">Escolha a tarifa</p>
+          <p className="text-xs text-gray-400 mt-0.5">Selecione a opção que melhor atende o passageiro</p>
+        </div>
+
+        {/* Cards de tarifas — scroll horizontal no mobile se muitas opções */}
+        <div className="overflow-y-auto flex-1 px-5 pb-5">
+          <div className={`grid gap-3 ${grupo.familias.length === 2 ? 'grid-cols-2' : grupo.familias.length >= 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1'}`}>
+            {grupo.familias.map((f, i) => {
+              const temBagagem = getLegs(f.viagem)[0]?.BagagemInclusa ?? false
+              const nome       = nomeTarifa(f, i)
+              const isCheapest = i === 0
+
+              return (
+                <div key={f.viagem.Id ?? i}
+                  className={`relative flex flex-col rounded-2xl border-2 overflow-hidden transition-all ${
+                    isCheapest && grupo.familias.length > 1
+                      ? 'border-gray-200'
+                      : temBagagem
+                        ? 'border-blue-200'
+                        : 'border-gray-200'
+                  }`}>
+
+                  {/* Badge */}
+                  {temBagagem && grupo.familias.length > 1 && (
+                    <div className="bg-blue-600 text-white text-xs font-semibold text-center py-1 tracking-wide">
+                      Com bagagem
+                    </div>
+                  )}
+                  {!temBagagem && grupo.familias.length > 1 && (
+                    <div className="bg-gray-100 text-gray-500 text-xs font-semibold text-center py-1 tracking-wide">
+                      Básica
+                    </div>
+                  )}
+
+                  <div className="flex flex-col flex-1 p-4 gap-3">
+                    {/* Nome da família */}
+                    <p className="font-bold text-gray-900 text-base uppercase tracking-wide">{nome}</p>
+
+                    {/* Preço */}
+                    <p className="text-2xl font-bold text-gray-900 leading-none">{formatPreco(f.preco)}</p>
+
+                    {/* Atributos */}
+                    <div className="space-y-2 flex-1">
+                      {/* Bagagem */}
+                      <div className="flex items-start gap-2">
+                        <span className={`mt-0.5 text-sm font-bold shrink-0 ${temBagagem ? 'text-green-500' : 'text-gray-300'}`}>
+                          {temBagagem ? '✓' : '✗'}
+                        </span>
+                        <span className={`text-xs ${temBagagem ? 'text-gray-700' : 'text-gray-400'}`}>
+                          {bagagemLabel(f.viagem)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Botão */}
                     <button
                       onClick={() => { onSelecionar(f.viagem); onFechar() }}
-                      className="mt-2 px-4 py-1.5 rounded-lg text-xs font-semibold text-white hover:opacity-80 transition-opacity"
-                      style={{ backgroundColor: '#1a2744' }}>
+                      className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-80 mt-1 ${
+                        temBagagem && grupo.familias.length > 1
+                          ? 'text-white'
+                          : 'text-white'
+                      }`}
+                      style={{ backgroundColor: temBagagem && grupo.familias.length > 1 ? '#1d4ed8' : '#1a2744' }}>
                       {labelBotao}
                     </button>
                   </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>
