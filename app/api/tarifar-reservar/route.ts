@@ -86,9 +86,13 @@ export async function POST(req: NextRequest) {
     console.log('[RESERVAR] idViagem:', JSON.stringify(idViagem))
     console.log('[RESERVAR] classesIda:', JSON.stringify(classesIda))
 
-    // 2. Reservar
+    // 2. Reservar — estrutura exata da homologação WOOBA
+    const primAdulto = passageiros.find((p: any) => (p.tipo || 'ADT') === 'ADT') || passageiros[0]
+    const telContato = primAdulto.telefone ? primAdulto.telefone.replace(/\D/g, '') : ''
+
     const reservaBody = {
-      ...cred, ClienteId: 0,
+      ...cred,
+      ClienteId: 0,
       IdentificacaoDaViagem: idViagem,
       ClassesSelecionadas: classesIda,
       ...(vooVolta ? { ClassesSelecionadasVolta: classesVolta } : {}),
@@ -105,33 +109,23 @@ export async function POST(req: NextRequest) {
       InformacoesComplementaresPassageiro: passageiros.map((p: any) => ({
         Nome:      p.nome.toUpperCase(),
         Sobrenome: p.sobrenome.toUpperCase(),
-        Tipo:      'ADT',
+        Tipo:      p.tipo || 'ADT',
       })),
-      Contatos: passageiros.map((p: any) => {
-        const tel  = p.telefone.replace(/\D/g, '')
-        return {
-          Nome:           `${p.nome} ${p.sobrenome}`.toUpperCase(),
-          Email:          p.email,
-          Telefone:       tel,
-          NumeroDDD:      tel.slice(0, 2) || '11',
-          NumeroTelefone: tel.slice(2) || '999999999',
+      Contatos: [
+        {
+          Nome:           `${primAdulto.nome} ${primAdulto.sobrenome}`.toUpperCase(),
+          Email:          primAdulto.email,
+          NumeroDDD:      telContato.slice(0, 2) || '11',
+          NumeroTelefone: telContato.slice(2) || '999999999',
           NumeroDDI:      '55',
           Tipo:           0,
-        }
-      }),
-      Solicitante:         passageiros[0].nome.toUpperCase(),
+        },
+      ],
+      Solicitante:         primAdulto.nome.toUpperCase(),
       ValidarAnaliseRisco: false,
     }
 
-    console.log('[RESERVAR] campos enviados:', JSON.stringify({
-      Login: reservaBody.Login,
-      ClienteId: reservaBody.ClienteId,
-      ClassesSelecionadas: reservaBody.ClassesSelecionadas,
-      PassageirosCount: reservaBody.Passageiros?.length,
-      ContatosCount: reservaBody.Contatos?.length,
-      Solicitante: reservaBody.Solicitante,
-      Contatos: reservaBody.Contatos,
-    }))
+    console.log('[RESERVAR] Contatos:', JSON.stringify(reservaBody.Contatos))
 
     const reservaRes  = await fetch(`${BASE}/Reservar`, {
       method: 'POST', headers: headers(), body: JSON.stringify(reservaBody),
