@@ -128,16 +128,22 @@ function nomeFamilia(v: Viagem): string {
 function agruparVoos(voos: Viagem[]): GrupoVoo[] {
   const mapa = new Map<string, GrupoVoo>()
   for (const v of voos) {
-    const chave = chaveVoo(v)
-    const grupo = mapa.get(chave)
+    const chave  = chaveVoo(v)
+    const familia = nomeFamilia(v)
+    const preco   = v.Preco?.Total ?? 0
+    const grupo   = mapa.get(chave)
     if (grupo) {
-      // deduplica pelo Id da Viagem (identificador único da WOOBA)
-      if (!grupo.familias.find(f => f.viagem.Id === v.Id)) {
-        grupo.familias.push({ viagem: v, familia: nomeFamilia(v), preco: v.Preco?.Total ?? 0 })
+      // Deduplica por Id OU por (família + preço) para filtrar duplicatas entre sistemas
+      const jaExiste = grupo.familias.find(f =>
+        f.viagem.Id === v.Id ||
+        (f.familia === familia && Math.abs(f.preco - preco) < 0.01)
+      )
+      if (!jaExiste) {
+        grupo.familias.push({ viagem: v, familia, preco })
         grupo.familias.sort((a, b) => a.preco - b.preco)
       }
     } else {
-      mapa.set(chave, { familias: [{ viagem: v, familia: nomeFamilia(v), preco: v.Preco?.Total ?? 0 }] })
+      mapa.set(chave, { familias: [{ viagem: v, familia, preco }] })
     }
   }
   return Array.from(mapa.values())
@@ -392,12 +398,6 @@ function VooCard({
         <span className="text-xs text-gray-400">
           {first?.BagagemInclusa ? '✓ Bagagem inclusa' : 'Sem bagagem despachada'}
         </span>
-        {temFamilias && (
-          <>
-            <span className="text-gray-200">·</span>
-            <span className="text-xs font-medium text-blue-600">{grupo.familias.length} tarifas disponíveis</span>
-          </>
-        )}
         {escalas > 0 && onVerDetalhes && (
           <>
             <span className="text-gray-200">·</span>
