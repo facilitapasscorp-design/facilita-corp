@@ -532,6 +532,26 @@ export default function Busca() {
     setChaveDeSeguranca(null); setCodigoPagamento(2)
   }
 
+  // Busca formas de financiamento com dados do cartão (2ª chamada, sem IniciarEmissao)
+  async function buscarFormasComCartao(numero: string) {
+    if (!localizador) return
+    try {
+      const res = await fetch('/api/iniciar-emissao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ localizador, cartao: { numero } }),
+      })
+      const data = await res.json()
+      if (data.erro) return
+      const formas: { FinanciamentoId: number; Parcelas: number }[] = data.formasFinanciamento ?? []
+      setFormasFinanciamento(formas)
+      if (formas.length > 0) {
+        setFinanciamentoId(formas[0].FinanciamentoId)
+        setParcelas(formas[0].Parcelas)
+      }
+    } catch {}
+  }
+
   const minDataVolta    = diaSeguinte(dataIda)
   const voosExibidos    = fase === 'volta' ? voosVolta : voosIda
   const totalEncontrado = voosExibidos?.length ?? 0
@@ -915,8 +935,17 @@ export default function Busca() {
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-gray-700">Número do cartão</label>
-                    <input type="text" placeholder="0000 0000 0000 0000" value={cartaoNumero}
-                      onChange={e => setCartaoNumero(mascaraCartao(e.target.value))} className={INPUT} />
+                    <input
+                      type="text"
+                      placeholder="0000 0000 0000 0000"
+                      value={cartaoNumero}
+                      onChange={e => {
+                        const val = mascaraCartao(e.target.value)
+                        setCartaoNumero(val)
+                        if (val.replace(/\D/g, '').length === 16) buscarFormasComCartao(val)
+                      }}
+                      className={INPUT}
+                    />
                   </div>
 
                   <div>
