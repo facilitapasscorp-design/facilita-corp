@@ -129,8 +129,6 @@ export async function POST(req: NextRequest) {
       PassageirosCount: reservaBody.Passageiros?.length,
       ContatosCount: reservaBody.Contatos?.length,
       Solicitante: reservaBody.Solicitante,
-      TelefonePassageiro: reservaBody.Passageiros?.[0]?.Telefone,
-      TelefoneContato: reservaBody.Contatos?.[0]?.Telefone,
     }))
 
     const reservaRes  = await fetch(`${BASE}/Reservar`, {
