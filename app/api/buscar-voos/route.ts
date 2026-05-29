@@ -4,8 +4,27 @@ import { gerarAccessCode } from '../../../lib/wooba-auth'
 const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
 
 function toWcfDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T03:00:00.000Z') // meio-dia no BRT (-3h)
+  const date = new Date(dateStr + 'T03:00:00.000Z')
   return `/Date(${date.getTime()}-0300)/`
+}
+
+async function buscarDisponibilidade(
+  url: string,
+  headers: Record<string, string>,
+  params: Record<string, unknown>,
+  comBagagem: boolean,
+): Promise<unknown> {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      ...params,
+      BuscarVoosComBagagem: comBagagem,
+      BuscarVoosSemBagagem: !comBagagem,
+    }),
+  })
+  const data = await res.json()
+  return data
 }
 
 export async function POST(request: NextRequest) {
@@ -28,23 +47,13 @@ export async function POST(request: NextRequest) {
 
     const credenciais = { Login: login, Senha: senha }
 
-    // Passo 1: Recuperar sistemas disponíveis para o trecho
     const urlSistemas = `${BASE_URL}/RecuperarSistemasPesquisa`
-    console.log('[WOOBA] URL RecuperarSistemasPesquisa:', urlSistemas)
     const sistemasRes = await fetch(urlSistemas, {
       method: 'POST',
       headers,
-      body: JSON.stringify({
-        ...credenciais,
-        Origem: origem,
-        Destino: destino,
-        Timeout: 15,
-      }),
+      body: JSON.stringify({ ...credenciais, Origem: origem, Destino: destino, Timeout: 15 }),
     })
-    const sistemasRaw = await sistemasRes.text()
-    console.log('[WOOBA] RecuperarSistemasPesquisa status:', sistemasRes.status)
-    console.log('[WOOBA] RecuperarSistemasPesquisa raw:', sistemasRaw)
-    const sistemasData = JSON.parse(sistemasRaw)
+    const sistemasData = await sistemasRes.json()
 
     if (sistemasData.SessaoExpirada) {
       return NextResponse.json({ erro: 'Sessão expirada' }, { status: 401 })
@@ -56,54 +65,47 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ erro: 'Nenhum sistema disponível para este trecho' }, { status: 404 })
     }
 
-    // Passo 2: Buscar disponibilidade em todos os sistemas em paralelo
     const urlDisponibilidade = `${BASE_URL}/Disponibilidade`
-    console.log('[WOOBA] URL Disponibilidade:', urlDisponibilidade)
-    const disponibilidades = await Promise.all(
-      sistemasData.Sistemas.map(async (s: { Sistema: number }) => {
-        const dispRes = await fetch(urlDisponibilidade, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            ...credenciais,
-            Origem: origem,
-            Destino: destino,
-            DataIda: toWcfDate(dataIda),
-            ...(tipo === 'idavolta' && dataVolta ? { DataVolta: toWcfDate(dataVolta) } : {}),
-            QuantidadeAdultos: adultos,
-            QuantidadeCriancas: criancas,
-            QuantidadeBebes: bebes,
-            QuantidadeDeVoos: 50,
-            Sistema: s.Sistema,
-            ApenasVoosComBagagem: false,
-            ApenasVoosDiretos: false,
-            BuscarVoosComBagagem: true,
-            BuscarVoosSemBagagem: true,
-            Flex: false,
-            Recomendacao: false,
-          }),
-        })
-        const dispRaw = await dispRes.text()
-        console.log(`[WOOBA] Disponibilidade sistema ${s.Sistema} status:`, dispRes.status)
-        console.log(`[WOOBA] Disponibilidade sistema ${s.Sistema} raw:`, dispRaw.slice(0, 500))
-        return JSON.parse(dispRaw)
-      })
+
+    // Para cada sistema, faz DUAS chamadas em paralelo:
+    // uma buscando só sem bagagem, outra só com bagagem.
+    // Isso garante que ambas as famílias tarifárias cheguem,
+    // já que o limite de 50 resultados por chamada priorizaria
+    // sempre a opção mais barata (sem bagagem) se buscássemos tudo junto.
+    const baseParams = (s: { Sistema: number }) => ({
+      ...credenciais,
+      Origem: origem,
+      Destino: destino,
+      DataIda: toWcfDate(dataIda),
+      ...(tipo === 'idavolta' && dataVolta ? { DataVolta: toWcfDate(dataVolta) } : {}),
+      QuantidadeAdultos: adultos,
+      QuantidadeCriancas: criancas,
+      QuantidadeBebes: bebes,
+      QuantidadeDeVoos: 50,
+      Sistema: s.Sistema,
+      ApenasVoosComBagagem: false,
+      ApenasVoosDiretos: false,
+      Flex: false,
+      Recomendacao: false,
+    })
+
+    const todasRespostas = await Promise.all(
+      sistemasData.Sistemas.flatMap((s: { Sistema: number }) => [
+        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), false),
+        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), true),
+      ])
     )
 
-    // Combina voos de todos os sistemas, ignorando os que retornaram erro
-    const voosIda = disponibilidades.flatMap(d => {
+    const voosIda = (todasRespostas as { Exception?: unknown; SessaoExpirada?: boolean; ViagensTrecho1?: unknown[] }[]).flatMap(d => {
       if (d.Exception || d.SessaoExpirada) return []
       return d.ViagensTrecho1 ?? []
     })
-    const voosVolta = disponibilidades.flatMap(d => {
+    const voosVolta = (todasRespostas as { Exception?: unknown; SessaoExpirada?: boolean; ViagensTrecho2?: unknown[] }[]).flatMap(d => {
       if (d.Exception || d.SessaoExpirada) return []
       return d.ViagensTrecho2 ?? []
     })
 
-    // Log estrutura completa da primeira Viagem para diagnóstico
-    if (voosIda.length > 0) {
-      console.log('[BUSCAR-VOOS] Primeira Viagem (estrutura completa):', JSON.stringify(voosIda[0], null, 2))
-    }
+    console.log(`[BUSCAR-VOOS] Total voosIda: ${voosIda.length} | voosVolta: ${voosVolta.length}`)
 
     return NextResponse.json({ sistemas: sistemasData.Sistemas, voos: voosIda, voosVolta })
 
