@@ -10,13 +10,12 @@ function toWcfDate(dateStr: string): string {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Viagem = Record<string, any>
-type Resposta = { data: Record<string, unknown>; comBagagem: boolean; sistema: number }
+type Resposta = { data: Record<string, unknown>; sistema: number }
 
 async function buscarDisponibilidade(
   url: string,
   headers: Record<string, string>,
   params: Record<string, unknown>,
-  comBagagem: boolean,
   sistema: number,
 ): Promise<Resposta> {
   const res = await fetch(url, {
@@ -24,11 +23,11 @@ async function buscarDisponibilidade(
     headers,
     body: JSON.stringify({
       ...params,
-      BuscarVoosComBagagem: comBagagem,
-      BuscarVoosSemBagagem: !comBagagem,
+      BuscarVoosComBagagem: true,
+      BuscarVoosSemBagagem: true,
     }),
   })
-  return { data: await res.json(), comBagagem, sistema }
+  return { data: await res.json(), sistema }
 }
 
 function normalizarCia(iata: string): string {
@@ -40,13 +39,11 @@ function chaveVoo(v: Viagem): string {
   const first = voos[0] ?? {}
   const last  = voos[voos.length - 1] ?? first
   const cia   = normalizarCia(v.CiaMandatoria?.CodigoIata ?? '')
-  // Inclui TODOS os números de voo do itinerário na chave
   const numeros = voos.map(leg => leg.Numero || leg.NumeroDoVoo || '').join('+')
   const hora    = first.HoraSaida ?? 0
-  // Inclui todos os aeroportos (origem, escalas, destino final)
   const aeroportos = [
     first.Origem?.CodigoIata ?? '',
-    ...voos.slice(1).map(leg => leg.Origem?.CodigoIata ?? ''),
+    ...voos.slice(1).map((leg: Viagem) => leg.Origem?.CodigoIata ?? ''),
     last.Destino?.CodigoIata ?? '',
   ].join('-')
   return `${cia}-${numeros}-${hora}-${aeroportos}`
@@ -86,10 +83,10 @@ function criarTarifa(v: Viagem): Tarifa {
     familiaCodigo:         typeof leg0.FamiliaCodigo === 'string' ? leg0.FamiliaCodigo : (typeof v.FamiliaCodigo === 'string' ? v.FamiliaCodigo : ''),
     preco:                 v.Preco?.Total              ?? 0,
     bagagemInclusa,
-    bagagemPeso:           typeof leg0.BagagemPeso === 'number'       ? leg0.BagagemPeso       : null,
-    bagagemQuantidade:     typeof leg0.BagagemQuantidade === 'number'  ? leg0.BagagemQuantidade : null,
-    baseTarifaria:         typeof leg0.BaseTarifaria === 'string'      ? leg0.BaseTarifaria     : '',
-    classe:                typeof leg0.Classe === 'string'             ? leg0.Classe            : (typeof leg0.Cabine === 'string' ? leg0.Cabine : ''),
+    bagagemPeso:           typeof leg0.BagagemPeso === 'number'      ? leg0.BagagemPeso       : null,
+    bagagemQuantidade:     typeof leg0.BagagemQuantidade === 'number' ? leg0.BagagemQuantidade : null,
+    baseTarifaria:         typeof leg0.BaseTarifaria === 'string'     ? leg0.BaseTarifaria     : '',
+    classe:                typeof leg0.Classe === 'string'            ? leg0.Classe            : (typeof leg0.Cabine === 'string' ? leg0.Cabine : ''),
     identificacaoDaViagem: v.IdentificacaoDaViagem    ?? '',
     viagem:                v,
   }
@@ -104,7 +101,6 @@ function agruparViagens(viagens: Viagem[]) {
 
     const entry = mapa.get(chave)
     if (entry) {
-      // Só agrupa se for realmente a mesma tarifa (mesmo identificador ou mesma família+bagagem)
       const jaExiste = entry.tarifas.some(t => {
         if (v.IdentificacaoDaViagem && t.identificacaoDaViagem === v.IdentificacaoDaViagem) return true
         if (v.Id && t.viagem.Id === v.Id) return true
@@ -146,11 +142,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { origem, destino, dataIda, dataVolta, adultos = 1, criancas = 0, bebes = 0, tipo } = body
 
-    const BASE_URL    = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
-    const login       = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
-    const senha       = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
-    const token       = process.env.WOOBA_TOKEN!
-    const accessCode  = gerarAccessCode()
+    const BASE_URL   = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
+    const login      = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
+    const senha      = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
+    const token      = process.env.WOOBA_TOKEN!
+    const accessCode = gerarAccessCode()
 
     const headers = {
       'Content-Type':          'application/json',
@@ -197,18 +193,17 @@ export async function POST(request: NextRequest) {
       Recomendacao:         false,
     })
 
+    // Uma chamada por sistema com ambas as flags ativas
     const todasRespostas = await Promise.all(
-      sistemasData.Sistemas.flatMap((s: { Sistema: number }) => [
-        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), false, s.Sistema),
-        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), true,  s.Sistema),
-      ])
+      sistemasData.Sistemas.map((s: { Sistema: number }) =>
+        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), s.Sistema)
+      )
     )
 
     function extrairViagens(campo: 'ViagensTrecho1' | 'ViagensTrecho2'): Viagem[] {
-      return todasRespostas.flatMap(({ data: d, comBagagem }) => {
+      return todasRespostas.flatMap(({ data: d }) => {
         if (d.Exception || d.SessaoExpirada) return []
-        const viagens = (d[campo] as Viagem[] | null) ?? []
-        return viagens.map(v => ({ ...v, BagagemInclusa: v.BagagemInclusa ?? comBagagem }))
+        return (d[campo] as Viagem[] | null) ?? []
       })
     }
 
