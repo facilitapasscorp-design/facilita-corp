@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      console.log('[FIN-ENVIO]', JSON.stringify({ ...formasBody, CartaoDeCredito: formasBody.CartaoDeCredito ? { ...formasBody.CartaoDeCredito, Numero: 'MASK' + String(formasBody.CartaoDeCredito.Numero).slice(-4) } : undefined }))
       const formasData = await fetch(`${BASE}/RecuperarFormasDeFinanciamento`, {
         method: 'POST', headers: headers(),
         body: JSON.stringify(formasBody),
