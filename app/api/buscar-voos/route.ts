@@ -102,11 +102,11 @@ function agruparViagens(viagens: Viagem[]) {
 
     const entry = mapa.get(chave)
     if (entry) {
-      const jaExiste = entry.tarifas.some(t => {
-        if (v.IdentificacaoDaViagem && t.identificacaoDaViagem === v.IdentificacaoDaViagem) return true
-        if (v.Id && t.viagem.Id === v.Id) return true
-        return t.familia === tarifa.familia && t.bagagemInclusa === tarifa.bagagemInclusa && t.preco === tarifa.preco
-      })
+      const jaExiste = entry.tarifas.some(t =>
+        t.familia === tarifa.familia &&
+        t.bagagemInclusa === tarifa.bagagemInclusa &&
+        t.preco === tarifa.preco
+      )
       if (!jaExiste) {
         entry.tarifas.push(tarifa)
         entry.tarifas.sort((a, b) => a.preco - b.preco)
@@ -202,21 +202,6 @@ export async function POST(request: NextRequest) {
       ])
     )
 
-    // ── DIAGNÓSTICO: chaves de Azul (AD) e GOL (G3) para entender o agrupamento ──
-    for (const { data: d, comBagagem } of todasRespostas) {
-      if (d.Exception || d.SessaoExpirada) continue
-      const viagens = (d.ViagensTrecho1 as Viagem[] | null) ?? []
-      for (const v of viagens) {
-        const cia = normalizarCia(v.CiaMandatoria?.CodigoIata ?? '?')
-        if (cia !== 'AD' && cia !== 'G3') continue
-        const leg0 = (v.Voos ?? [])[0] ?? {}
-        console.log('[DIAG-CHAVE]', cia, comBagagem ? 'COM' : 'SEM',
-          '| chave=' + chaveVoo(v),
-          '| fam=' + nomeFamilia(v),
-          '| bagInc=' + (leg0.BagagemInclusa ?? v.BagagemInclusa),
-          '| preco=' + (v.Preco?.Total ?? 0))
-      }
-    }
 
     function extrairViagens(campo: 'ViagensTrecho1' | 'ViagensTrecho2'): Viagem[] {
       return todasRespostas.flatMap(({ data: d, comBagagem }) => {
