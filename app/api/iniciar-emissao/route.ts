@@ -91,7 +91,9 @@ export async function POST(req: NextRequest) {
       if (!formasData.Exception) {
         formasFinanciamento = formasData.Financiamentos ?? []
       }
-    } catch {}
+    } catch (e) {
+      console.log('[FINANCIAMENTO-ERRO]', e instanceof Error ? e.message : String(e))
+    }
 
     return NextResponse.json({ chaveDeSeguranca, codigoPagamento, formasFinanciamento })
   } catch (err: unknown) {
