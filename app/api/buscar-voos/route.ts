@@ -39,16 +39,18 @@ function chaveVoo(v: Viagem): string {
   const voos: Viagem[] = v.Voos ?? []
   const first = voos[0] ?? {}
   const cia = normalizarCia(v.CiaMandatoria?.CodigoIata ?? '')
-  const num = first.Numero || first.NumeroDoVoo
-  if (num) return `${cia}-${num}`
-  return `${cia}-${v.Origem?.CodigoIata}-${v.Destino?.CodigoIata}-${first.HoraSaida ?? 0}`
+  const num = first.Numero || first.NumeroDoVoo || ''
+  const hora = first.HoraSaida ?? 0
+  return `${cia}-${num}-${hora}`
 }
 
 function nomeFamilia(v: Viagem): string {
-  if (v.Familia) return v.Familia as string
+  if (v.Familia)       return v.Familia as string
   if (v.FamiliaCodigo) return v.FamiliaCodigo as string
   const leg = (v.Voos ?? [])[0] ?? {}
-  return leg.Familia || leg.FamiliaCodigo || ''
+  if (leg.Familia)       return leg.Familia as string
+  if (leg.FamiliaCodigo) return leg.FamiliaCodigo as string
+  return leg.BaseTarifaria ?? ''
 }
 
 interface Tarifa {
@@ -66,16 +68,21 @@ interface Tarifa {
 
 function criarTarifa(v: Viagem): Tarifa {
   const leg0: Viagem = (v.Voos ?? [])[0] ?? {}
+
+  const bagagemInclusa =
+    leg0.BagagemInclusa != null ? leg0.BagagemInclusa :
+    v.BagagemInclusa    != null ? v.BagagemInclusa    : false
+
   return {
     familia:               nomeFamilia(v),
-    familiaCodigo:         leg0.FamiliaCodigo         ?? '',
-    preco:                 v.Preco?.Total              ?? 0,
-    bagagemInclusa:        v.BagagemInclusa            ?? leg0.BagagemInclusa ?? false,
-    bagagemPeso:           leg0.BagagemPeso            ?? null,
-    bagagemQuantidade:     leg0.BagagemQuantidade      ?? null,
-    baseTarifaria:         leg0.BaseTarifaria          ?? '',
-    classe:                leg0.Classe                 ?? '',
-    identificacaoDaViagem: v.IdentificacaoDaViagem    ?? '',
+    familiaCodigo:         leg0.FamiliaCodigo      ?? v.FamiliaCodigo ?? '',
+    preco:                 v.Preco?.Total           ?? 0,
+    bagagemInclusa,
+    bagagemPeso:           leg0.BagagemPeso         ?? null,
+    bagagemQuantidade:     leg0.BagagemQuantidade   ?? null,
+    baseTarifaria:         leg0.BaseTarifaria       ?? '',
+    classe:                leg0.Classe              ?? leg0.Cabine ?? '',
+    identificacaoDaViagem: v.IdentificacaoDaViagem  ?? '',
     viagem:                v,
   }
 }
@@ -131,11 +138,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { origem, destino, dataIda, dataVolta, adultos = 1, criancas = 0, bebes = 0, tipo } = body
 
-    const BASE_URL    = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
-    const login       = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
-    const senha       = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
-    const token       = process.env.WOOBA_TOKEN!
-    const accessCode  = gerarAccessCode()
+    const BASE_URL   = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
+    const login      = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
+    const senha      = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
+    const token      = process.env.WOOBA_TOKEN!
+    const accessCode = gerarAccessCode()
 
     const headers = {
       'Content-Type':          'application/json',
@@ -182,24 +189,12 @@ export async function POST(request: NextRequest) {
       Recomendacao:         false,
     })
 
-    // Duas chamadas por sistema: sem e com bagagem
     const todasRespostas = await Promise.all(
       sistemasData.Sistemas.flatMap((s: { Sistema: number }) => [
         buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), false, s.Sistema),
         buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), true,  s.Sistema),
       ])
     )
-
-    for (const { data: d, comBagagem, sistema } of todasRespostas) {
-      const viagens: Viagem[] = (!d.Exception && !d.SessaoExpirada) ? ((d.ViagensTrecho1 as Viagem[]) ?? []) : []
-      const v0   = viagens[0]
-      const voo0 = v0?.Voos?.[0] ?? {}
-      console.log(
-        `[DIAG] s=${sistema} com=${comBagagem} count=${viagens.length} err=${!!d.Exception}` +
-        (v0 ? ` | BagInclusa=v.${v0.BagagemInclusa}/voo.${voo0.BagagemInclusa}` : '') +
-        (v0 ? ` | Familia=v.${v0.Familia}/voo.${voo0.Familia} FamiliaCodigo=${voo0.FamiliaCodigo}` : '')
-      )
-    }
 
     function extrairViagens(campo: 'ViagensTrecho1' | 'ViagensTrecho2'): Viagem[] {
       return todasRespostas.flatMap(({ data: d, comBagagem }) => {

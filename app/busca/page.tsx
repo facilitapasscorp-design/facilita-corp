@@ -378,17 +378,17 @@ function VooCard({
         )}
       </div>
 
-      {/* Colunas de tarifas */}
+      {/* Colunas de tarifas — dados reais da API */}
       <div className="flex overflow-x-auto border-t border-gray-100 divide-x divide-gray-100">
         {voo.tarifas.map((tarifa, i) => {
-          const nome         = tarifa.familia || (tarifa.bagagemInclusa ? 'Com bagagem' : 'Sem bagagem')
+          const nomeFam      = tarifa.familia || tarifa.familiaCodigo || tarifa.baseTarifaria || '—'
           const isMenorPreco = i === 0
 
           return (
             <button
-              key={i}
+              key={tarifa.identificacaoDaViagem || i}
               onClick={() => onSelecionar(tarifa.viagem)}
-              className={`flex-1 min-w-[130px] sm:min-w-[150px] flex flex-col items-center gap-2 px-3 py-4 text-center transition-colors ${
+              className={`flex-1 min-w-[130px] sm:min-w-[155px] flex flex-col items-center gap-1.5 px-3 py-4 text-center transition-colors ${
                 isMenorPreco ? 'bg-blue-50 hover:bg-blue-100' : 'bg-white hover:bg-gray-50'
               }`}
             >
@@ -400,20 +400,29 @@ function VooCard({
                 <span className="h-[18px]" />
               )}
 
+              {/* Nome real da família tarifária */}
               <p className={`font-bold text-xs sm:text-sm uppercase tracking-wider leading-tight ${
                 isMenorPreco ? 'text-blue-800' : 'text-gray-600'
               }`}>
-                {nome}
+                {nomeFam}
               </p>
 
-              <p className={`text-xl sm:text-2xl font-bold leading-none ${
+              {/* Classe e base tarifária reais */}
+              {(tarifa.classe || tarifa.baseTarifaria) && (
+                <p className="text-[10px] text-gray-400 leading-none">
+                  {[tarifa.classe, tarifa.baseTarifaria].filter(Boolean).join(' · ')}
+                </p>
+              )}
+
+              {/* Preço real */}
+              <p className={`text-xl sm:text-2xl font-bold leading-none mt-0.5 ${
                 isMenorPreco ? 'text-blue-900' : 'text-gray-900'
               }`}>
                 {formatPreco(tarifa.preco)}
               </p>
 
-              {/* Ícone de bagagem */}
-              <div className="flex flex-col items-center gap-0.5">
+              {/* Bagagem real */}
+              <div className="flex flex-col items-center gap-0.5 mt-1">
                 {tarifa.bagagemInclusa ? (
                   <>
                     <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
@@ -448,7 +457,7 @@ function VooCard({
                 )}
               </div>
 
-              <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${
+              <span className={`mt-1 text-xs font-semibold px-3 py-1.5 rounded-lg ${
                 isMenorPreco ? 'text-white' : 'bg-gray-100 text-gray-600'
               }`} style={isMenorPreco ? { backgroundColor: '#1a2744' } : {}}>
                 {labelBotao}
