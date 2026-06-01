@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({ ...cred, ClienteId: 0, Localizador: localizador }),
       }).then(r => r.json())
 
-      console.log('[INICIAR-EMISSAO] IniciarEmissao response:', JSON.stringify(inicioData, null, 2))
+      console.log('[INICIAR-EMISSAO-INICIO]', JSON.stringify(inicioData))
 
       if (inicioData.Exception) {
         return NextResponse.json({ erro: inicioData.Exception.Message }, { status: 400 })
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify(formasBody),
       }).then(r => r.json())
 
-      console.log('[INICIAR-EMISSAO] RecuperarFormasDeFinanciamento response:', JSON.stringify(formasData, null, 2))
+      console.log('[FINANCIAMENTO]', cartao?.numero ? 'COM-CARTAO' : 'SEM-CARTAO', JSON.stringify(formasData))
 
       // Campo correto na resposta da WOOBA é "Financiamentos", não "FormasDeFinanciamento"
       if (!formasData.Exception) {
