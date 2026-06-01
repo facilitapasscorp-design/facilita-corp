@@ -92,6 +92,11 @@ export default function Painel() {
   const [bilheteEmitido,    setBilheteEmitido]    = useState<{ numero: string; passageiro: string } | null>(null)
 
   useEffect(() => {
+    // Trigger server-side cancellation of expired reservas on page load
+    fetch('/api/cancelar-expiradas').catch(() => {})
+  }, [])
+
+  useEffect(() => {
     const supabase = createClient()
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) { router.replace('/'); return }
@@ -253,14 +258,24 @@ export default function Painel() {
     setCancelarReserva(null); setErroCancelamento(''); setSucessoCancelamento(false)
   }
 
-  const reservasFiltradas = filtroStatus === 'todas'
-    ? reservas
-    : reservas.filter(r => r.status === filtroStatus)
+  function statusExibido(r: Reserva): Reserva['status'] {
+    if (r.status === 'Ativa') {
+      const inicioDia = new Date()
+      inicioDia.setHours(0, 0, 0, 0)
+      if (new Date(r.created_at) < inicioDia) return 'Expirada'
+    }
+    return r.status
+  }
+
+  const reservasFiltradas = reservas.filter(r => {
+    const s = statusExibido(r)
+    return filtroStatus === 'todas' || s === filtroStatus
+  })
 
   const contagemStatus = {
-    Ativa:     reservas.filter(r => r.status === 'Ativa').length,
-    Emitida:   reservas.filter(r => r.status === 'Emitida').length,
-    Cancelada: reservas.filter(r => r.status === 'Cancelada').length,
+    Ativa:     reservas.filter(r => statusExibido(r) === 'Ativa').length,
+    Emitida:   reservas.filter(r => statusExibido(r) === 'Emitida').length,
+    Cancelada: reservas.filter(r => statusExibido(r) === 'Cancelada').length,
   }
 
   return (
@@ -364,7 +379,8 @@ export default function Painel() {
           ) : (
             <div className="p-4 sm:p-6 space-y-4">
               {reservasFiltradas.map(r => {
-                const st = STATUS[r.status] ?? STATUS.Expirada
+                const exibido = statusExibido(r)
+                const st = STATUS[exibido] ?? STATUS.Expirada
                 return (
                   <div
                     key={r.id}
@@ -410,7 +426,7 @@ export default function Painel() {
                       )}
                     </div>
 
-                    {r.status === 'Ativa' && (
+                    {exibido === 'Ativa' && (
                       <div className="flex items-center gap-3 flex-wrap">
                         <button
                           onClick={() => abrirModal(r)}
@@ -426,12 +442,12 @@ export default function Painel() {
                           Cancelar
                         </button>
                         <span className="text-xs font-medium text-amber-600">
-                          ⚠️ Expira às 23:00 de hoje
+                          ⚠️ Expira às 23:59 de hoje
                         </span>
                       </div>
                     )}
 
-                    {r.status === 'Emitida' && (
+                    {exibido === 'Emitida' && (
                       <button className="px-5 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
                         Ver bilhete
                       </button>

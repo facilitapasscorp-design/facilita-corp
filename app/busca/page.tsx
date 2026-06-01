@@ -153,14 +153,13 @@ function agruparVoos(voos: Viagem[]): GrupoVoo[] {
     const grupo   = mapa.get(chave)
     if (grupo) {
       const jaExiste = grupo.familias.find(f => {
-        if (f.viagem.Id === v.Id) return true
-        const fBt     = baseTarifaria(f.viagem)
+        // IdentificacaoDaViagem é o identificador único por tarifa na WOOBA
+        if (v.IdentificacaoDaViagem && f.viagem.IdentificacaoDaViagem === v.IdentificacaoDaViagem) return true
+        // Id como fallback — apenas quando não-zero (Id=0 é valor padrão em vários sistemas)
+        if (v.Id && f.viagem.Id === v.Id) return true
+        const fBt      = baseTarifaria(f.viagem)
         const fBagagem = bagagemViagem(f.viagem)
-        // Chave composta: BaseTarifaria + BagagemInclusa
-        // Mesmo código tarifário + mesma bagagem = duplicata entre sistemas
-        // Mesmo código + bagagem diferente = variante legítima (sem vs com bagagem)
         if (bt && fBt) return bt === fBt && bagagem === fBagagem
-        // Sem BaseTarifaria: mesma família + mesma bagagem = duplicata
         return f.familia === familia && fBagagem === bagagem
       })
       if (!jaExiste) {
@@ -228,7 +227,14 @@ function AeroportoInput({
   const [focusIdx, setFocusIdx] = useState(-1)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { setQuery(value) }, [value])
+  useEffect(() => {
+    if (!value) { setQuery(''); return }
+    if (value.length === 3) {
+      const exact = buscarAeroportos(value).find(a => a.iata === value)
+      if (exact) { setQuery(`${exact.iata} - ${exact.nome}`); return }
+    }
+    setQuery(value)
+  }, [value])
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -247,19 +253,22 @@ function AeroportoInput({
   }
 
   function handleChange(v: string) {
-    const upper = v.toUpperCase()
-    setQuery(upper)
+    setQuery(v)
     abrir(v)
     setFocusIdx(-1)
+    const upper = v.trim().toUpperCase()
     if (upper.length === 3) {
-      const exact = buscarAeroportos(v).find(a => a.iata === upper)
+      const exact = buscarAeroportos(upper).find(a => a.iata === upper)
       if (exact) { selecionar(exact); return }
     }
-    onChange(upper)
+    onChange(upper.slice(0, 3))
   }
 
   function selecionar(a: Aeroporto) {
-    setQuery(a.iata); onChange(a.iata); setAberto(false); setSugestoes([])
+    setQuery(`${a.iata} - ${a.nome}`)
+    onChange(a.iata)
+    setAberto(false)
+    setSugestoes([])
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -337,28 +346,23 @@ function CardSkeleton() {
 }
 
 function VooCard({
-  grupo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes, onEscolherFamilia,
+  grupo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes,
 }: {
   grupo: GrupoVoo
   onSelecionar: (v: Viagem) => void
   labelBotao?: string
   onVerDetalhes?: (v: Viagem) => void
-  onEscolherFamilia?: (g: GrupoVoo) => void
 }) {
-  const cheapest  = grupo.familias[0]
-  const viagem    = cheapest.viagem
-  const legs      = getLegs(viagem)
-  const first     = legs[0]
-  const last      = legs[legs.length - 1]
-  const iata      = viagem.CiaMandatoria?.CodigoIata ?? ''
-  const escalas   = viagem.NumeroParadas
+  const [selectedIdx, setSelectedIdx] = useState(0)
+  const idx      = Math.min(selectedIdx, grupo.familias.length - 1)
+  const selected = grupo.familias[idx]
+  const viagem   = selected.viagem
+  const legs     = getLegs(viagem)
+  const first    = legs[0]
+  const last     = legs[legs.length - 1]
+  const iata     = viagem.CiaMandatoria?.CodigoIata ?? ''
+  const escalas  = viagem.NumeroParadas
   const escalasLabel = escalas === 0 ? 'Direto' : escalas === 1 ? '1 escala' : `${escalas} escalas`
-  const temFamilias  = grupo.familias.length > 1
-
-  function handleSelecionar() {
-    if (temFamilias && onEscolherFamilia) onEscolherFamilia(grupo)
-    else onSelecionar(viagem)
-  }
 
   return (
     <div className="bg-white rounded-2xl px-4 sm:px-6 py-4 sm:py-5 hover:shadow-md transition-shadow">
@@ -401,13 +405,8 @@ function VooCard({
         </div>
 
         <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 sm:ml-4 shrink-0">
-          <div className="text-right">
-            <p className="text-xs text-gray-400">
-              {temFamilias ? `a partir de` : ''}
-            </p>
-            <p className="text-xl font-bold text-gray-900">{formatPreco(cheapest.preco)}</p>
-          </div>
-          <button onClick={handleSelecionar}
+          <p className="text-xl font-bold text-gray-900">{formatPreco(selected.preco)}</p>
+          <button onClick={() => onSelecionar(selected.viagem)}
             className="px-4 sm:px-5 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-80 transition-opacity"
             style={{ backgroundColor: '#1a2744' }}>
             {labelBotao}
@@ -415,13 +414,39 @@ function VooCard({
         </div>
       </div>
 
-      <div className="mt-3 flex items-center gap-3 border-t border-gray-50 pt-3">
+      {/* Pills de família tarifária */}
+      {grupo.familias.length > 1 && (
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          {grupo.familias.map((f, i) => {
+            const nome   = f.familia || (bagagemViagem(f.viagem) ? 'Com bagagem' : 'Sem bagagem')
+            const comBag = bagagemViagem(f.viagem)
+            const ativo  = i === idx
+            return (
+              <button key={i} onClick={() => setSelectedIdx(i)}
+                className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  ativo ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                }`}
+                style={ativo ? { backgroundColor: '#1a2744' } : {}}>
+                <span>{nome}</span>
+                <span className={ativo ? 'text-blue-200' : 'text-gray-400'}>{formatPreco(f.preco)}</span>
+                <span className={comBag
+                  ? (ativo ? 'text-green-300' : 'text-green-600')
+                  : (ativo ? 'text-red-300'   : 'text-red-400')}>
+                  {comBag ? '✓' : '✗'}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      <div className={`flex items-center gap-3 border-t border-gray-50 pt-3 ${grupo.familias.length > 1 ? 'mt-2' : 'mt-3'}`}>
         <span className="text-xs text-gray-400">
           {first?.Numero ? `Voo ${nomeCompanhia(iata)} ${first.Numero}` : nomeCompanhia(iata)}
         </span>
         <span className="text-gray-200">·</span>
         <span className="text-xs text-gray-400">
-          {bagagemViagem(viagem) ? '✓ Bagagem inclusa' : 'Sem bagagem despachada'}
+          {bagagemViagem(selected.viagem) ? '✓ Bagagem inclusa' : 'Sem bagagem despachada'}
         </span>
         {escalas > 0 && onVerDetalhes && (
           <>
@@ -432,147 +457,6 @@ function VooCard({
             </button>
           </>
         )}
-      </div>
-    </div>
-  )
-}
-
-function FamiliaModal({ grupo, onSelecionar, onFechar, labelBotao }: {
-  grupo: GrupoVoo
-  onSelecionar: (v: Viagem) => void
-  onFechar: () => void
-  labelBotao: string
-}) {
-  const base    = grupo.familias[0].viagem
-  const legs    = getLegs(base)
-  const first   = legs[0]
-  const last    = legs[legs.length - 1]
-  const iata    = base.CiaMandatoria?.CodigoIata ?? ''
-  const escalas = base.NumeroParadas
-
-  function bagagemLabel(viagem: Viagem): string {
-    const inclusa = bagagemViagem(viagem)
-    if (!inclusa) return 'Sem bagagem despachada'
-    const leg  = getLegs(viagem)[0]
-    const qtd  = leg?.BagagemQuantidade
-    const peso = leg?.BagagemPeso
-    const pesoStr = peso ? `${peso}kg` : null
-    if (qtd && pesoStr) return `${qtd} mala${qtd > 1 ? 's' : ''} despachada${qtd > 1 ? 's' : ''} · ${pesoStr} por peça`
-    if (qtd) return `${qtd} mala${qtd > 1 ? 's' : ''} despachada${qtd > 1 ? 's' : ''}`
-    if (pesoStr) return `Bagagem até ${pesoStr}`
-    return 'Bagagem despachada inclusa'
-  }
-
-  function nomeTarifa(f: { viagem: Viagem; familia: string }, i: number): string {
-    if (f.familia) return f.familia
-    // Fallback: nomear pela bagagem quando a família não vem da API
-    return bagagemViagem(f.viagem) ? 'Com bagagem' : 'Sem bagagem'
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
-      onClick={e => { if (e.target === e.currentTarget) onFechar() }}
-    >
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[92vh] flex flex-col">
-
-        {/* Header do voo */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <AirlineBadge iata={iata} />
-            <div className="min-w-0">
-              <p className="font-semibold text-gray-900 text-sm">
-                {first ? formatHora(first.HoraSaida) : '--'} → {last ? formatHora(last.HoraChegada) : '--'}
-                <span className="font-normal text-gray-400 ml-2">
-                  {base.Origem?.CodigoIata} → {base.Destino?.CodigoIata}
-                </span>
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {formatDuracao(base.TempoDeDuracao)}
-                {' · '}{escalas === 0 ? 'Direto' : `${escalas} escala${escalas > 1 ? 's' : ''}`}
-                {first?.Numero ? ` · Voo ${nomeCompanhia(iata)} ${first.Numero}` : ''}
-              </p>
-            </div>
-          </div>
-          <button onClick={onFechar}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 shrink-0 ml-3">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Título */}
-        <div className="px-5 pt-4 pb-2 shrink-0">
-          <p className="text-sm font-semibold text-gray-800">Escolha a tarifa</p>
-          <p className="text-xs text-gray-400 mt-0.5">Selecione a opção que melhor atende o passageiro</p>
-        </div>
-
-        {/* Cards de tarifas — scroll horizontal no mobile se muitas opções */}
-        <div className="overflow-y-auto flex-1 px-5 pb-5">
-          <div className={`grid gap-3 ${grupo.familias.length === 2 ? 'grid-cols-2' : grupo.familias.length >= 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1'}`}>
-            {grupo.familias.map((f, i) => {
-              const temBagagem = bagagemViagem(f.viagem)
-              const nome       = nomeTarifa(f, i)
-              const isCheapest = i === 0
-
-              const cabine = getLegs(f.viagem)[0]?.Cabine
-              const classe = getLegs(f.viagem)[0]?.Classe
-
-              return (
-                <div key={f.viagem.Id ?? i}
-                  className={`relative flex flex-col rounded-2xl border-2 overflow-hidden transition-all ${
-                    temBagagem ? 'border-blue-200' : 'border-gray-200'
-                  }`}>
-
-                  {/* Badge */}
-                  <div className={`text-xs font-semibold text-center py-1.5 tracking-wide ${
-                    temBagagem ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'
-                  }`}>
-                    {temBagagem ? 'Com bagagem' : 'Sem bagagem'}
-                  </div>
-
-                  <div className="flex flex-col flex-1 p-4 gap-3">
-                    {/* Nome da família */}
-                    <p className="font-bold text-gray-900 text-base uppercase tracking-wide leading-tight">{nome}</p>
-
-                    {/* Cabine e classe */}
-                    {(cabine || classe) && (
-                      <p className="text-xs text-gray-400 -mt-1">
-                        {cabine || ''}
-                        {cabine && classe ? ` · Classe ${classe}` : classe ? `Classe ${classe}` : ''}
-                      </p>
-                    )}
-
-                    {/* Preço */}
-                    <p className="text-2xl font-bold text-gray-900 leading-none">{formatPreco(f.preco)}</p>
-
-                    {/* Atributos */}
-                    <div className="space-y-2 flex-1">
-                      <div className="flex items-start gap-2">
-                        <span className={`mt-0.5 text-sm font-bold shrink-0 ${temBagagem ? 'text-green-500' : 'text-red-400'}`}>
-                          {temBagagem ? '✓' : '✗'}
-                        </span>
-                        <span className={`text-xs leading-relaxed ${temBagagem ? 'text-gray-700' : 'text-gray-400'}`}>
-                          {bagagemLabel(f.viagem)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Botão */}
-                    <button
-                      onClick={() => { onSelecionar(f.viagem); onFechar() }}
-                      className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-80 mt-1"
-                      style={{ backgroundColor: temBagagem ? '#1d4ed8' : '#1a2744' }}>
-                      {labelBotao}
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
       </div>
     </div>
   )
@@ -802,7 +686,6 @@ export default function Busca() {
   const [vooVoltaSelecionado, setVooVoltaSelecionado] = useState<Viagem | null>(null)
   const [ordenacao, setOrdenacao]                     = useState<Ordenacao>('preco')
   const [vooDetalhes, setVooDetalhes]                 = useState<Viagem | null>(null)
-  const [familiaModal, setFamiliaModal]               = useState<GrupoVoo | null>(null)
 
   // Etapa
   const [etapa, setEtapa] = useState<Etapa>('selecao')
@@ -1256,7 +1139,6 @@ export default function Busca() {
                     {gruposOrdenados.map((grupo, idx) => (
                       <VooCard key={grupo.familias[0].viagem.Id || idx} grupo={grupo}
                         onSelecionar={fase === 'volta' ? selecionarVooVolta : selecionarVooIda}
-                        onEscolherFamilia={setFamiliaModal}
                         onVerDetalhes={setVooDetalhes}
                         labelBotao={fase === 'volta' ? 'Selecionar volta'
                           : tipo === 'idavolta' ? 'Selecionar ida' : 'Selecionar'} />
@@ -1518,15 +1400,6 @@ export default function Busca() {
         <VooDetalhesModal viagem={vooDetalhes} onFechar={() => setVooDetalhes(null)} />
       )}
 
-      {/* Modal de seleção de tarifa */}
-      {familiaModal && (
-        <FamiliaModal
-          grupo={familiaModal}
-          onSelecionar={fase === 'volta' ? selecionarVooVolta : selecionarVooIda}
-          onFechar={() => setFamiliaModal(null)}
-          labelBotao={fase === 'volta' ? 'Selecionar volta' : tipo === 'idavolta' ? 'Selecionar ida' : 'Selecionar'}
-        />
-      )}
     </div>
   )
 }
