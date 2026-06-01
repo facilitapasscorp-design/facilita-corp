@@ -101,6 +101,7 @@ export async function POST(request: NextRequest) {
     type Resposta = { data: Record<string, unknown>; comBagagem: boolean; sistema: number }
 
     // Log diagnóstico por sistema — mostra o que cada chamada retornou
+    let primeiraViagemLogada = false
     for (const { data: d, comBagagem, sistema } of todasRespostas) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const viagens: Viagem[] = (!d.Exception && !d.SessaoExpirada) ? ((d.ViagensTrecho1 as Viagem[]) ?? []) : []
@@ -114,6 +115,13 @@ export async function POST(request: NextRequest) {
         (v0 ? ` | v.BagInclusa=${v0.BagagemInclusa} voo.BagInclusa=${voo0.BagagemInclusa}` : '') +
         (v0 ? ` | v.Familia=${v0.Familia} voo.Familia=${voo0.Familia} voo.FamiliaCodigo=${voo0.FamiliaCodigo}` : '')
       )
+
+      // [TEMP] Log completo do primeiro voo encontrado — para mapear todos os campos disponíveis
+      if (v0 && !primeiraViagemLogada) {
+        primeiraViagemLogada = true
+        console.log(`[TEMP-FULL-VIAGEM] s=${sistema} com=${comBagagem}`)
+        console.log('[TEMP-FULL-VIAGEM] ViagensTrecho1[0]:', JSON.stringify(v0, null, 2))
+      }
     }
 
     function extrairViagens(respostas: Resposta[], campo: 'ViagensTrecho1' | 'ViagensTrecho2'): Viagem[] {
