@@ -36,10 +36,10 @@ export async function POST(req: NextRequest) {
 
     let chaveDeSeguranca: string | null = null
     let codigoPagamento = 2
+    let totalParaPagamento = 0
 
-    // 1. IniciarEmissao — apenas na primeira chamada (sem cartão)
-    //    Quando cartão é fornecido, o frontend já tem a chaveDeSeguranca da 1ª chamada
-    if (!cartao?.numero) {
+    // 1. IniciarEmissao — roda sempre (precisamos do valor total para parcelar)
+    {
       const inicioData = await fetch(`${BASE}/IniciarEmissao`, {
         method: 'POST', headers: headers(),
         body: JSON.stringify({ ...cred, ClienteId: 0, Localizador: localizador }),
@@ -55,16 +55,22 @@ export async function POST(req: NextRequest) {
       const opcoesPagamento: any[] = inicioData.ConfiguracoesDeEmissao?.OpcoesDePagamento || []
       const opcao = opcoesPagamento.find((o: any) => o.CartaoDeCredito === true) || opcoesPagamento[0]
       codigoPagamento = opcao?.CodigoFormaDeRecebimento ?? 2
+      totalParaPagamento = inicioData.Sumario?.TotalParaPagamento ?? 0
     }
 
     // 2. RecuperarFormasDeFinanciamento — com dados do cartão quando disponíveis
     let formasFinanciamento: any[] = []
     try {
-      const formasBody: any = { ...cred, ClienteId: 0, Localizador: localizador }
+      const formasBody: any = {
+        ...cred,
+        ClienteId: 0,
+        Localizador: localizador,
+        ...(totalParaPagamento > 0 ? { Valor: totalParaPagamento } : {}),
+      }
       if (cartao?.numero) {
         const num = cartao.numero.replace(/\D/g, '')
         formasBody.CartaoDeCredito = {
-          Bandeira: detectarBandeira(num),
+          Bandeira: { Id: detectarBandeira(num) },
           Numero:   num,
           ...(cartao.validade ? { Validade: expandirValidade(cartao.validade) } : {}),
         }
