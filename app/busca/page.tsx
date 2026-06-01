@@ -45,8 +45,31 @@ interface Viagem {
   BagagemInclusa?: boolean
 }
 
-interface GrupoVoo {
-  familias: { viagem: Viagem; familia: string; preco: number }[]
+interface Tarifa {
+  familia: string
+  familiaCodigo: string
+  preco: number
+  bagagemInclusa: boolean
+  bagagemPeso: number | null
+  bagagemQuantidade: number | null
+  baseTarifaria: string
+  classe: string
+  identificacaoDaViagem: string
+  viagem: Viagem
+}
+
+interface VooAgrupado {
+  id: string
+  numeroVoo: string
+  origem: string
+  destino: string
+  horaSaida: number
+  horaChegada: number
+  duracao: string
+  companhia: string
+  numParadas: number
+  voos: VooLeg[]
+  tarifas: Tarifa[]
 }
 
 interface Trecho { origem: string; destino: string; data: string }
@@ -111,78 +134,17 @@ function formatMinutos(m: number): string {
   const h = Math.floor(m / 60), min = m % 60
   return min === 0 ? `${h}h` : `${h}h ${min}m`
 }
-function normalizarCia(iata: string): string {
-  if (iata === 'JJ') return 'LA'
-  return iata
-}
-function chaveVoo(v: Viagem): string {
-  const legs  = getLegs(v)
-  const first = legs[0]
-  const cia   = normalizarCia(v.CiaMandatoria?.CodigoIata ?? '')
-  // Usa número do voo como chave primária — garante agrupamento de tarifas do mesmo voo
-  const num   = first?.Numero || first?.NumeroDoVoo
-  if (num) return `${cia}-${num}`
-  // Fallback: rota + horário de saída
-  return `${cia}-${v.Origem?.CodigoIata}-${v.Destino?.CodigoIata}-${first?.HoraSaida ?? 0}`
-}
-function nomeFamilia(v: Viagem): string {
-  // A WOOBA pode expor Familia no nível da Viagem ou dentro de Voos[]
-  if (v.Familia) return v.Familia
-  if (v.FamiliaCodigo) return v.FamiliaCodigo
-  const leg = getLegs(v)[0]
-  return leg?.Familia || leg?.FamiliaCodigo || ''
-}
-
-function baseTarifaria(v: Viagem): string {
-  // BaseTarifaria é string (ex: "SJEX0N2/B19") — identifica unicamente a tarifa
-  return getLegs(v)[0]?.BaseTarifaria ?? ''
-}
-
-function bagagemViagem(v: Viagem): boolean {
-  // BagagemInclusa pode estar no nível da Viagem ou no primeiro leg
-  return v.BagagemInclusa ?? getLegs(v)[0]?.BagagemInclusa ?? false
-}
-function agruparVoos(voos: Viagem[]): GrupoVoo[] {
-  const mapa = new Map<string, GrupoVoo>()
-  for (const v of voos) {
-    const chave   = chaveVoo(v)
-    const familia = nomeFamilia(v)
-    const preco   = v.Preco?.Total ?? 0
-    const bt      = baseTarifaria(v)
-    const bagagem = bagagemViagem(v)
-    const grupo   = mapa.get(chave)
-    if (grupo) {
-      const jaExiste = grupo.familias.find(f => {
-        // IdentificacaoDaViagem é o identificador único por tarifa na WOOBA
-        if (v.IdentificacaoDaViagem && f.viagem.IdentificacaoDaViagem === v.IdentificacaoDaViagem) return true
-        // Id como fallback — apenas quando não-zero (Id=0 é valor padrão em vários sistemas)
-        if (v.Id && f.viagem.Id === v.Id) return true
-        const fBt      = baseTarifaria(f.viagem)
-        const fBagagem = bagagemViagem(f.viagem)
-        if (bt && fBt) return bt === fBt && bagagem === fBagagem
-        return f.familia === familia && fBagagem === bagagem
-      })
-      if (!jaExiste) {
-        grupo.familias.push({ viagem: v, familia, preco })
-        grupo.familias.sort((a, b) => a.preco - b.preco)
-      }
-    } else {
-      mapa.set(chave, { familias: [{ viagem: v, familia, preco }] })
-    }
-  }
-  return Array.from(mapa.values())
-}
-function ordenarVoos(voos: Viagem[], ord: Ordenacao): Viagem[] {
-  return [...voos].sort((a, b) => {
+function ordenarGrupos(grupos: VooAgrupado[], ord: Ordenacao): VooAgrupado[] {
+  return [...grupos].sort((a, b) => {
     switch (ord) {
-      case 'preco': return (a.Preco?.Total ?? 0) - (b.Preco?.Total ?? 0)
-      case 'duracao': return duracaoMinutos(a.TempoDeDuracao) - duracaoMinutos(b.TempoDeDuracao)
+      case 'preco':   return (a.tarifas[0]?.preco ?? 0) - (b.tarifas[0]?.preco ?? 0)
+      case 'duracao': return duracaoMinutos(a.duracao) - duracaoMinutos(b.duracao)
       case 'custo': {
-        const da = duracaoMinutos(a.TempoDeDuracao) || 1
-        const db = duracaoMinutos(b.TempoDeDuracao) || 1
-        return ((a.Preco?.Total ?? 0) / da) - ((b.Preco?.Total ?? 0) / db)
+        const da = duracaoMinutos(a.duracao) || 1
+        const db = duracaoMinutos(b.duracao) || 1
+        return ((a.tarifas[0]?.preco ?? 0) / da) - ((b.tarifas[0]?.preco ?? 0) / db)
       }
-      case 'escalas': return (a.NumeroParadas ?? 0) - (b.NumeroParadas ?? 0)
+      case 'escalas': return (a.numParadas ?? 0) - (b.numParadas ?? 0)
       default: return 0
     }
   })
@@ -346,117 +308,154 @@ function CardSkeleton() {
 }
 
 function VooCard({
-  grupo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes,
+  voo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes,
 }: {
-  grupo: GrupoVoo
+  voo: VooAgrupado
   onSelecionar: (v: Viagem) => void
   labelBotao?: string
   onVerDetalhes?: (v: Viagem) => void
 }) {
-  const [selectedIdx, setSelectedIdx] = useState(0)
-  const idx      = Math.min(selectedIdx, grupo.familias.length - 1)
-  const selected = grupo.familias[idx]
-  const viagem   = selected.viagem
-  const legs     = getLegs(viagem)
-  const first    = legs[0]
-  const last     = legs[legs.length - 1]
-  const iata     = viagem.CiaMandatoria?.CodigoIata ?? ''
-  const escalas  = viagem.NumeroParadas
+  const escalas      = voo.numParadas
   const escalasLabel = escalas === 0 ? 'Direto' : escalas === 1 ? '1 escala' : `${escalas} escalas`
 
   return (
-    <div className="bg-white rounded-2xl px-4 sm:px-6 py-4 sm:py-5 hover:shadow-md transition-shadow">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
-        <div className="flex items-center gap-3 sm:gap-5 flex-1 min-w-0">
-          <div className="w-14 sm:w-16 shrink-0"><AirlineBadge iata={iata} /></div>
-
-          <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="text-right shrink-0">
-              <p className="text-lg sm:text-xl font-semibold text-gray-900 leading-none">
-                {first ? formatHora(first.HoraSaida) : '--:--'}
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">{viagem.Origem?.CodigoIata}</p>
-            </div>
-
-            <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
-              <p className="text-xs text-gray-400">{formatDuracao(viagem.TempoDeDuracao)}</p>
-              <div className="w-full flex items-center gap-1">
-                <div className="h-px flex-1 bg-gray-300" />
-                {escalas > 0 && Array.from({ length: escalas }).map((_, i) => (
-                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
-                ))}
-                {escalas > 0 && <div className="h-px flex-1 bg-gray-300" />}
-                <svg className="w-3 h-3 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2h0A1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
-                </svg>
-              </div>
-              <p className="text-xs font-medium" style={{ color: escalas === 0 ? '#22c55e' : '#f59e0b' }}>
-                {escalasLabel}
-              </p>
-            </div>
-
-            <div className="text-left shrink-0">
-              <p className="text-lg sm:text-xl font-semibold text-gray-900 leading-none">
-                {last ? formatHora(last.HoraChegada) : '--:--'}
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">{viagem.Destino?.CodigoIata}</p>
-            </div>
-          </div>
+    <div className="bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+      {/* Cabeçalho do voo */}
+      <div className="px-4 sm:px-5 pt-4 pb-3 flex items-center gap-3 sm:gap-4">
+        <div className="shrink-0 w-14 sm:w-16">
+          <AirlineBadge iata={voo.companhia} />
         </div>
 
-        <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 sm:ml-4 shrink-0">
-          <p className="text-xl font-bold text-gray-900">{formatPreco(selected.preco)}</p>
-          <button onClick={() => onSelecionar(selected.viagem)}
-            className="px-4 sm:px-5 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-80 transition-opacity"
-            style={{ backgroundColor: '#1a2744' }}>
-            {labelBotao}
-          </button>
+        <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="text-right shrink-0">
+            <p className="text-lg sm:text-xl font-semibold text-gray-900 leading-none">
+              {formatHora(voo.horaSaida)}
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5">{voo.origem}</p>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
+            <p className="text-xs text-gray-400">{formatDuracao(voo.duracao)}</p>
+            <div className="w-full flex items-center gap-1">
+              <div className="h-px flex-1 bg-gray-300" />
+              {escalas > 0 && Array.from({ length: escalas }).map((_, i) => (
+                <div key={i} className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
+              ))}
+              {escalas > 0 && <div className="h-px flex-1 bg-gray-300" />}
+              <svg className="w-3 h-3 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2h0A1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+              </svg>
+            </div>
+            <p className="text-xs font-medium" style={{ color: escalas === 0 ? '#22c55e' : '#f59e0b' }}>
+              {escalasLabel}
+            </p>
+          </div>
+
+          <div className="text-left shrink-0">
+            <p className="text-lg sm:text-xl font-semibold text-gray-900 leading-none">
+              {formatHora(voo.horaChegada)}
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5">{voo.destino}</p>
+          </div>
         </div>
       </div>
 
-      {/* Pills de família tarifária */}
-      {grupo.familias.length > 1 && (
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          {grupo.familias.map((f, i) => {
-            const nome   = f.familia || (bagagemViagem(f.viagem) ? 'Com bagagem' : 'Sem bagagem')
-            const comBag = bagagemViagem(f.viagem)
-            const ativo  = i === idx
-            return (
-              <button key={i} onClick={() => setSelectedIdx(i)}
-                className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  ativo ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-                }`}
-                style={ativo ? { backgroundColor: '#1a2744' } : {}}>
-                <span>{nome}</span>
-                <span className={ativo ? 'text-blue-200' : 'text-gray-400'}>{formatPreco(f.preco)}</span>
-                <span className={comBag
-                  ? (ativo ? 'text-green-300' : 'text-green-600')
-                  : (ativo ? 'text-red-300'   : 'text-red-400')}>
-                  {comBag ? '✓' : '✗'}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      )}
-
-      <div className={`flex items-center gap-3 border-t border-gray-50 pt-3 ${grupo.familias.length > 1 ? 'mt-2' : 'mt-3'}`}>
-        <span className="text-xs text-gray-400">
-          {first?.Numero ? `Voo ${nomeCompanhia(iata)} ${first.Numero}` : nomeCompanhia(iata)}
-        </span>
-        <span className="text-gray-200">·</span>
-        <span className="text-xs text-gray-400">
-          {bagagemViagem(selected.viagem) ? '✓ Bagagem inclusa' : 'Sem bagagem despachada'}
-        </span>
-        {escalas > 0 && onVerDetalhes && (
+      {/* Número do voo + link detalhes */}
+      <div className="px-4 sm:px-5 pb-3 flex items-center gap-2 text-xs text-gray-400">
+        {voo.numeroVoo && (
+          <span>Voo {nomeCompanhia(voo.companhia)} {voo.numeroVoo}</span>
+        )}
+        {escalas > 0 && onVerDetalhes && voo.tarifas[0] && (
           <>
-            <span className="text-gray-200">·</span>
-            <button onClick={() => onVerDetalhes(viagem)}
-              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors underline">
+            {voo.numeroVoo && <span>·</span>}
+            <button
+              onClick={() => onVerDetalhes(voo.tarifas[0].viagem)}
+              className="font-medium text-blue-600 hover:text-blue-800 underline transition-colors"
+            >
               Ver detalhes
             </button>
           </>
         )}
+      </div>
+
+      {/* Colunas de tarifas */}
+      <div className="flex overflow-x-auto border-t border-gray-100 divide-x divide-gray-100">
+        {voo.tarifas.map((tarifa, i) => {
+          const nome         = tarifa.familia || (tarifa.bagagemInclusa ? 'Com bagagem' : 'Sem bagagem')
+          const isMenorPreco = i === 0
+
+          return (
+            <button
+              key={i}
+              onClick={() => onSelecionar(tarifa.viagem)}
+              className={`flex-1 min-w-[130px] sm:min-w-[150px] flex flex-col items-center gap-2 px-3 py-4 text-center transition-colors ${
+                isMenorPreco ? 'bg-blue-50 hover:bg-blue-100' : 'bg-white hover:bg-gray-50'
+              }`}
+            >
+              {isMenorPreco ? (
+                <span className="text-[10px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                  Menor preço
+                </span>
+              ) : (
+                <span className="h-[18px]" />
+              )}
+
+              <p className={`font-bold text-xs sm:text-sm uppercase tracking-wider leading-tight ${
+                isMenorPreco ? 'text-blue-800' : 'text-gray-600'
+              }`}>
+                {nome}
+              </p>
+
+              <p className={`text-xl sm:text-2xl font-bold leading-none ${
+                isMenorPreco ? 'text-blue-900' : 'text-gray-900'
+              }`}>
+                {formatPreco(tarifa.preco)}
+              </p>
+
+              {/* Ícone de bagagem */}
+              <div className="flex flex-col items-center gap-0.5">
+                {tarifa.bagagemInclusa ? (
+                  <>
+                    <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                      <rect x="5" y="7" width="14" height="13" rx="2" />
+                      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                      <line x1="12" y1="11" x2="12" y2="16" />
+                      <line x1="9.5" y1="13.5" x2="14.5" y2="13.5" />
+                    </svg>
+                    <span className="text-[10px] sm:text-xs text-blue-600 font-medium">
+                      {tarifa.bagagemQuantidade && tarifa.bagagemPeso
+                        ? `${tarifa.bagagemQuantidade}x ${tarifa.bagagemPeso}kg`
+                        : tarifa.bagagemPeso
+                          ? `${tarifa.bagagemPeso}kg`
+                          : tarifa.bagagemQuantidade
+                            ? `${tarifa.bagagemQuantidade} mala${tarifa.bagagemQuantidade > 1 ? 's' : ''}`
+                            : 'Inclusa'}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <div className="relative">
+                      <svg className="w-5 h-5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                        <rect x="5" y="7" width="14" height="13" rx="2" />
+                        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                      </svg>
+                      <svg className="absolute inset-0 w-5 h-5 text-red-400" viewBox="0 0 24 24">
+                        <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <span className="text-[10px] sm:text-xs text-gray-400">Sem bagagem</span>
+                  </>
+                )}
+              </div>
+
+              <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${
+                isMenorPreco ? 'text-white' : 'bg-gray-100 text-gray-600'
+              }`} style={isMenorPreco ? { backgroundColor: '#1a2744' } : {}}>
+                {labelBotao}
+              </span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )
@@ -675,10 +674,10 @@ export default function Busca() {
   ])
 
   // Resultados
-  const [carregando, setCarregando] = useState(false)
-  const [erroVoo, setErroVoo]       = useState('')
-  const [voosIda, setVoosIda]       = useState<Viagem[] | null>(null)
-  const [voosVolta, setVoosVolta]   = useState<Viagem[] | null>(null)
+  const [carregando, setCarregando]     = useState(false)
+  const [erroVoo, setErroVoo]           = useState('')
+  const [gruposIda, setGruposIda]       = useState<VooAgrupado[] | null>(null)
+  const [gruposVolta, setGruposVolta]   = useState<VooAgrupado[] | null>(null)
 
   // Seleção / ordenação / detalhes
   const [fase, setFase]                               = useState<FaseSeleção>('ida')
@@ -774,7 +773,7 @@ export default function Busca() {
     } else if (!origem || !destino || !dataIda) {
       setErroVoo('Preencha origem, destino e data de ida.'); return
     }
-    setCarregando(true); setErroVoo(''); setVoosIda(null); setVoosVolta(null)
+    setCarregando(true); setErroVoo(''); setGruposIda(null); setGruposVolta(null)
     setFase('ida'); setVooIdaSelecionado(null); setVooVoltaSelecionado(null)
     const res = await fetch('/api/buscar-voos', {
       method: 'POST',
@@ -790,7 +789,7 @@ export default function Busca() {
     const data = await res.json()
     setCarregando(false)
     if (data.erro) setErroVoo(data.erro)
-    else { setVoosIda(data.voos ?? []); setVoosVolta(data.voosVolta ?? []) }
+    else { setGruposIda(data.grupos ?? []); setGruposVolta(data.gruposVolta ?? []) }
   }
 
   function selecionarVooIda(viagem: Viagem) {
@@ -869,7 +868,7 @@ export default function Busca() {
   }
 
   function novaBusca() {
-    setEtapa('selecao'); setVoosIda(null); setVoosVolta(null)
+    setEtapa('selecao'); setGruposIda(null); setGruposVolta(null)
     setVooIdaSelecionado(null); setVooVoltaSelecionado(null); setFase('ida')
     setLocalizador(''); setNumeroBilhete(''); setNomeBilhete('')
     setAdultos(1); setCriancas(0); setBebes(0)
@@ -897,10 +896,9 @@ export default function Busca() {
   }
 
   const minDataVolta    = diaSeguinte(dataIda)
-  const voosExibidos    = fase === 'volta' ? voosVolta : voosIda
-  const voosOrdenados   = voosExibidos ? ordenarVoos(voosExibidos, ordenacao) : null
-  const gruposOrdenados = voosOrdenados ? agruparVoos(voosOrdenados) : null
-  const totalEncontrado = voosExibidos?.length ?? 0
+  const gruposExibidos  = fase === 'volta' ? gruposVolta : gruposIda
+  const gruposOrdenados = gruposExibidos ? ordenarGrupos(gruposExibidos, ordenacao) : null
+  const totalEncontrado = gruposExibidos?.length ?? 0
   const precoTotal      = (vooIdaSelecionado?.Preco?.Total ?? 0) + (vooVoltaSelecionado?.Preco?.Total ?? 0)
 
   const ORDENACAO_OPTS: { id: Ordenacao; label: string }[] = [
@@ -1084,7 +1082,7 @@ export default function Busca() {
             </div>
 
             {/* Resultados */}
-            {(carregando || voosIda !== null) && (
+            {(carregando || gruposIda !== null) && (
               <div>
                 {!carregando && fase === 'volta' && vooIdaSelecionado && (
                   <ResumoIdaSelecionada viagem={vooIdaSelecionado}
@@ -1124,7 +1122,7 @@ export default function Busca() {
 
                 {carregando && <div className="space-y-3">{[1,2,3].map(i => <CardSkeleton key={i} />)}</div>}
 
-                {!carregando && voosExibidos?.length === 0 && (
+                {!carregando && gruposExibidos?.length === 0 && (
                   <div className="bg-white rounded-2xl px-8 py-16 text-center shadow-sm">
                     <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -1136,8 +1134,8 @@ export default function Busca() {
 
                 {!carregando && gruposOrdenados && gruposOrdenados.length > 0 && (
                   <div className="space-y-3">
-                    {gruposOrdenados.map((grupo, idx) => (
-                      <VooCard key={grupo.familias[0].viagem.Id || idx} grupo={grupo}
+                    {gruposOrdenados.map((voo, idx) => (
+                      <VooCard key={voo.id || idx} voo={voo}
                         onSelecionar={fase === 'volta' ? selecionarVooVolta : selecionarVooIda}
                         onVerDetalhes={setVooDetalhes}
                         labelBotao={fase === 'volta' ? 'Selecionar volta'

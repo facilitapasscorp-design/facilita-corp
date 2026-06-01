@@ -8,13 +8,17 @@ function toWcfDate(dateStr: string): string {
   return `/Date(${date.getTime()}-0300)/`
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Viagem = Record<string, any>
+type Resposta = { data: Record<string, unknown>; comBagagem: boolean; sistema: number }
+
 async function buscarDisponibilidade(
   url: string,
   headers: Record<string, string>,
   params: Record<string, unknown>,
   comBagagem: boolean,
   sistema: number,
-): Promise<{ data: Record<string, unknown>; comBagagem: boolean; sistema: number }> {
+): Promise<Resposta> {
   const res = await fetch(url, {
     method: 'POST',
     headers,
@@ -24,8 +28,102 @@ async function buscarDisponibilidade(
       BuscarVoosSemBagagem: !comBagagem,
     }),
   })
-  const data = await res.json()
-  return { data, comBagagem, sistema }
+  return { data: await res.json(), comBagagem, sistema }
+}
+
+function normalizarCia(iata: string): string {
+  return iata === 'JJ' ? 'LA' : iata
+}
+
+function chaveVoo(v: Viagem): string {
+  const voos: Viagem[] = v.Voos ?? []
+  const first = voos[0] ?? {}
+  const cia = normalizarCia(v.CiaMandatoria?.CodigoIata ?? '')
+  const num = first.Numero || first.NumeroDoVoo
+  if (num) return `${cia}-${num}`
+  return `${cia}-${v.Origem?.CodigoIata}-${v.Destino?.CodigoIata}-${first.HoraSaida ?? 0}`
+}
+
+function nomeFamilia(v: Viagem): string {
+  if (v.Familia) return v.Familia as string
+  if (v.FamiliaCodigo) return v.FamiliaCodigo as string
+  const leg = (v.Voos ?? [])[0] ?? {}
+  return leg.Familia || leg.FamiliaCodigo || ''
+}
+
+interface Tarifa {
+  familia: string
+  familiaCodigo: string
+  preco: number
+  bagagemInclusa: boolean
+  bagagemPeso: number | null
+  bagagemQuantidade: number | null
+  baseTarifaria: string
+  classe: string
+  identificacaoDaViagem: string
+  viagem: Viagem
+}
+
+function criarTarifa(v: Viagem): Tarifa {
+  const leg0: Viagem = (v.Voos ?? [])[0] ?? {}
+  return {
+    familia:               nomeFamilia(v),
+    familiaCodigo:         leg0.FamiliaCodigo         ?? '',
+    preco:                 v.Preco?.Total              ?? 0,
+    bagagemInclusa:        v.BagagemInclusa            ?? leg0.BagagemInclusa ?? false,
+    bagagemPeso:           leg0.BagagemPeso            ?? null,
+    bagagemQuantidade:     leg0.BagagemQuantidade      ?? null,
+    baseTarifaria:         leg0.BaseTarifaria          ?? '',
+    classe:                leg0.Classe                 ?? '',
+    identificacaoDaViagem: v.IdentificacaoDaViagem    ?? '',
+    viagem:                v,
+  }
+}
+
+function agruparViagens(viagens: Viagem[]) {
+  const mapa = new Map<string, { base: Viagem; tarifas: Tarifa[] }>()
+
+  for (const v of viagens) {
+    const chave  = chaveVoo(v)
+    const tarifa = criarTarifa(v)
+
+    const entry = mapa.get(chave)
+    if (entry) {
+      const jaExiste = entry.tarifas.some(t => {
+        if (v.IdentificacaoDaViagem && t.identificacaoDaViagem === v.IdentificacaoDaViagem) return true
+        if (v.Id && t.viagem.Id === v.Id) return true
+        if (tarifa.baseTarifaria && t.baseTarifaria) return t.baseTarifaria === tarifa.baseTarifaria && t.bagagemInclusa === tarifa.bagagemInclusa
+        return t.familia === tarifa.familia && t.bagagemInclusa === tarifa.bagagemInclusa
+      })
+      if (!jaExiste) {
+        entry.tarifas.push(tarifa)
+        entry.tarifas.sort((a, b) => a.preco - b.preco)
+      }
+    } else {
+      mapa.set(chave, { base: v, tarifas: [tarifa] })
+    }
+  }
+
+  return Array.from(mapa.values()).map(({ base, tarifas }) => {
+    const voos: Viagem[] = base.Voos ?? []
+    const leg0 = voos[0] ?? {}
+    const legN = voos[voos.length - 1] ?? leg0
+    const num  = leg0.Numero || leg0.NumeroDoVoo
+
+    return {
+      id:          base.IdentificacaoDaViagem ?? chaveVoo(base),
+      numeroVoo:   num ? String(num) : '',
+      origem:      base.Origem?.CodigoIata  ?? '',
+      destino:     base.Destino?.CodigoIata ?? '',
+      horaSaida:   (leg0.HoraSaida  as number) ?? 0,
+      horaChegada: (legN.HoraChegada as number) ?? 0,
+      duracao:     (base.TempoDeDuracao as string) ?? '',
+      companhia:   base.CiaMandatoria?.CodigoIata ?? '',
+      numParadas:  (base.NumeroParadas as number) ?? 0,
+      voos,
+      tarifas,
+    }
+  })
 }
 
 export async function POST(request: NextRequest) {
@@ -33,23 +131,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { origem, destino, dataIda, dataVolta, adultos = 1, criancas = 0, bebes = 0, tipo } = body
 
-    const BASE_URL = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
-    const login   = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
-    const senha   = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
-    const token   = process.env.WOOBA_TOKEN!
-    const accessCode = gerarAccessCode()
+    const BASE_URL    = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
+    const login       = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
+    const senha       = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
+    const token       = process.env.WOOBA_TOKEN!
+    const accessCode  = gerarAccessCode()
 
     const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Developer-Token': token,
+      'Content-Type':          'application/json',
+      'Accept':                'application/json',
+      'Developer-Token':       token,
       'Developer-Access-Code': accessCode,
     }
 
     const credenciais = { Login: login, Senha: senha }
 
-    const urlSistemas = `${BASE_URL}/RecuperarSistemasPesquisa`
-    const sistemasRes = await fetch(urlSistemas, {
+    const sistemasRes  = await fetch(`${BASE_URL}/RecuperarSistemasPesquisa`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ ...credenciais, Origem: origem, Destino: destino, Timeout: 15 }),
@@ -68,28 +165,24 @@ export async function POST(request: NextRequest) {
 
     const urlDisponibilidade = `${BASE_URL}/Disponibilidade`
 
-    // Para cada sistema, faz DUAS chamadas em paralelo:
-    // uma buscando só sem bagagem, outra só com bagagem.
-    // Isso garante que ambas as famílias tarifárias cheguem,
-    // já que o limite de 50 resultados por chamada priorizaria
-    // sempre a opção mais barata (sem bagagem) se buscássemos tudo junto.
     const baseParams = (s: { Sistema: number }) => ({
       ...credenciais,
       Origem: origem,
       Destino: destino,
       DataIda: toWcfDate(dataIda),
       ...(tipo === 'idavolta' && dataVolta ? { DataVolta: toWcfDate(dataVolta) } : {}),
-      QuantidadeAdultos: adultos,
+      QuantidadeAdultos:  adultos,
       QuantidadeCriancas: criancas,
-      QuantidadeBebes: bebes,
-      QuantidadeDeVoos: 50,
-      Sistema: s.Sistema,
+      QuantidadeBebes:    bebes,
+      QuantidadeDeVoos:   50,
+      Sistema:            s.Sistema,
       ApenasVoosComBagagem: false,
-      ApenasVoosDiretos: false,
-      Flex: false,
-      Recomendacao: false,
+      ApenasVoosDiretos:    false,
+      Flex:                 false,
+      Recomendacao:         false,
     })
 
+    // Duas chamadas por sistema: sem e com bagagem
     const todasRespostas = await Promise.all(
       sistemasData.Sistemas.flatMap((s: { Sistema: number }) => [
         buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), false, s.Sistema),
@@ -97,50 +190,33 @@ export async function POST(request: NextRequest) {
       ])
     )
 
-    type Viagem = Record<string, unknown>
-    type Resposta = { data: Record<string, unknown>; comBagagem: boolean; sistema: number }
-
-    // Log diagnóstico por sistema — mostra o que cada chamada retornou
-    let primeiraViagemLogada = false
     for (const { data: d, comBagagem, sistema } of todasRespostas) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const viagens: Viagem[] = (!d.Exception && !d.SessaoExpirada) ? ((d.ViagensTrecho1 as Viagem[]) ?? []) : []
-      const v0 = viagens[0] as Record<string, unknown> | undefined
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const voo0 = (v0?.Voos as any[])?.[0] ?? {}
+      const v0   = viagens[0]
+      const voo0 = v0?.Voos?.[0] ?? {}
       console.log(
         `[DIAG] s=${sistema} com=${comBagagem} count=${viagens.length} err=${!!d.Exception}` +
-        (v0 ? ` | viagemKeys=${Object.keys(v0).join(',')}` : '') +
-        (v0 ? ` | voo0Keys=${Object.keys(voo0).join(',')}` : '') +
-        (v0 ? ` | v.BagInclusa=${v0.BagagemInclusa} voo.BagInclusa=${voo0.BagagemInclusa}` : '') +
-        (v0 ? ` | v.Familia=${v0.Familia} voo.Familia=${voo0.Familia} voo.FamiliaCodigo=${voo0.FamiliaCodigo}` : '')
+        (v0 ? ` | BagInclusa=v.${v0.BagagemInclusa}/voo.${voo0.BagagemInclusa}` : '') +
+        (v0 ? ` | Familia=v.${v0.Familia}/voo.${voo0.Familia} FamiliaCodigo=${voo0.FamiliaCodigo}` : '')
       )
-
-      // [TEMP] Log completo do primeiro voo encontrado — para mapear todos os campos disponíveis
-      if (v0 && !primeiraViagemLogada) {
-        primeiraViagemLogada = true
-        console.log(`[TEMP-FULL-VIAGEM] s=${sistema} com=${comBagagem}`)
-        console.log('[TEMP-FULL-VIAGEM] ViagensTrecho1[0]:', JSON.stringify(v0, null, 2))
-      }
     }
 
-    function extrairViagens(respostas: Resposta[], campo: 'ViagensTrecho1' | 'ViagensTrecho2'): Viagem[] {
-      return respostas.flatMap(({ data: d, comBagagem }) => {
+    function extrairViagens(campo: 'ViagensTrecho1' | 'ViagensTrecho2'): Viagem[] {
+      return todasRespostas.flatMap(({ data: d, comBagagem }) => {
         if (d.Exception || d.SessaoExpirada) return []
         const viagens = (d[campo] as Viagem[] | null) ?? []
-        return viagens.map(v => ({
-          ...v,
-          BagagemInclusa: (v.BagagemInclusa as boolean | undefined) ?? comBagagem,
-        }))
+        return viagens.map(v => ({ ...v, BagagemInclusa: v.BagagemInclusa ?? comBagagem }))
       })
     }
 
-    const voosIda   = extrairViagens(todasRespostas, 'ViagensTrecho1')
-    const voosVolta = extrairViagens(todasRespostas, 'ViagensTrecho2')
+    const voosIda   = extrairViagens('ViagensTrecho1')
+    const voosVolta = extrairViagens('ViagensTrecho2')
+    const grupos      = agruparViagens(voosIda)
+    const gruposVolta = agruparViagens(voosVolta)
 
-    console.log(`[BUSCAR-VOOS] Total voosIda: ${voosIda.length} | voosVolta: ${voosVolta.length}`)
+    console.log(`[BUSCAR-VOOS] voosIda=${voosIda.length} voosVolta=${voosVolta.length} grupos=${grupos.length} gruposVolta=${gruposVolta.length}`)
 
-    return NextResponse.json({ sistemas: sistemasData.Sistemas, voos: voosIda, voosVolta })
+    return NextResponse.json({ sistemas: sistemasData.Sistemas, grupos, gruposVolta })
 
   } catch (error: unknown) {
     console.error('Erro WOOBA:', error)
