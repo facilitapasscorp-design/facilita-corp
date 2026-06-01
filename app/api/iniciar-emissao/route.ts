@@ -69,10 +69,13 @@ export async function POST(req: NextRequest) {
       }
       if (cartao?.numero) {
         const num = cartao.numero.replace(/\D/g, '')
-        formasBody.CartaoDeCredito = {
-          Bandeira: { Id: detectarBandeira(num) },
-          Numero:   num,
-          ...(cartao.validade ? { Validade: expandirValidade(cartao.validade) } : {}),
+        formasBody.Pagamento = {
+          FormaDePagamento: codigoPagamento ?? 2,
+          CartaoDeCredito: {
+            Bandeira: { Id: detectarBandeira(num) },
+            Numero:   num,
+            ...(cartao.validade ? { Validade: expandirValidade(cartao.validade) } : {}),
+          },
         }
       }
 
