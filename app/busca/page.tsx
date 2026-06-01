@@ -407,16 +407,6 @@ function VooCard({
                 {nomeFam}
               </p>
 
-              {/* Classe e base tarifária reais */}
-              {(tarifa.classe || tarifa.baseTarifaria) && (
-                <p className="text-[10px] text-gray-400 leading-none">
-                  {[
-                    typeof tarifa.classe === 'string' ? tarifa.classe : '',
-                    typeof tarifa.baseTarifaria === 'string' ? tarifa.baseTarifaria : '',
-                  ].filter(Boolean).join(' · ')}
-                </p>
-              )}
-
               {/* Preço real */}
               <p className={`text-xl sm:text-2xl font-bold leading-none mt-0.5 ${
                 isMenorPreco ? 'text-blue-900' : 'text-gray-900'

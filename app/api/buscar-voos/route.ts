@@ -38,10 +38,18 @@ function normalizarCia(iata: string): string {
 function chaveVoo(v: Viagem): string {
   const voos: Viagem[] = v.Voos ?? []
   const first = voos[0] ?? {}
-  const cia = normalizarCia(v.CiaMandatoria?.CodigoIata ?? '')
-  const num = first.Numero || first.NumeroDoVoo || ''
-  const hora = first.HoraSaida ?? 0
-  return `${cia}-${num}-${hora}`
+  const last  = voos[voos.length - 1] ?? first
+  const cia   = normalizarCia(v.CiaMandatoria?.CodigoIata ?? '')
+  // Inclui TODOS os números de voo do itinerário na chave
+  const numeros = voos.map(leg => leg.Numero || leg.NumeroDoVoo || '').join('+')
+  const hora    = first.HoraSaida ?? 0
+  // Inclui todos os aeroportos (origem, escalas, destino final)
+  const aeroportos = [
+    first.Origem?.CodigoIata ?? '',
+    ...voos.slice(1).map(leg => leg.Origem?.CodigoIata ?? ''),
+    last.Destino?.CodigoIata ?? '',
+  ].join('-')
+  return `${cia}-${numeros}-${hora}-${aeroportos}`
 }
 
 function nomeFamilia(v: Viagem): string {
@@ -50,7 +58,7 @@ function nomeFamilia(v: Viagem): string {
   const leg = (v.Voos ?? [])[0] ?? {}
   if (leg.Familia)       return leg.Familia as string
   if (leg.FamiliaCodigo) return leg.FamiliaCodigo as string
-  return leg.BaseTarifaria ?? ''
+  return ''
 }
 
 interface Tarifa {
@@ -75,14 +83,14 @@ function criarTarifa(v: Viagem): Tarifa {
 
   return {
     familia:               nomeFamilia(v),
-    familiaCodigo:         leg0.FamiliaCodigo      ?? v.FamiliaCodigo ?? '',
-    preco:                 v.Preco?.Total           ?? 0,
+    familiaCodigo:         typeof leg0.FamiliaCodigo === 'string' ? leg0.FamiliaCodigo : (typeof v.FamiliaCodigo === 'string' ? v.FamiliaCodigo : ''),
+    preco:                 v.Preco?.Total              ?? 0,
     bagagemInclusa,
-    bagagemPeso:           leg0.BagagemPeso         ?? null,
-    bagagemQuantidade:     leg0.BagagemQuantidade   ?? null,
-    baseTarifaria: typeof leg0.BaseTarifaria === 'string' ? leg0.BaseTarifaria : '',
-    classe:        typeof leg0.Classe === 'string' ? leg0.Classe : (typeof leg0.Cabine === 'string' ? leg0.Cabine : ''),
-    identificacaoDaViagem: v.IdentificacaoDaViagem  ?? '',
+    bagagemPeso:           typeof leg0.BagagemPeso === 'number'       ? leg0.BagagemPeso       : null,
+    bagagemQuantidade:     typeof leg0.BagagemQuantidade === 'number'  ? leg0.BagagemQuantidade : null,
+    baseTarifaria:         typeof leg0.BaseTarifaria === 'string'      ? leg0.BaseTarifaria     : '',
+    classe:                typeof leg0.Classe === 'string'             ? leg0.Classe            : (typeof leg0.Cabine === 'string' ? leg0.Cabine : ''),
+    identificacaoDaViagem: v.IdentificacaoDaViagem    ?? '',
     viagem:                v,
   }
 }
@@ -96,11 +104,11 @@ function agruparViagens(viagens: Viagem[]) {
 
     const entry = mapa.get(chave)
     if (entry) {
+      // Só agrupa se for realmente a mesma tarifa (mesmo identificador ou mesma família+bagagem)
       const jaExiste = entry.tarifas.some(t => {
         if (v.IdentificacaoDaViagem && t.identificacaoDaViagem === v.IdentificacaoDaViagem) return true
         if (v.Id && t.viagem.Id === v.Id) return true
-        if (tarifa.baseTarifaria && t.baseTarifaria) return t.baseTarifaria === tarifa.baseTarifaria && t.bagagemInclusa === tarifa.bagagemInclusa
-        return t.familia === tarifa.familia && t.bagagemInclusa === tarifa.bagagemInclusa
+        return t.familia === tarifa.familia && t.bagagemInclusa === tarifa.bagagemInclusa && t.preco === tarifa.preco
       })
       if (!jaExiste) {
         entry.tarifas.push(tarifa)
@@ -118,7 +126,7 @@ function agruparViagens(viagens: Viagem[]) {
     const num  = leg0.Numero || leg0.NumeroDoVoo
 
     return {
-      id:          base.IdentificacaoDaViagem ?? chaveVoo(base),
+      id:          chaveVoo(base),
       numeroVoo:   num ? String(num) : '',
       origem:      base.Origem?.CodigoIata  ?? '',
       destino:     base.Destino?.CodigoIata ?? '',
@@ -138,11 +146,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { origem, destino, dataIda, dataVolta, adultos = 1, criancas = 0, bebes = 0, tipo } = body
 
-    const BASE_URL   = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
-    const login      = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
-    const senha      = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
-    const token      = process.env.WOOBA_TOKEN!
-    const accessCode = gerarAccessCode()
+    const BASE_URL    = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
+    const login       = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
+    const senha       = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
+    const token       = process.env.WOOBA_TOKEN!
+    const accessCode  = gerarAccessCode()
 
     const headers = {
       'Content-Type':          'application/json',
