@@ -80,8 +80,8 @@ function criarTarifa(v: Viagem): Tarifa {
     bagagemInclusa,
     bagagemPeso:           leg0.BagagemPeso         ?? null,
     bagagemQuantidade:     leg0.BagagemQuantidade   ?? null,
-    baseTarifaria:         leg0.BaseTarifaria       ?? '',
-    classe:                leg0.Classe              ?? leg0.Cabine ?? '',
+    baseTarifaria: typeof leg0.BaseTarifaria === 'string' ? leg0.BaseTarifaria : '',
+    classe:        typeof leg0.Classe === 'string' ? leg0.Classe : (typeof leg0.Cabine === 'string' ? leg0.Cabine : ''),
     identificacaoDaViagem: v.IdentificacaoDaViagem  ?? '',
     viagem:                v,
   }
