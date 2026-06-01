@@ -410,7 +410,10 @@ function VooCard({
               {/* Classe e base tarifária reais */}
               {(tarifa.classe || tarifa.baseTarifaria) && (
                 <p className="text-[10px] text-gray-400 leading-none">
-                  {[tarifa.classe, tarifa.baseTarifaria].filter(Boolean).join(' · ')}
+                  {[
+                    typeof tarifa.classe === 'string' ? tarifa.classe : '',
+                    typeof tarifa.baseTarifaria === 'string' ? tarifa.baseTarifaria : '',
+                  ].filter(Boolean).join(' · ')}
                 </p>
               )}
 
