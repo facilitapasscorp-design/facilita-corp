@@ -202,24 +202,21 @@ export async function POST(request: NextRequest) {
       ])
     )
 
-    // ── DIAGNÓSTICO: conta viagens por companhia em cada tipo de chamada ──
-    const diag: Record<string, { sem: number; com: number; comBagInclusa: number }> = {}
+    // ── DIAGNÓSTICO: chaves de Azul (AD) e GOL (G3) para entender o agrupamento ──
     for (const { data: d, comBagagem } of todasRespostas) {
       if (d.Exception || d.SessaoExpirada) continue
       const viagens = (d.ViagensTrecho1 as Viagem[] | null) ?? []
       for (const v of viagens) {
         const cia = normalizarCia(v.CiaMandatoria?.CodigoIata ?? '?')
-        if (!diag[cia]) diag[cia] = { sem: 0, com: 0, comBagInclusa: 0 }
-        if (comBagagem) {
-          diag[cia].com++
-          const leg0 = (v.Voos ?? [])[0] ?? {}
-          if (leg0.BagagemInclusa === true || v.BagagemInclusa === true) diag[cia].comBagInclusa++
-        } else {
-          diag[cia].sem++
-        }
+        if (cia !== 'AD' && cia !== 'G3') continue
+        const leg0 = (v.Voos ?? [])[0] ?? {}
+        console.log('[DIAG-CHAVE]', cia, comBagagem ? 'COM' : 'SEM',
+          '| chave=' + chaveVoo(v),
+          '| fam=' + nomeFamilia(v),
+          '| bagInc=' + (leg0.BagagemInclusa ?? v.BagagemInclusa),
+          '| preco=' + (v.Preco?.Total ?? 0))
       }
     }
-    console.log('[DIAG-BAGAGEM]', JSON.stringify(diag))
 
     function extrairViagens(campo: 'ViagensTrecho1' | 'ViagensTrecho2'): Viagem[] {
       return todasRespostas.flatMap(({ data: d, comBagagem }) => {
