@@ -10,12 +10,13 @@ function toWcfDate(dateStr: string): string {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Viagem = Record<string, any>
-type Resposta = { data: Record<string, unknown>; sistema: number }
+type Resposta = { data: Record<string, unknown>; comBagagem: boolean; sistema: number }
 
 async function buscarDisponibilidade(
   url: string,
   headers: Record<string, string>,
   params: Record<string, unknown>,
+  comBagagem: boolean,
   sistema: number,
 ): Promise<Resposta> {
   const res = await fetch(url, {
@@ -23,11 +24,11 @@ async function buscarDisponibilidade(
     headers,
     body: JSON.stringify({
       ...params,
-      BuscarVoosComBagagem: true,
-      BuscarVoosSemBagagem: true,
+      BuscarVoosComBagagem: comBagagem,
+      BuscarVoosSemBagagem: !comBagagem,
     }),
   })
-  return { data: await res.json(), sistema }
+  return { data: await res.json(), comBagagem, sistema }
 }
 
 function normalizarCia(iata: string): string {
@@ -193,17 +194,38 @@ export async function POST(request: NextRequest) {
       Recomendacao:         false,
     })
 
-    // Uma chamada por sistema com ambas as flags ativas
+    // Duas chamadas por sistema: sem e com bagagem (restaura STANDARD da LATAM)
     const todasRespostas = await Promise.all(
-      sistemasData.Sistemas.map((s: { Sistema: number }) =>
-        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), s.Sistema)
-      )
+      sistemasData.Sistemas.flatMap((s: { Sistema: number }) => [
+        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), false, s.Sistema),
+        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), true,  s.Sistema),
+      ])
     )
 
+    // ── DIAGNÓSTICO: conta viagens por companhia em cada tipo de chamada ──
+    const diag: Record<string, { sem: number; com: number; comBagInclusa: number }> = {}
+    for (const { data: d, comBagagem } of todasRespostas) {
+      if (d.Exception || d.SessaoExpirada) continue
+      const viagens = (d.ViagensTrecho1 as Viagem[] | null) ?? []
+      for (const v of viagens) {
+        const cia = normalizarCia(v.CiaMandatoria?.CodigoIata ?? '?')
+        if (!diag[cia]) diag[cia] = { sem: 0, com: 0, comBagInclusa: 0 }
+        if (comBagagem) {
+          diag[cia].com++
+          const leg0 = (v.Voos ?? [])[0] ?? {}
+          if (leg0.BagagemInclusa === true || v.BagagemInclusa === true) diag[cia].comBagInclusa++
+        } else {
+          diag[cia].sem++
+        }
+      }
+    }
+    console.log('[DIAG-BAGAGEM]', JSON.stringify(diag))
+
     function extrairViagens(campo: 'ViagensTrecho1' | 'ViagensTrecho2'): Viagem[] {
-      return todasRespostas.flatMap(({ data: d }) => {
+      return todasRespostas.flatMap(({ data: d, comBagagem }) => {
         if (d.Exception || d.SessaoExpirada) return []
-        return (d[campo] as Viagem[] | null) ?? []
+        const viagens = (d[campo] as Viagem[] | null) ?? []
+        return viagens.map(v => ({ ...v, BagagemInclusa: v.BagagemInclusa ?? comBagagem }))
       })
     }
 
