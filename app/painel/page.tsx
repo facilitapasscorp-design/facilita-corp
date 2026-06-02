@@ -87,6 +87,7 @@ export default function Painel() {
   const [cartaoTitular,     setCartaoTitular]     = useState('')
   const [cartaoValidade,    setCartaoValidade]    = useState('')
   const [cartaoCVV,         setCartaoCVV]         = useState('')
+  const [cartaoBandeira,    setCartaoBandeira]    = useState('VI')
   const [carregandoEmissao, setCarregandoEmissao] = useState(false)
   const [erroEmissao,       setErroEmissao]       = useState('')
   const [bilheteEmitido,    setBilheteEmitido]    = useState<{ numero: string; passageiro: string } | null>(null)
@@ -171,14 +172,14 @@ export default function Painel() {
 
   // Busca formas de financiamento com dados do cartão (2ª chamada, sem IniciarEmissao)
   // Requer número completo (16 dígitos) e validade (MM/AA) para a API aceitar
-  async function buscarFormasComCartao(numero: string, validade: string, localizador: string) {
-    if (numero.replace(/\D/g, '').length < 16) return
-    if (validade.length < 5) return
+  async function buscarFormasComCartao(numero: string, validade: string, titular: string, cvv: string, bandeira: string) {
+    if (!modalReserva) return
+    if (numero.replace(/\D/g, '').length < 16 || validade.length < 5 || !cvv) return
     try {
       const res = await fetch('/api/iniciar-emissao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ localizador, cartao: { numero, validade } }),
+        body: JSON.stringify({ localizador: modalReserva.localizador, cartao: { numero, validade, titular, cvv, bandeira } }),
       })
       const data = await res.json()
       if (data.erro) return
@@ -206,7 +207,7 @@ export default function Painel() {
           chaveDeSeguranca,
           codigoPagamento,
           financiamentoId,
-          cartao: { numero: cartaoNumero, titular: cartaoTitular, validade: cartaoValidade, cvv: cartaoCVV, parcelas },
+          cartao: { numero: cartaoNumero, titular: cartaoTitular, validade: cartaoValidade, cvv: cartaoCVV, parcelas, bandeira: cartaoBandeira },
         }),
       })
       const data = await res.json()
@@ -613,6 +614,17 @@ export default function Painel() {
               {!carregandoFormas && !bilheteEmitido && (
                 <div className="space-y-4">
                   <div>
+                    <label className="text-sm font-medium text-gray-700">Bandeira</label>
+                    <select value={cartaoBandeira} onChange={e => setCartaoBandeira(e.target.value)} className={`${INPUT} bg-white`}>
+                      <option value="VI">Visa</option>
+                      <option value="MC">Mastercard</option>
+                      <option value="AM">Amex</option>
+                      <option value="DC">Diners</option>
+                      <option value="EL">Elo</option>
+                      <option value="HC">Hipercard</option>
+                    </select>
+                  </div>
+                  <div>
                     <label className="text-sm font-medium text-gray-700">Número do cartão</label>
                     <input
                       type="text"
@@ -621,7 +633,7 @@ export default function Painel() {
                       onChange={e => {
                         const val = mascaraCartao(e.target.value)
                         setCartaoNumero(val)
-                        if (modalReserva) buscarFormasComCartao(val, cartaoValidade, modalReserva.localizador)
+                        buscarFormasComCartao(val, cartaoValidade, cartaoTitular, cartaoCVV, cartaoBandeira)
                       }}
                       className={INPUT}
                     />
@@ -638,7 +650,7 @@ export default function Painel() {
                         onChange={e => {
                           const val = mascaraValidade(e.target.value)
                           setCartaoValidade(val)
-                          if (modalReserva && val.length >= 5) buscarFormasComCartao(cartaoNumero, val, modalReserva.localizador)
+                          if (val.length >= 5) buscarFormasComCartao(cartaoNumero, val, cartaoTitular, cartaoCVV, cartaoBandeira)
                         }} className={INPUT} />
                     </div>
                     <div>
