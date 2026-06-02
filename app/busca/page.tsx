@@ -558,7 +558,7 @@ export default function Busca() {
   const [erroEmissao,       setErroEmissao]       = useState('')
   const [numeroBilhete,     setNumeroBilhete]      = useState('')
   const [nomeBilhete,       setNomeBilhete]        = useState('')
-  const [formasFinanciamento, setFormasFinanciamento] = useState<{ FinanciamentoId: number; Parcelas: number }[]>([])
+  const [formasFinanciamento, setFormasFinanciamento] = useState<{ FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[]>([])
   const [financiamentoId,     setFinanciamentoId]     = useState<number>(61)
   const [parcelas,            setParcelas]            = useState<number>(1)
   const [chaveDeSeguranca,    setChaveDeSeguranca]    = useState<string | null>(null)
@@ -587,7 +587,7 @@ export default function Busca() {
         if (data.erro) { setErroEmissao(data.erro); return }
         setChaveDeSeguranca(data.chaveDeSeguranca ?? null)
         setCodigoPagamento(data.codigoPagamento ?? 2)
-        const formas: { FinanciamentoId: number; Parcelas: number }[] = data.formasFinanciamento ?? []
+        const formas: { FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[] = data.formasFinanciamento ?? []
         setFormasFinanciamento(formas)
         if (formas.length > 0) { setFinanciamentoId(formas[0].FinanciamentoId); setParcelas(formas[0].Parcelas) }
       })
@@ -721,7 +721,7 @@ export default function Busca() {
       })
       const data = await res.json()
       if (data.erro) return
-      const formas: { FinanciamentoId: number; Parcelas: number }[] = data.formasFinanciamento ?? []
+      const formas: { FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[] = data.formasFinanciamento ?? []
       setFormasFinanciamento(formas)
       if (formas.length > 0) { setFinanciamentoId(formas[0].FinanciamentoId); setParcelas(formas[0].Parcelas) }
     } catch {}
@@ -959,7 +959,7 @@ export default function Busca() {
                       <label className="text-sm font-medium text-gray-700">Parcelas</label>
                       {carregandoFormas ? <div className={`${INPUT} flex items-center text-gray-400`}>Carregando...</div> : (
                         <select value={financiamentoId} onChange={e => { const id = Number(e.target.value); const forma = formasFinanciamento.find(f => f.FinanciamentoId === id); setFinanciamentoId(id); setParcelas(forma?.Parcelas ?? 1) }} className={`${INPUT} bg-white`}>
-                          {formasFinanciamento.length > 0 ? formasFinanciamento.map(f => <option key={f.FinanciamentoId} value={f.FinanciamentoId}>{f.Parcelas}x {precoTotal > 0 ? formatPreco(precoTotal / f.Parcelas) : ''}</option>) : <option value={61}>1x {precoTotal > 0 ? formatPreco(precoTotal) : ''}</option>}
+                          {formasFinanciamento.length > 0 ? formasFinanciamento.map(f => <option key={f.FinanciamentoId} value={f.FinanciamentoId}>{f.Parcelas === 1 ? `1x ${formatPreco(f.PrimeiraParcela)}` : `${f.Parcelas}x de ${formatPreco(f.DemaisParcela)}`}</option>) : <option value={61}>1x {precoTotal > 0 ? formatPreco(precoTotal) : ''}</option>}
                         </select>
                       )}
                     </div>

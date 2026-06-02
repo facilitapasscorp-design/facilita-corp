@@ -78,7 +78,7 @@ export default function Painel() {
   // ── Estado do modal de pagamento ────────────────────────────────
   const [modalReserva,      setModalReserva]      = useState<Reserva | null>(null)
   const [carregandoFormas,  setCarregandoFormas]  = useState(false)
-  const [formasFinanciamento, setFormasFinanciamento] = useState<{ FinanciamentoId: number; Parcelas: number }[]>([])
+  const [formasFinanciamento, setFormasFinanciamento] = useState<{ FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[]>([])
   const [financiamentoId,   setFinanciamentoId]   = useState<number>(61)
   const [parcelas,          setParcelas]          = useState<number>(1)
   const [chaveDeSeguranca,  setChaveDeSeguranca]  = useState<string | null>(null)
@@ -149,7 +149,7 @@ export default function Painel() {
       if (data.erro) { setErroEmissao(data.erro); return }
       setChaveDeSeguranca(data.chaveDeSeguranca ?? null)
       setCodigoPagamento(data.codigoPagamento ?? 2)
-      const formas: { FinanciamentoId: number; Parcelas: number }[] = data.formasFinanciamento ?? []
+      const formas: { FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[] = data.formasFinanciamento ?? []
       setFormasFinanciamento(formas)
       if (formas.length > 0) {
         setFinanciamentoId(formas[0].FinanciamentoId)
@@ -183,7 +183,7 @@ export default function Painel() {
       })
       const data = await res.json()
       if (data.erro) return
-      const formas: { FinanciamentoId: number; Parcelas: number }[] = data.formasFinanciamento ?? []
+      const formas: { FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[] = data.formasFinanciamento ?? []
       setFormasFinanciamento(formas)
       if (formas.length > 0) {
         setFinanciamentoId(formas[0].FinanciamentoId)
@@ -682,7 +682,9 @@ export default function Painel() {
                         {formasFinanciamento.length > 0
                           ? formasFinanciamento.map(f => (
                               <option key={f.FinanciamentoId} value={f.FinanciamentoId}>
-                                {f.Parcelas}x {modalReserva.valor ? formatValor(modalReserva.valor! / f.Parcelas) : ''}
+                                {f.Parcelas === 1
+                                  ? `1x ${formatValor(f.PrimeiraParcela)}`
+                                  : `${f.Parcelas}x de ${formatValor(f.DemaisParcela)}`}
                               </option>
                             ))
                           : <option value={61}>1x {modalReserva.valor ? formatValor(modalReserva.valor) : ''}</option>
