@@ -78,6 +78,7 @@ export default function Painel() {
   // ── Estado do modal de pagamento ────────────────────────────────
   const [modalReserva,      setModalReserva]      = useState<Reserva | null>(null)
   const [carregandoFormas,  setCarregandoFormas]  = useState(false)
+  const [carregandoParcelas, setCarregandoParcelas] = useState(false)
   const [formasFinanciamento, setFormasFinanciamento] = useState<{ FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[]>([])
   const [financiamentoId,   setFinanciamentoId]   = useState<number>(61)
   const [parcelas,          setParcelas]          = useState<number>(1)
@@ -175,6 +176,7 @@ export default function Painel() {
   async function buscarFormasComCartao(numero: string, validade: string, titular: string, cvv: string, bandeira: string) {
     if (!modalReserva) return
     if (numero.replace(/\D/g, '').length < 16 || validade.length < 5 || !cvv) return
+    setCarregandoParcelas(true)
     try {
       const res = await fetch('/api/iniciar-emissao', {
         method: 'POST',
@@ -189,7 +191,9 @@ export default function Painel() {
         setFinanciamentoId(formas[0].FinanciamentoId)
         setParcelas(formas[0].Parcelas)
       }
-    } catch {}
+    } finally {
+      setCarregandoParcelas(false)
+    }
   }
 
   useEffect(() => {
@@ -669,6 +673,9 @@ export default function Painel() {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-700">Parcelas</label>
+                      {carregandoParcelas ? (
+                        <div className={`${INPUT} flex items-center text-gray-400`}>Calculando parcelas...</div>
+                      ) : (
                       <select
                         value={financiamentoId}
                         onChange={e => {
@@ -690,6 +697,7 @@ export default function Painel() {
                           : <option value={61}>1x {modalReserva.valor ? formatValor(modalReserva.valor) : ''}</option>
                         }
                       </select>
+                      )}
                     </div>
                   </div>
 
@@ -725,7 +733,7 @@ export default function Painel() {
                   </button>
                   <button
                     onClick={emitir}
-                    disabled={carregandoEmissao || carregandoFormas}
+                    disabled={carregandoEmissao || carregandoFormas || carregandoParcelas}
                     className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
                     style={{ backgroundColor: '#1a2744' }}
                   >

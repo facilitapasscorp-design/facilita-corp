@@ -714,6 +714,7 @@ export default function Busca() {
   async function buscarFormasComCartao(numero: string, validade: string, titular: string, cvv: string, bandeira: string) {
     if (!localizador) return
     if (numero.replace(/\D/g, '').length < 16 || validade.length < 5 || !cvv) return
+    setCarregandoFormas(true)
     try {
       const res = await fetch('/api/iniciar-emissao', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -724,7 +725,9 @@ export default function Busca() {
       const formas: { FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[] = data.formasFinanciamento ?? []
       setFormasFinanciamento(formas)
       if (formas.length > 0) { setFinanciamentoId(formas[0].FinanciamentoId); setParcelas(formas[0].Parcelas) }
-    } catch {}
+    } finally {
+      setCarregandoFormas(false)
+    }
   }
 
   const minDataVolta    = diaSeguinte(dataIda)
@@ -957,7 +960,7 @@ export default function Busca() {
                     <div><label className="text-sm font-medium text-gray-700">CVV</label><input type="text" placeholder="123" maxLength={4} value={cartaoCVV} onChange={e => setCartaoCVV(e.target.value.replace(/\D/g, '').slice(0, 4))} className={INPUT} /></div>
                     <div>
                       <label className="text-sm font-medium text-gray-700">Parcelas</label>
-                      {carregandoFormas ? <div className={`${INPUT} flex items-center text-gray-400`}>Carregando...</div> : (
+                      {carregandoFormas ? <div className={`${INPUT} flex items-center text-gray-400`}>Calculando parcelas...</div> : (
                         <select value={financiamentoId} onChange={e => { const id = Number(e.target.value); const forma = formasFinanciamento.find(f => f.FinanciamentoId === id); setFinanciamentoId(id); setParcelas(forma?.Parcelas ?? 1) }} className={`${INPUT} bg-white`}>
                           {formasFinanciamento.length > 0 ? formasFinanciamento.map(f => <option key={f.FinanciamentoId} value={f.FinanciamentoId}>{f.Parcelas === 1 ? `1x ${formatPreco(f.PrimeiraParcela)}` : `${f.Parcelas}x de ${formatPreco(f.DemaisParcela)}`}</option>) : <option value={61}>1x {precoTotal > 0 ? formatPreco(precoTotal) : ''}</option>}
                         </select>
@@ -968,7 +971,7 @@ export default function Busca() {
                 {erroEmissao && <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200"><p className="text-red-600 text-sm">{erroEmissao}</p></div>}
                 <div className="flex flex-col sm:flex-row gap-3 mt-6">
                   <button onClick={() => setEtapa('passageiro')} className="sm:w-auto w-full px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">← Voltar</button>
-                  <button onClick={emitirPassagem} disabled={carregandoEmissao} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50" style={{ backgroundColor: '#1a2744' }}>{carregandoEmissao ? 'Emitindo passagem...' : 'Emitir passagem'}</button>
+                  <button onClick={emitirPassagem} disabled={carregandoEmissao || carregandoFormas} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50" style={{ backgroundColor: '#1a2744' }}>{carregandoEmissao ? 'Emitindo passagem...' : 'Emitir passagem'}</button>
                 </div>
               </div>
             </div>
