@@ -3,12 +3,15 @@ import { gerarAccessCode } from '../../../lib/wooba-auth'
 
 const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
 
-function detectarBandeira(numero: string): number {
+function detectarBandeira(numero: string): string {
   const n = numero.replace(/\D/g, '')
-  if (/^4/.test(n))       return 1  // Visa
-  if (/^5[1-5]/.test(n)) return 3  // Mastercard
-  if (/^3[47]/.test(n))  return 2  // Amex
-  return 1
+  if (/^4/.test(n))                                               return 'VI'
+  if (/^3[47]/.test(n))                                           return 'AM'
+  if (/^5[1-5]/.test(n) || /^2(2[2-9]|[3-6]|7[01]|720)/.test(n)) return 'MC'
+  if (/^3(0[0-5]|[68])/.test(n))                                  return 'DC'
+  if (/^(606282|3841)/.test(n))                                   return 'HC'
+  if (/^(4011|4312|4389|4514|4576|5041|5066|5067|509|6277|6362|6363|650|651|655)/.test(n)) return 'EL'
+  return 'VI'
 }
 
 function expandirValidade(val: string): string {
@@ -61,22 +64,20 @@ export async function POST(req: NextRequest) {
     // 2. RecuperarFormasDeFinanciamento — com dados do cartão quando disponíveis
     let formasFinanciamento: any[] = []
     try {
-      const formasBody: any = {
-        ...cred,
-        ClienteId: 0,
-        Localizador: localizador,
-        ...(totalParaPagamento > 0 ? { Valor: totalParaPagamento } : {}),
-      }
+      const formasBody: any = { ...cred, ClienteId: 0, Localizador: localizador }
       if (cartao?.numero) {
         const num = cartao.numero.replace(/\D/g, '')
-        formasBody.Pagamento = {
-          FormaDePagamento: codigoPagamento ?? 2,
-          CartaoDeCredito: {
-            Bandeira: { Id: detectarBandeira(num) },
-            Numero:   num,
-            ...(cartao.validade ? { Validade: expandirValidade(cartao.validade) } : {}),
-          },
-        }
+        const validadeMatch = (cartao.validade ?? '').match(/^(\d{2})\/?(\d{2,4})$/)
+        const mes    = validadeMatch ? validadeMatch[1] : ''
+        const anoRaw = validadeMatch ? validadeMatch[2] : ''
+        const ano    = anoRaw.length === 2 ? '20' + anoRaw : anoRaw
+        formasBody.NumeroCartao    = num
+        formasBody.NomeTitular     = cartao.titular ?? ''
+        formasBody.CodigoSeguranca = cartao.cvv ?? ''
+        formasBody.MesValidade     = mes
+        formasBody.AnoValidade     = ano
+        formasBody.Bandeira        = cartao.bandeira || detectarBandeira(num)
+        formasBody.Forma           = codigoPagamento ?? 2
       }
 
       console.log('[FIN-ENVIO]', JSON.stringify({ ...formasBody, CartaoDeCredito: formasBody.CartaoDeCredito ? { ...formasBody.CartaoDeCredito, Numero: 'MASK' + String(formasBody.CartaoDeCredito.Numero).slice(-4) } : undefined }))

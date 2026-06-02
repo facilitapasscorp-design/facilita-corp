@@ -550,6 +550,7 @@ export default function Busca() {
   const [erroReserva,       setErroReserva]       = useState('')
   const [localizador,       setLocalizador]        = useState('')
   const [cartaoNumero,   setCartaoNumero]   = useState('')
+  const [cartaoBandeira, setCartaoBandeira] = useState('VI')
   const [cartaoTitular,  setCartaoTitular]  = useState('')
   const [cartaoValidade, setCartaoValidade] = useState('')
   const [cartaoCVV,      setCartaoCVV]      = useState('')
@@ -677,7 +678,7 @@ export default function Busca() {
     const res = await fetch('/api/iniciar-emitir', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ localizador, chaveDeSeguranca, codigoPagamento, financiamentoId,
-        cartao: { numero: cartaoNumero, titular: cartaoTitular, validade: cartaoValidade, cvv: cartaoCVV, parcelas } }),
+        cartao: { numero: cartaoNumero, titular: cartaoTitular, validade: cartaoValidade, cvv: cartaoCVV, parcelas, bandeira: cartaoBandeira } }),
     })
     const data = await res.json()
     setCarregandoEmissao(false)
@@ -699,12 +700,13 @@ export default function Busca() {
     setChaveDeSeguranca(null); setCodigoPagamento(2)
   }
 
-  async function buscarFormasComCartao(numero: string, validade: string) {
+  async function buscarFormasComCartao(numero: string, validade: string, titular: string, cvv: string, bandeira: string) {
     if (!localizador) return
+    if (numero.replace(/\D/g, '').length < 16 || validade.length < 5 || !cvv) return
     try {
       const res = await fetch('/api/iniciar-emissao', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ localizador, cartao: { numero, validade } }),
+        body: JSON.stringify({ localizador, cartao: { numero, validade, titular, cvv, bandeira } }),
       })
       const data = await res.json()
       if (data.erro) return
@@ -926,10 +928,21 @@ export default function Busca() {
               <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 mb-5">Pagamento</h3>
                 <div className="space-y-4">
-                  <div><label className="text-sm font-medium text-gray-700">Número do cartão</label><input type="text" placeholder="0000 0000 0000 0000" value={cartaoNumero} onChange={e => { const val = mascaraCartao(e.target.value); setCartaoNumero(val); if (val.replace(/\D/g, '').length === 16) buscarFormasComCartao(val, cartaoValidade) }} className={INPUT} /></div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Bandeira</label>
+                    <select value={cartaoBandeira} onChange={e => setCartaoBandeira(e.target.value)} className={`${INPUT} bg-white`}>
+                      <option value="VI">Visa</option>
+                      <option value="MC">Mastercard</option>
+                      <option value="AM">Amex</option>
+                      <option value="DC">Diners</option>
+                      <option value="EL">Elo</option>
+                      <option value="HC">Hipercard</option>
+                    </select>
+                  </div>
+                  <div><label className="text-sm font-medium text-gray-700">Número do cartão</label><input type="text" placeholder="0000 0000 0000 0000" value={cartaoNumero} onChange={e => { const val = mascaraCartao(e.target.value); setCartaoNumero(val); if (val.replace(/\D/g, '').length === 16) buscarFormasComCartao(val, cartaoValidade, cartaoTitular, cartaoCVV, cartaoBandeira) }} className={INPUT} /></div>
                   <div><label className="text-sm font-medium text-gray-700">Nome no cartão</label><input type="text" placeholder="JOAO SILVA" value={cartaoTitular} onChange={e => setCartaoTitular(e.target.value.toUpperCase())} className={INPUT} /></div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <div><label className="text-sm font-medium text-gray-700">Validade</label><input type="text" placeholder="MM/AA" value={cartaoValidade} onChange={e => { const val = mascaraValidade(e.target.value); setCartaoValidade(val); if (val.length >= 5) buscarFormasComCartao(cartaoNumero, val) }} className={INPUT} /></div>
+                    <div><label className="text-sm font-medium text-gray-700">Validade</label><input type="text" placeholder="MM/AA" value={cartaoValidade} onChange={e => { const val = mascaraValidade(e.target.value); setCartaoValidade(val); if (val.length >= 5) buscarFormasComCartao(cartaoNumero, val, cartaoTitular, cartaoCVV, cartaoBandeira) }} className={INPUT} /></div>
                     <div><label className="text-sm font-medium text-gray-700">CVV</label><input type="text" placeholder="123" maxLength={4} value={cartaoCVV} onChange={e => setCartaoCVV(e.target.value.replace(/\D/g, '').slice(0, 4))} className={INPUT} /></div>
                     <div>
                       <label className="text-sm font-medium text-gray-700">Parcelas</label>

@@ -3,12 +3,15 @@ import { gerarAccessCode } from '../../../lib/wooba-auth'
 
 const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
 
-function detectarBandeira(numero: string): number {
+function detectarBandeira(numero: string): string {
   const n = numero.replace(/\D/g, '')
-  if (/^4/.test(n))        return 1  // Visa
-  if (/^5[1-5]/.test(n))  return 3  // Mastercard
-  if (/^3[47]/.test(n))   return 2  // Amex
-  return 1
+  if (/^4/.test(n))                                               return 'VI'
+  if (/^3[47]/.test(n))                                           return 'AM'
+  if (/^5[1-5]/.test(n) || /^2(2[2-9]|[3-6]|7[01]|720)/.test(n)) return 'MC'
+  if (/^3(0[0-5]|[68])/.test(n))                                  return 'DC'
+  if (/^(606282|3841)/.test(n))                                   return 'HC'
+  if (/^(4011|4312|4389|4514|4576|5041|5066|5067|509|6277|6362|6363|650|651|655)/.test(n)) return 'EL'
+  return 'VI'
 }
 
 // Converte "MM/AA" (máscara do frontend) para "MM/YYYY" (formato WOOBA)
@@ -38,7 +41,7 @@ export async function POST(req: NextRequest) {
     const pagamento: any = {
       FormaDePagamento: codigoPagamento ?? 2,
       CartaoDeCredito: {
-        Bandeira:          detectarBandeira(cartao.numero),
+        Bandeira:          cartao.bandeira || detectarBandeira(cartao.numero),
         Numero:            cartao.numero.replace(/\D/g, ''),
         CodigoDeSeguranca: cartao.cvv,
         Validade:          expandirValidade(cartao.validade),
