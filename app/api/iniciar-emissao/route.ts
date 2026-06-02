@@ -48,7 +48,11 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({ ...cred, ClienteId: 0, Localizador: localizador }),
       }).then(r => r.json())
 
-      console.log('[INICIAR-EMISSAO-INICIO]', JSON.stringify(inicioData))
+      console.log('[INICIAR-EMISSAO-INICIO]', JSON.stringify({
+        localizador,
+        total: inicioData.Sumario?.TotalParaPagamento ?? null,
+        erro:  inicioData.Exception?.Message ?? null,
+      }))
 
       if (inicioData.Exception) {
         return NextResponse.json({ erro: inicioData.Exception.Message }, { status: 400 })
@@ -80,13 +84,22 @@ export async function POST(req: NextRequest) {
         formasBody.Forma           = codigoPagamento ?? 2
       }
 
-      console.log('[FIN-ENVIO]', JSON.stringify({ ...formasBody, CartaoDeCredito: formasBody.CartaoDeCredito ? { ...formasBody.CartaoDeCredito, Numero: 'MASK' + String(formasBody.CartaoDeCredito.Numero).slice(-4) } : undefined }))
+      console.log('[FIN-ENVIO]', JSON.stringify({
+        temCartao:    !!cartao?.numero,
+        bandeira:     formasBody.Bandeira ?? null,
+        ultimos4:     cartao?.numero ? cartao.numero.replace(/\D/g, '').slice(-4) : null,
+        valor:        totalParaPagamento,
+      }))
       const formasData = await fetch(`${BASE}/RecuperarFormasDeFinanciamento`, {
         method: 'POST', headers: headers(),
         body: JSON.stringify(formasBody),
       }).then(r => r.json())
 
-      console.log('[FINANCIAMENTO]', cartao?.numero ? 'COM-CARTAO' : 'SEM-CARTAO', JSON.stringify(formasData))
+      console.log('[FINANCIAMENTO]', JSON.stringify({
+        temCartao: !!cartao?.numero,
+        parcelas:  (formasData.Financiamentos ?? []).length,
+        erro:      formasData.Exception?.Message ?? null,
+      }))
 
       // Campo correto na resposta da WOOBA é "Financiamentos", não "FormasDeFinanciamento"
       if (!formasData.Exception) {
