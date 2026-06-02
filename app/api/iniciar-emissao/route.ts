@@ -19,6 +19,13 @@ function expandirValidade(val: string): string {
   return m ? `${m[1]}/20${m[2]}` : val
 }
 
+function bandeiraCodigo(siglaOuNumero: string): number {
+  const n = Number(siglaOuNumero)
+  if (!isNaN(n) && n > 0) return n
+  const mapa: Record<string, number> = { VI: 1, AM: 2, MC: 3, DC: 5, HC: 6, EL: 7 }
+  return mapa[String(siglaOuNumero).toUpperCase()] ?? 1
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { localizador, cartao } = await req.json()
@@ -68,27 +75,28 @@ export async function POST(req: NextRequest) {
     // 2. RecuperarFormasDeFinanciamento — com dados do cartão quando disponíveis
     let formasFinanciamento: any[] = []
     try {
-      const formasBody: any = { ...cred, ClienteId: 0, Localizador: localizador }
+      const formasBody: any = { ...cred, Localizador: localizador }
       if (cartao?.numero) {
-        const num = cartao.numero.replace(/\D/g, '')
-        const validadeMatch = (cartao.validade ?? '').match(/^(\d{2})\/?(\d{2,4})$/)
-        const mes    = validadeMatch ? validadeMatch[1] : ''
-        const anoRaw = validadeMatch ? validadeMatch[2] : ''
-        const ano    = anoRaw.length === 2 ? '20' + anoRaw : anoRaw
-        formasBody.NumeroCartao    = num
-        formasBody.NomeTitular     = cartao.titular ?? ''
-        formasBody.CodigoSeguranca = cartao.cvv ?? ''
-        formasBody.MesValidade     = mes
-        formasBody.AnoValidade     = ano
-        formasBody.Bandeira        = cartao.bandeira || detectarBandeira(num)
-        formasBody.Forma           = codigoPagamento ?? 2
+        const num      = cartao.numero.replace(/\D/g, '')
+        const sigla    = cartao.bandeira || detectarBandeira(num)
+        const bandeira = bandeiraCodigo(sigla)
+        formasBody.Pagamento = {
+          FormaDePagamento: codigoPagamento ?? 2,
+          CartaoDeCredito: {
+            Bandeira:          bandeira,
+            CodigoDeSeguranca: cartao.cvv ?? '',
+            Numero:            num,
+            Parcelas:          1,
+            TitularNome:       (cartao.titular ?? '').toUpperCase(),
+            Validade:          expandirValidade(cartao.validade ?? ''),
+          },
+        }
       }
 
       console.log('[FIN-ENVIO]', JSON.stringify({
-        temCartao:    !!cartao?.numero,
-        bandeira:     formasBody.Bandeira ?? null,
-        ultimos4:     cartao?.numero ? cartao.numero.replace(/\D/g, '').slice(-4) : null,
-        valor:        totalParaPagamento,
+        temCartao: !!cartao?.numero,
+        bandeira:  formasBody.Pagamento?.CartaoDeCredito?.Bandeira ?? null,
+        ultimos4:  cartao?.numero ? cartao.numero.replace(/\D/g, '').slice(-4) : null,
       }))
       const formasData = await fetch(`${BASE}/RecuperarFormasDeFinanciamento`, {
         method: 'POST', headers: headers(),
@@ -101,9 +109,13 @@ export async function POST(req: NextRequest) {
         erro:      formasData.Exception?.Message ?? null,
       }))
 
-      // Campo correto na resposta da WOOBA é "Financiamentos", não "FormasDeFinanciamento"
       if (!formasData.Exception) {
-        formasFinanciamento = formasData.Financiamentos ?? []
+        formasFinanciamento = (formasData.Financiamentos ?? []).map((item: any) => ({
+          FinanciamentoId:  item.Id,
+          Parcelas:         item.Parcelas,
+          PrimeiraParcela:  item.PrimeiraParcela,
+          DemaisParcela:    item.DemaisParcela,
+        }))
       }
     } catch (e) {
       console.log('[FINANCIAMENTO-ERRO]', e instanceof Error ? e.message : String(e))

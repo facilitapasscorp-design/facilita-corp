@@ -14,10 +14,16 @@ function detectarBandeira(numero: string): string {
   return 'VI'
 }
 
-// Converte "MM/AA" (máscara do frontend) para "MM/YYYY" (formato WOOBA)
 function expandirValidade(val: string): string {
   const m = val.match(/^(\d{2})\/(\d{2})$/)
   return m ? `${m[1]}/20${m[2]}` : val
+}
+
+function bandeiraCodigo(siglaOuNumero: string): number {
+  const n = Number(siglaOuNumero)
+  if (!isNaN(n) && n > 0) return n
+  const mapa: Record<string, number> = { VI: 1, AM: 2, MC: 3, DC: 5, HC: 6, EL: 7 }
+  return mapa[String(siglaOuNumero).toUpperCase()] ?? 1
 }
 
 export async function POST(req: NextRequest) {
@@ -41,7 +47,7 @@ export async function POST(req: NextRequest) {
     const pagamento: any = {
       FormaDePagamento: codigoPagamento ?? 2,
       CartaoDeCredito: {
-        Bandeira:          cartao.bandeira || detectarBandeira(cartao.numero),
+        Bandeira:          bandeiraCodigo(cartao.bandeira || detectarBandeira(cartao.numero)),
         Numero:            cartao.numero.replace(/\D/g, ''),
         CodigoDeSeguranca: cartao.cvv,
         Validade:          expandirValidade(cartao.validade),
