@@ -192,6 +192,17 @@ export default function Painel() {
     } catch {}
   }
 
+  useEffect(() => {
+    if (!modalReserva?.localizador) return
+    if (cartaoNumero.replace(/\D/g, '').length < 16) return
+    if (cartaoValidade.length < 5) return
+    if (!cartaoCVV) return
+    const t = setTimeout(() => {
+      buscarFormasComCartao(cartaoNumero, cartaoValidade, cartaoTitular, cartaoCVV, cartaoBandeira)
+    }, 500)
+    return () => clearTimeout(t)
+  }, [cartaoNumero, cartaoValidade, cartaoCVV, cartaoBandeira, modalReserva?.localizador])
+
   // ── Modal: emite a passagem ──────────────────────────────────────
   async function emitir() {
     if (!cartaoNumero || !cartaoTitular || !cartaoValidade || !cartaoCVV) {
@@ -633,7 +644,6 @@ export default function Painel() {
                       onChange={e => {
                         const val = mascaraCartao(e.target.value)
                         setCartaoNumero(val)
-                        buscarFormasComCartao(val, cartaoValidade, cartaoTitular, cartaoCVV, cartaoBandeira)
                       }}
                       className={INPUT}
                     />
@@ -650,7 +660,6 @@ export default function Painel() {
                         onChange={e => {
                           const val = mascaraValidade(e.target.value)
                           setCartaoValidade(val)
-                          if (val.length >= 5) buscarFormasComCartao(cartaoNumero, val, cartaoTitular, cartaoCVV, cartaoBandeira)
                         }} className={INPUT} />
                     </div>
                     <div>

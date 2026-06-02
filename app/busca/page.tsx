@@ -595,6 +595,17 @@ export default function Busca() {
       .finally(() => setCarregandoFormas(false))
   }, [etapa, localizador])
 
+  useEffect(() => {
+    if (!localizador) return
+    if (cartaoNumero.replace(/\D/g, '').length < 16) return
+    if (cartaoValidade.length < 5) return
+    if (!cartaoCVV) return
+    const t = setTimeout(() => {
+      buscarFormasComCartao(cartaoNumero, cartaoValidade, cartaoTitular, cartaoCVV, cartaoBandeira)
+    }, 500)
+    return () => clearTimeout(t)
+  }, [cartaoNumero, cartaoValidade, cartaoCVV, cartaoBandeira, localizador])
+
   function atualizarTrecho(idx: number, campo: keyof Trecho, v: string) {
     setTrechos(prev => prev.map((t, i) => i === idx ? { ...t, [campo]: v } : t))
   }
@@ -939,10 +950,10 @@ export default function Busca() {
                       <option value="HC">Hipercard</option>
                     </select>
                   </div>
-                  <div><label className="text-sm font-medium text-gray-700">Número do cartão</label><input type="text" placeholder="0000 0000 0000 0000" value={cartaoNumero} onChange={e => { const val = mascaraCartao(e.target.value); setCartaoNumero(val); if (val.replace(/\D/g, '').length === 16) buscarFormasComCartao(val, cartaoValidade, cartaoTitular, cartaoCVV, cartaoBandeira) }} className={INPUT} /></div>
+                  <div><label className="text-sm font-medium text-gray-700">Número do cartão</label><input type="text" placeholder="0000 0000 0000 0000" value={cartaoNumero} onChange={e => { const val = mascaraCartao(e.target.value); setCartaoNumero(val) }} className={INPUT} /></div>
                   <div><label className="text-sm font-medium text-gray-700">Nome no cartão</label><input type="text" placeholder="JOAO SILVA" value={cartaoTitular} onChange={e => setCartaoTitular(e.target.value.toUpperCase())} className={INPUT} /></div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <div><label className="text-sm font-medium text-gray-700">Validade</label><input type="text" placeholder="MM/AA" value={cartaoValidade} onChange={e => { const val = mascaraValidade(e.target.value); setCartaoValidade(val); if (val.length >= 5) buscarFormasComCartao(cartaoNumero, val, cartaoTitular, cartaoCVV, cartaoBandeira) }} className={INPUT} /></div>
+                    <div><label className="text-sm font-medium text-gray-700">Validade</label><input type="text" placeholder="MM/AA" value={cartaoValidade} onChange={e => { const val = mascaraValidade(e.target.value); setCartaoValidade(val) }} className={INPUT} /></div>
                     <div><label className="text-sm font-medium text-gray-700">CVV</label><input type="text" placeholder="123" maxLength={4} value={cartaoCVV} onChange={e => setCartaoCVV(e.target.value.replace(/\D/g, '').slice(0, 4))} className={INPUT} /></div>
                     <div>
                       <label className="text-sm font-medium text-gray-700">Parcelas</label>
