@@ -67,6 +67,12 @@ interface VooAgrupado {
   tarifas: Tarifa[]
 }
 
+interface PoliticaViagem {
+  id: string; empresa_id: string; ativa: boolean
+  limite_valor_nacional: number | null; limite_valor_internacional: number | null
+  antecedencia_minima_dias: number | null; familias_permitidas: string[] | null; max_parcelas: number | null
+}
+
 interface Trecho { origem: string; destino: string; data: string }
 type TipoViagem = 'ida' | 'idavolta' | 'multiplos'
 type FaseSeleção = 'ida' | 'volta'
@@ -267,12 +273,63 @@ function CardSkeleton() {
   )
 }
 
+// ── Helpers de política ───────────────────────────────────────────
+function isAeroportoBrasileiro(iata: string): boolean {
+  const exact = buscarAeroportos(iata).find(a => a.iata === iata)
+  return exact?.pais === 'Brasil'
+}
+
+function verificarViolacoes(
+  voo: VooAgrupado,
+  tarifa: Tarifa,
+  politica: PoliticaViagem,
+  dataVoo: string,
+): string[] {
+  if (!politica.ativa) return []
+  const violacoes: string[] = []
+
+  const isNacional = isAeroportoBrasileiro(voo.origem) && isAeroportoBrasileiro(voo.destino)
+  const limite = isNacional ? politica.limite_valor_nacional : politica.limite_valor_internacional
+  if (limite != null && tarifa.preco > limite) {
+    violacoes.push(`valor ${formatPreco(tarifa.preco)} acima do limite de ${formatPreco(limite)}`)
+  }
+
+  if (politica.antecedencia_minima_dias != null && dataVoo) {
+    const hoje = new Date(); hoje.setHours(0, 0, 0, 0)
+    const vooDate = new Date(dataVoo + 'T12:00:00')
+    const dias = Math.round((vooDate.getTime() - hoje.getTime()) / 86400000)
+    if (dias < politica.antecedencia_minima_dias) {
+      violacoes.push(`antecedência de ${dias} dia${dias !== 1 ? 's' : ''} abaixo do mínimo de ${politica.antecedencia_minima_dias} dias`)
+    }
+  }
+
+  const permitidas = politica.familias_permitidas
+  if (permitidas && permitidas.length > 0) {
+    const familia = (tarifa.familia || tarifa.familiaCodigo || '').toLowerCase()
+    if (familia) {
+      const ok = permitidas.some(p => {
+        const pl = p.toLowerCase()
+        if (pl === 'light')    return familia.includes('light') || familia.includes('lite')
+        if (pl === 'standard') return familia.includes('standard') || familia.includes('classic') || familia.includes('basic')
+        if (pl === 'plus')     return familia.includes('plus') || familia.includes('full') || familia.includes('premium') || familia.includes('confort')
+        return familia.includes(pl)
+      })
+      if (!ok) violacoes.push(`família "${tarifa.familia || tarifa.familiaCodigo}" fora das famílias permitidas`)
+    }
+  }
+
+  return violacoes
+}
+
 // ── VooCard minimalista ───────────────────────────────────────────
-function VooCard({ voo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes }: {
+function VooCard({ voo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes, politica, dataVoo, onViolacao }: {
   voo: VooAgrupado
   onSelecionar: (v: Viagem) => void
   labelBotao?: string
   onVerDetalhes?: (v: Viagem) => void
+  politica?: PoliticaViagem | null
+  dataVoo?: string
+  onViolacao?: (viagem: Viagem, motivos: string[]) => void
 }) {
   const escalas      = voo.numParadas
   const escalasLabel = escalas === 0 ? 'Direto' : escalas === 1 ? '1 escala' : `${escalas} escalas`
@@ -319,15 +376,26 @@ function VooCard({ voo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes }
       {/* Tarifas — colunas finas */}
       <div className="flex overflow-x-auto border-t border-gray-100 divide-x divide-gray-100">
         {voo.tarifas.map((tarifa, i) => {
+          const violacoes  = politica && dataVoo ? verificarViolacoes(voo, tarifa, politica, dataVoo) : []
+          const foraPolicy = violacoes.length > 0
           const nomeFam    = tarifa.familia || tarifa.familiaCodigo || '—'
           const menor      = i === 0
 
           return (
             <button key={tarifa.identificacaoDaViagem || i}
-              onClick={() => onSelecionar(tarifa.viagem)}
+              onClick={() => {
+                if (foraPolicy && onViolacao) onViolacao(tarifa.viagem, violacoes)
+                else onSelecionar(tarifa.viagem)
+              }}
               className={`flex-1 min-w-[110px] flex flex-col items-center gap-1 px-2.5 py-2.5 text-center transition-colors ${
                 menor ? 'bg-slate-50 hover:bg-slate-100' : 'bg-white hover:bg-gray-50'
               }`}>
+
+              {/* Badge fora da política */}
+              {foraPolicy && (
+                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-sm leading-tight"
+                  style={{ backgroundColor: '#fef9c3', color: '#92400e' }}>⚠️ Fora da política</span>
+              )}
 
               {/* Nome da família */}
               <p className={`text-[10px] font-bold uppercase tracking-widest leading-none ${
@@ -564,10 +632,17 @@ export default function Busca() {
   const [chaveDeSeguranca,    setChaveDeSeguranca]    = useState<string | null>(null)
   const [codigoPagamento,     setCodigoPagamento]     = useState<number>(2)
   const [carregandoFormas,    setCarregandoFormas]    = useState(false)
+  const [politica, setPolitica] = useState<PoliticaViagem | null>(null)
+  const [avisoPolitica, setAvisoPolitica] = useState<{ viagem: Viagem; motivos: string[]; onContinuar: () => void } | null>(null)
   const dataVoltaRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    createClient().auth.getSession().then(({ data }) => { if (!data.session) router.replace('/') })
+    const supabase = createClient()
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!data.session) { router.replace('/'); return }
+      const { data: pol } = await supabase.from('politicas_viagem').select('*').eq('ativa', true).maybeSingle()
+      if (pol) setPolitica(pol as PoliticaViagem)
+    })
   }, [router])
 
   useEffect(() => {
@@ -864,7 +939,13 @@ export default function Busca() {
                       <VooCard key={voo.id || idx} voo={voo}
                         onSelecionar={fase === 'volta' ? selecionarVooVolta : selecionarVooIda}
                         onVerDetalhes={setVooDetalhes}
-                        labelBotao={fase === 'volta' ? 'Selecionar volta' : tipo === 'idavolta' ? 'Selecionar ida' : 'Selecionar'} />
+                        labelBotao={fase === 'volta' ? 'Selecionar volta' : tipo === 'idavolta' ? 'Selecionar ida' : 'Selecionar'}
+                        politica={politica}
+                        dataVoo={dataIda}
+                        onViolacao={(viagem, motivos) => {
+                          const fn = fase === 'volta' ? selecionarVooVolta : selecionarVooIda
+                          setAvisoPolitica({ viagem, motivos, onContinuar: () => { setAvisoPolitica(null); fn(viagem) } })
+                        }} />
                     ))}
                   </div>
                 )}
@@ -968,6 +1049,14 @@ export default function Busca() {
                     </div>
                   </div>
                 </div>
+                {politica?.max_parcelas != null && parcelas > politica.max_parcelas && (
+                  <div className="mt-4 p-3 rounded-lg flex items-start gap-2" style={{ backgroundColor: '#fef9c3', border: '1px solid #fde68a' }}>
+                    <span className="shrink-0 mt-0.5">⚠️</span>
+                    <p className="text-sm" style={{ color: '#92400e' }}>
+                      {parcelas}x excede o máximo de {politica.max_parcelas}x permitido pela política de viagens da sua empresa.
+                    </p>
+                  </div>
+                )}
                 {erroEmissao && <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200"><p className="text-red-600 text-sm">{erroEmissao}</p></div>}
                 <div className="flex flex-col sm:flex-row gap-3 mt-6">
                   <button onClick={() => setEtapa('passageiro')} className="sm:w-auto w-full px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">← Voltar</button>
@@ -1004,6 +1093,44 @@ export default function Busca() {
       </div>
 
       {vooDetalhes && <VooDetalhesModal viagem={vooDetalhes} onFechar={() => setVooDetalhes(null)} />}
+
+      {avisoPolitica && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <div className="flex items-start gap-3 mb-5">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#fef9c3' }}>
+                <svg className="w-5 h-5" style={{ color: '#d97706' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900 mb-1">Fora da política de viagens</h3>
+                <p className="text-sm text-gray-600 mb-3">Esta passagem está fora da política de viagens da sua empresa:</p>
+                <ul className="space-y-1.5">
+                  {avisoPolitica.motivos.map((m, i) => (
+                    <li key={i} className="text-sm flex items-start gap-1.5" style={{ color: '#92400e' }}>
+                      <span className="shrink-0 mt-0.5">•</span>{m}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-sm text-gray-500 mt-3">Deseja continuar mesmo assim?</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setAvisoPolitica(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+                Escolher outro voo
+              </button>
+              <button onClick={avisoPolitica.onContinuar}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: '#1a2744' }}>
+                Continuar mesmo assim
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
