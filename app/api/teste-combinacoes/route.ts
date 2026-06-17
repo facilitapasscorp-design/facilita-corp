@@ -11,14 +11,25 @@ const NOME_SISTEMA: Record<number, string> = {
   104: 'AZUL',
 }
 
-const COMBINACOES: Array<{ ida: number; volta: number }> = [
+const COMBINACOES: Array<{
+  ida: number
+  volta: number
+  label?: string
+  melhorPreco?: boolean
+  melhorFamilia?: boolean
+}> = [
   { ida: 77,  volta: 77  },  // GDS LATAM + GDS LATAM
   { ida: 103, volta: 103 },  // NDC LATAM + NDC LATAM
   { ida: 103, volta: 77  },  // NDC LATAM + GDS LATAM
   { ida: 103, volta: 95  },  // NDC LATAM + GOL
   { ida: 77,  volta: 95  },  // GDS LATAM + GOL
   { ida: 95,  volta: 104 },  // GOL + AZUL
-  { ida: 95,  volta: 95  },  // GOL + GOL
+  // GOL + GOL: comparação com e sem TarifarMelhorPreco/Família
+  // (nas outras combinações acima os dois flags já estão true — ver loop)
+  { ida: 95, volta: 95, melhorPreco: false, melhorFamilia: false,
+    label: 'GOL + GOL (sem TarifarMelhorPreco/Família)' },
+  { ida: 95, volta: 95, melhorPreco: true,  melhorFamilia: true,
+    label: 'GOL + GOL (com TarifarMelhorPreco/Família)' },
 ]
 
 const ORIGEM     = 'GRU'
@@ -174,13 +185,17 @@ export async function GET() {
       precoVolta?: number
       motivo?: string
       erro?: string
+      flags?: { melhorPreco: boolean; melhorFamilia: boolean }
     }
     const resultados: Resultado[] = []
 
-    for (const { ida: idaSistema, volta: voltaSistema } of COMBINACOES) {
+    for (const combo of COMBINACOES) {
+      const { ida: idaSistema, volta: voltaSistema } = combo
+      const melhorPreco   = combo.melhorPreco   ?? true
+      const melhorFamilia = combo.melhorFamilia  ?? true
       const nomeIda   = NOME_SISTEMA[idaSistema]
       const nomeVolta = NOME_SISTEMA[voltaSistema]
-      const label     = `Ida ${nomeIda} (${idaSistema}) + Volta ${nomeVolta} (${voltaSistema})`
+      const label     = combo.label ?? `Ida ${nomeIda} (${idaSistema}) + Volta ${nomeVolta} (${voltaSistema})`
 
       const dadosIda   = voosPorSistema[idaSistema]
       const dadosVolta = voosPorSistema[voltaSistema]
@@ -204,6 +219,7 @@ export async function GET() {
       console.log(`[TESTE-COMB] Tarifando | ${label}`)
       console.log(`[TESTE-COMB]   ViagemIda=${vooIda.Id} IdentificacaoDaViagem=${vooIda.IdentificacaoDaViagem}`)
       console.log(`[TESTE-COMB]   ViagemVolta=${vooVolta.Id}`)
+      console.log(`[TESTE-COMB]   flags: TarifarMelhorPreco=${melhorPreco} TarifarMelhorFamilia=${melhorFamilia}`)
 
       try {
         const classesIda   = extrairClasses(vooIda)
@@ -221,8 +237,8 @@ export async function GET() {
           ClassesSelecionadasVolta: classesVolta,
           RetornarPlanoDeFinanciamento: true,
           RetornarRegrasTarifarias:     true,
-          TarifarMelhorFamilia:         true,
-          TarifarMelhorPreco:           true,
+          TarifarMelhorFamilia:         melhorFamilia,
+          TarifarMelhorPreco:           melhorPreco,
         }
 
         const tarifaRes  = await fetch(`${BASE}/Tarifar`, {
@@ -232,20 +248,21 @@ export async function GET() {
         })
         const tarifaData = await tarifaRes.json()
 
+        const flagsUsadas = { melhorPreco, melhorFamilia }
         if (tarifaData.Exception) {
           const erro = tarifaData.Exception.Message ?? JSON.stringify(tarifaData.Exception)
           console.log(`[TESTE-COMB] ERRO    | ${label} | ${erro}`)
-          resultados.push({ combinacao: label, status: 'ERRO', erro })
+          resultados.push({ combinacao: label, status: 'ERRO', erro, flags: flagsUsadas })
         } else {
           const precoIda   = tarifaData.ViagensTrecho1?.[0]?.Preco?.Total as number | undefined
           const precoVolta = tarifaData.ViagensTrecho2?.[0]?.Preco?.Total as number | undefined
           console.log(`[TESTE-COMB] OK      | ${label} | precoIda=${precoIda} precoVolta=${precoVolta}`)
-          resultados.push({ combinacao: label, status: 'OK', precoIda, precoVolta })
+          resultados.push({ combinacao: label, status: 'OK', precoIda, precoVolta, flags: flagsUsadas })
         }
       } catch (e) {
         const erro = e instanceof Error ? e.message : String(e)
         console.log(`[TESTE-COMB] ERRO    | ${label} | exceção: ${erro}`)
-        resultados.push({ combinacao: label, status: 'ERRO', erro: `exceção: ${erro}` })
+        resultados.push({ combinacao: label, status: 'ERRO', erro: `exceção: ${erro}`, flags: { melhorPreco, melhorFamilia } })
       }
     }
 
