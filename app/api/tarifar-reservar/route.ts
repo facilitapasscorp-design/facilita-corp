@@ -130,18 +130,31 @@ export async function POST(req: NextRequest) {
     const reservaRaw = await reservaRes.text()
     const reservaData = JSON.parse(reservaRaw)
     console.log('[RESERVAR] status:', reservaRes.status, '| Exception:', reservaData.Exception?.Message ?? null)
-    console.log('[RESERVAR] Localizador:', reservaData.Reservas?.[0]?.Localizador ?? null)
 
     if (reservaData.Exception) {
       return NextResponse.json({ erro: reservaData.Exception.Message }, { status: 400 })
     }
 
-    const localizador = reservaData.Reservas?.[0]?.Localizador
-    if (!localizador) {
-      return NextResponse.json({ erro: 'Localizador não retornado pela WOOBA' }, { status: 400 })
+    const reservas = reservaData.Reservas ?? []
+    if (reservas.length === 0) {
+      return NextResponse.json({ erro: 'Nenhuma reserva retornada pela WOOBA' }, { status: 400 })
     }
 
-    return NextResponse.json({ localizador })
+    const localizadores = reservas.map((r: any) => ({
+      localizador: r.Localizador,
+      companhia: r.Voos?.[0]?.CiaAerea?.CodigoIata ?? r.Bilhetes?.[0]?.Cia ?? null,
+      id: r.Id,
+    }))
+
+    console.log('[RESERVAR] Total de reservas:', reservas.length)
+    console.log('[RESERVAR] Localizadores:', JSON.stringify(localizadores))
+
+    // Mantém compatibilidade: localizador principal é o primeiro
+    return NextResponse.json({
+      localizador: localizadores[0].localizador,
+      localizadores,
+      totalReservas: reservas.length,
+    })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
     return NextResponse.json({ erro: msg }, { status: 500 })
