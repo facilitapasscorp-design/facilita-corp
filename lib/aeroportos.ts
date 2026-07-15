@@ -5,6 +5,43 @@ export interface Aeroporto {
   estado: string
   pais: string
   aliases: string[]
+  /** Quando presente, este item representa um grupo de cidade (ex: "SAO"), não um aeroporto único. */
+  grupo?: string[]
+}
+
+export interface GrupoCidade {
+  codigo: string
+  nome: string
+  cidade: string
+  aeroportos: string[]
+  aliases: string[]
+}
+
+export const GRUPOS_CIDADE: GrupoCidade[] = [
+  { codigo: 'SAO', nome: 'Todos os aeroportos de São Paulo', cidade: 'São Paulo', aeroportos: ['GRU', 'CGH', 'VCP'], aliases: ['sao', 'são', 'sao paulo', 'são paulo', 'sp'] },
+  { codigo: 'RIO', nome: 'Todos os aeroportos do Rio de Janeiro', cidade: 'Rio de Janeiro', aeroportos: ['GIG', 'SDU'], aliases: ['rio', 'rio de janeiro', 'rj'] },
+  { codigo: 'BHZ', nome: 'Todos os aeroportos de Belo Horizonte', cidade: 'Belo Horizonte', aeroportos: ['CNF', 'PLU'], aliases: ['bh', 'bhz', 'belo horizonte'] },
+]
+
+/** Se `iata` for o código de um grupo de cidade, retorna os códigos IATA que ele representa. */
+export function resolverGrupo(iata: string): string[] | null {
+  const g = GRUPOS_CIDADE.find(g => g.codigo === iata)
+  return g ? g.aeroportos : null
+}
+
+function grupoParaAeroporto(g: GrupoCidade): Aeroporto {
+  return { iata: g.codigo, nome: g.nome, cidade: g.cidade, estado: '', pais: 'Brasil', aliases: g.aliases, grupo: g.aeroportos }
+}
+
+function buscarGrupo(q: string): Aeroporto | null {
+  for (const g of GRUPOS_CIDADE) {
+    const codigoL = g.codigo.toLowerCase()
+    const cidadeN = removerAcentos(g.cidade)
+    const match = codigoL === q || codigoL.startsWith(q) || cidadeN === q || cidadeN.startsWith(q) ||
+      g.aliases.some(a => { const al = removerAcentos(a); return al === q || al.startsWith(q) })
+    if (match) return grupoParaAeroporto(g)
+  }
+  return null
 }
 
 const AEROPORTOS: Aeroporto[] = [
@@ -184,5 +221,7 @@ export function buscarAeroportos(query: string): Aeroporto[] {
     else if (aliasesN.some(al => al === q || al.startsWith(q))) aliasMatch.push(a)
   }
 
-  return [...exatoIATA, ...comecaIATA, ...cidadeExata, ...cidadeParcial, ...aliasMatch].slice(0, 6)
+  const resultados = [...exatoIATA, ...comecaIATA, ...cidadeExata, ...cidadeParcial, ...aliasMatch].slice(0, 6)
+  const grupo = buscarGrupo(q)
+  return grupo ? [grupo, ...resultados] : resultados
 }

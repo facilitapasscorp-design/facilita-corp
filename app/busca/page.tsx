@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '../../lib/supabase'
-import { buscarAeroportos, Aeroporto } from '../../lib/aeroportos'
+import { buscarAeroportos, resolverGrupo, Aeroporto } from '../../lib/aeroportos'
 
 interface VooLeg {
   Numero: number
@@ -164,6 +164,10 @@ function mascaraValidade(v: string): string {
   return v.replace(/\D/g, '').slice(0, 4).replace(/(\d{2})(\d)/, '$1/$2')
 }
 
+const AZUL = '#18283A'
+const DOURADO = '#B79D7D'
+const FUNDO = '#F4F5F3'
+
 const CIA: Record<string, { label: string; bg: string }> = {
   G3: { label: 'GOL',   bg: '#F97316' },
   LA: { label: 'LATAM', bg: '#7B1022' },
@@ -174,14 +178,16 @@ const CIA: Record<string, { label: string; bg: string }> = {
 
 const INPUT = 'mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 
-function AeroportoInput({ value, onChange, placeholder }: { value: string; onChange: (iata: string) => void; placeholder: string }) {
+function AeroportoInput({ value, onChange, placeholder, icon }: { value: string; onChange: (iata: string) => void; placeholder: string; icon?: React.ReactNode }) {
   const [query, setQuery] = useState(value)
   const [aberto, setAberto] = useState(false)
   const [sugestoes, setSugestoes] = useState<Aeroporto[]>([])
   const [focusIdx, setFocusIdx] = useState(-1)
   const containerRef = useRef<HTMLDivElement>(null)
+  const digitandoRef = useRef(false)
 
   useEffect(() => {
+    if (digitandoRef.current) { digitandoRef.current = false; return }
     if (!value) { setQuery(''); return }
     if (value.length === 3) {
       const exact = buscarAeroportos(value).find(a => a.iata === value)
@@ -205,10 +211,12 @@ function AeroportoInput({ value, onChange, placeholder }: { value: string; onCha
     setQuery(v); abrir(v); setFocusIdx(-1)
     const upper = v.trim().toUpperCase()
     if (upper.length === 3) {
-      const exact = buscarAeroportos(upper).find(a => a.iata === upper)
+      const exact = buscarAeroportos(upper).find(a => a.iata === upper && !a.grupo)
       if (exact) { selecionar(exact); return }
     }
-    onChange(upper.slice(0, 3))
+    const novoValor = upper.slice(0, 3)
+    if (novoValor !== value) digitandoRef.current = true
+    onChange(novoValor)
   }
   function selecionar(a: Aeroporto) {
     setQuery(`${a.iata} - ${a.nome}`); onChange(a.iata); setAberto(false); setSugestoes([])
@@ -223,23 +231,136 @@ function AeroportoInput({ value, onChange, placeholder }: { value: string; onCha
 
   return (
     <div ref={containerRef} className="relative">
+      {icon && <span className="absolute left-3 top-1/2 -translate-y-1/2 mt-0.5 text-gray-400 pointer-events-none">{icon}</span>}
       <input type="text" placeholder={placeholder} value={query}
         onChange={e => handleChange(e.target.value)}
         onFocus={() => { if (query.length >= 2) abrir(query) }}
-        onKeyDown={handleKeyDown} autoComplete="off" className={INPUT} />
+        onKeyDown={handleKeyDown} autoComplete="off" className={`${INPUT} ${icon ? 'pl-10' : ''}`} />
       {aberto && sugestoes.length > 0 && (
         <div className="absolute z-50 mt-1 left-0 right-0 sm:right-auto sm:w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
           {sugestoes.map((a, i) => (
             <button key={a.iata} type="button" onMouseDown={() => selecionar(a)}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${i === focusIdx ? 'bg-blue-50' : 'hover:bg-gray-50'}`}>
-              <span className="shrink-0 inline-flex items-center justify-center bg-blue-600 text-white font-bold text-xs rounded-lg px-2 py-1 min-w-[44px]">{a.iata}</span>
+              {a.grupo ? (
+                <span className="shrink-0 inline-flex items-center justify-center text-white rounded-lg px-2 py-1 min-w-[44px]" style={{ backgroundColor: DOURADO }}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m-1 4h1m4-4h1m-1 4h1M9 21v-4h6v4" />
+                  </svg>
+                </span>
+              ) : (
+                <span className="shrink-0 inline-flex items-center justify-center bg-blue-600 text-white font-bold text-xs rounded-lg px-2 py-1 min-w-[44px]">{a.iata}</span>
+              )}
               <div className="min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{a.nome}</p>
-                <p className="text-xs text-gray-400">{a.cidade}{a.estado ? `, ${a.estado}` : ''} · {a.pais}</p>
+                <p className={`text-sm font-medium truncate ${a.grupo ? 'text-gray-900' : 'text-gray-900'}`}>{a.nome}</p>
+                <p className="text-xs text-gray-400">{a.grupo ? `${a.grupo.join(', ')}` : `${a.cidade}${a.estado ? `, ${a.estado}` : ''} · ${a.pais}`}</p>
               </div>
             </button>
           ))}
         </div>
+      )}
+    </div>
+  )
+}
+
+const NOME_MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+const DIAS_SEMANA = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
+
+function isoParaData(v: string): Date { const [y, m, d] = v.split('-').map(Number); return new Date(y, m - 1, d) }
+function dataParaIso(d: Date): string { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
+function formatDataExibicao(v: string): string { if (!v) return ''; const [y, m, d] = v.split('-'); return `${d}/${m}/${y}` }
+function mesmoDia(a: Date, b: Date): boolean { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate() }
+
+function DatePicker({ value, onChange, minDate, placeholder, openSignal }: {
+  value: string
+  onChange: (v: string) => void
+  minDate?: string
+  placeholder?: string
+  openSignal?: number
+}) {
+  const [aberto, setAberto] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0)
+  const dataMinima = minDate ? isoParaData(minDate) : hoje
+  const base = value ? isoParaData(value) : dataMinima
+  const [mesAtual, setMesAtual] = useState(() => new Date(base.getFullYear(), base.getMonth(), 1))
+
+  const [minDateSincronizado, setMinDateSincronizado] = useState(minDate)
+  if (minDate !== minDateSincronizado) {
+    setMinDateSincronizado(minDate)
+    if (minDate) { const d = isoParaData(minDate); setMesAtual(new Date(d.getFullYear(), d.getMonth(), 1)) }
+  }
+
+  const [openSignalSincronizado, setOpenSignalSincronizado] = useState(openSignal)
+  if (openSignal !== openSignalSincronizado) {
+    setOpenSignalSincronizado(openSignal)
+    if (openSignal !== undefined) setAberto(true)
+  }
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setAberto(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const ano = mesAtual.getFullYear(), mes = mesAtual.getMonth()
+  const primeiroDiaSemana = new Date(ano, mes, 1).getDay()
+  const diasNoMes = new Date(ano, mes + 1, 0).getDate()
+  const celulas: (Date | null)[] = [
+    ...Array.from({ length: primeiroDiaSemana }, () => null),
+    ...Array.from({ length: diasNoMes }, (_, i) => new Date(ano, mes, i + 1)),
+  ]
+  const valorSelecionado = value ? isoParaData(value) : null
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button type="button" onClick={() => setAberto(o => !o)}
+        className="mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-left bg-white flex items-center gap-2 focus:outline-none focus:ring-2 transition-colors"
+        style={{ boxShadow: aberto ? `0 0 0 2px ${DOURADO}55` : undefined }}>
+        <svg className="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <rect x="3" y="5" width="18" height="16" rx="2" /><path strokeLinecap="round" d="M3 9h18M8 3v4M16 3v4" />
+        </svg>
+        <span className={value ? 'text-gray-900' : 'text-gray-400'}>{value ? formatDataExibicao(value) : (placeholder ?? 'dd/mm/aaaa')}</span>
+      </button>
+
+      {aberto && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/30 sm:hidden" onClick={() => setAberto(false)} />
+          <div className="fixed inset-x-4 bottom-4 z-50 sm:absolute sm:inset-auto sm:bottom-auto sm:left-0 sm:mt-1 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 sm:w-80">
+            <div className="flex items-center justify-between mb-3">
+              <button type="button" onClick={() => setMesAtual(m => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
+                className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              <span className="text-sm font-semibold" style={{ color: AZUL }}>{NOME_MESES[mes]} {ano}</span>
+              <button type="button" onClick={() => setMesAtual(m => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
+                className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </div>
+            <div className="grid grid-cols-7 gap-1 mb-1">
+              {DIAS_SEMANA.map((d, i) => <div key={i} className="text-center text-[10px] font-semibold text-gray-400">{d}</div>)}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {celulas.map((d, i) => {
+                if (!d) return <div key={i} />
+                const bloqueado = d < dataMinima
+                const selecionado = valorSelecionado ? mesmoDia(d, valorSelecionado) : false
+                return (
+                  <button key={i} type="button" disabled={bloqueado}
+                    onClick={() => { onChange(dataParaIso(d)); setAberto(false) }}
+                    className={`h-10 sm:h-8 rounded-lg text-xs font-medium transition-colors ${
+                      bloqueado ? 'text-gray-300 cursor-not-allowed' : selecionado ? 'text-white' : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                    style={selecionado ? { backgroundColor: AZUL } : {}}>
+                    {d.getDate()}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </>
       )}
     </div>
   )
@@ -250,6 +371,77 @@ function AirlineBadge({ iata }: { iata: string }) {
   return (
     <span className="inline-flex items-center justify-center rounded-md text-white font-bold text-xs px-2 py-1 min-w-[48px]"
       style={{ backgroundColor: c.bg }}>{c.label}</span>
+  )
+}
+
+function resumoPassageiros(adultos: number, criancas: number, bebes: number): string {
+  return [
+    `${adultos} ${adultos === 1 ? 'adulto' : 'adultos'}`,
+    criancas > 0 ? `${criancas} ${criancas === 1 ? 'criança' : 'crianças'}` : null,
+    bebes > 0 ? `${bebes} ${bebes === 1 ? 'bebê' : 'bebês'}` : null,
+  ].filter(Boolean).join(', ')
+}
+
+function PassageirosDropdown({ adultos, criancas, bebes, setAdultos, setCriancas, setBebes }: {
+  adultos: number; criancas: number; bebes: number
+  setAdultos: (v: number) => void; setCriancas: (v: number) => void; setBebes: (v: number) => void
+}) {
+  const [aberto, setAberto] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setAberto(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const total = adultos + criancas + bebes
+  const linhas = [
+    { label: 'Adultos', sub: 'Acima de 12 anos', val: adultos, set: setAdultos, min: 1, max: 9 - criancas - bebes },
+    { label: 'Crianças', sub: '2 a 11 anos', val: criancas, set: setCriancas, min: 0, max: 9 - adultos - bebes },
+    { label: 'Bebês', sub: 'Até 2 anos, no colo', val: bebes, set: setBebes, min: 0, max: Math.min(adultos, 9 - adultos - criancas) },
+  ]
+
+  return (
+    <div ref={containerRef} className="relative">
+      <label className="text-sm font-medium text-gray-700">Passageiros</label>
+      <button type="button" onClick={() => setAberto(o => !o)}
+        className="mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-left bg-white flex items-center justify-between gap-2 focus:outline-none transition-colors"
+        style={{ boxShadow: aberto ? `0 0 0 2px ${DOURADO}55` : undefined }}>
+        <span className="flex items-center gap-2 text-gray-900 truncate">
+          <svg className="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1a4 4 0 10-4-4 4 4 0 004 4zm6-4a4 4 0 11-4-4" />
+          </svg>
+          {resumoPassageiros(adultos, criancas, bebes)}
+        </span>
+        <svg className={`w-4 h-4 shrink-0 text-gray-400 transition-transform ${aberto ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {aberto && (
+        <div className="absolute z-50 mt-1 left-0 right-0 sm:w-80 bg-white rounded-xl shadow-xl border border-gray-100 divide-y divide-gray-100 overflow-hidden">
+          {linhas.map(({ label, sub, val, set, min, max }) => (
+            <div key={label} className="flex items-center justify-between px-4 py-3">
+              <div><p className="text-sm font-medium text-gray-800">{label}</p><p className="text-xs text-gray-400">{sub}</p></div>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => val > min && set(val - 1)} disabled={val <= min}
+                  className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 text-lg font-medium hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">−</button>
+                <span className="w-5 text-center text-sm font-bold text-gray-900">{val}</span>
+                <button type="button" onClick={() => val < max && set(val + 1)} disabled={val >= max}
+                  className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 text-lg font-medium hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">+</button>
+              </div>
+            </div>
+          ))}
+          {total >= 9 && <p className="px-4 py-2 text-amber-600 text-xs font-medium">Máximo de 9 passageiros atingido.</p>}
+          <div className="px-4 py-2.5 bg-gray-50">
+            <button type="button" onClick={() => setAberto(false)} className="w-full text-center text-xs font-semibold py-1.5 rounded-lg text-white transition-opacity hover:opacity-90" style={{ backgroundColor: AZUL }}>Aplicar</button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -444,7 +636,7 @@ function VooCard({ voo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes, 
               {/* Botão */}
               <span className={`mt-0.5 text-[10px] font-semibold px-2.5 py-1 rounded-md ${
                 menor ? 'text-white' : 'bg-gray-100 text-gray-500'
-              }`} style={menor ? { backgroundColor: '#1a2744' } : {}}>
+              }`} style={menor ? { backgroundColor: '#18283A' } : {}}>
                 {labelBotao}
               </span>
             </button>
@@ -507,7 +699,7 @@ function IndicadorEtapas({ etapa }: { etapa: Etapa }) {
           <div className="flex flex-col items-center gap-1.5">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
               i < idx ? 'bg-green-500 text-white' : i === idx ? 'text-white' : 'bg-gray-200 text-gray-400'
-            }`} style={i === idx ? { backgroundColor: '#1a2744' } : {}}>
+            }`} style={i === idx ? { backgroundColor: '#18283A' } : {}}>
               {i < idx ? <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : i + 1}
             </div>
             <span className={`text-xs whitespace-nowrap ${i === idx ? 'text-gray-700 font-semibold' : i < idx ? 'text-green-600 font-medium' : 'text-gray-400'}`}>{step.label}</span>
@@ -634,14 +826,21 @@ export default function Busca() {
   const [carregandoFormas,    setCarregandoFormas]    = useState(false)
   const [politica, setPolitica] = useState<PoliticaViagem | null>(null)
   const [avisoPolitica, setAvisoPolitica] = useState<{ viagem: Viagem; motivos: string[]; onContinuar: () => void } | null>(null)
-  const dataVoltaRef = useRef<HTMLInputElement>(null)
+  const [nomeUsuario, setNomeUsuario] = useState<string | null>(null)
+  const [menuMobileAberto, setMenuMobileAberto] = useState(false)
+  const [voltaAbrirSignal, setVoltaAbrirSignal] = useState(0)
 
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) { router.replace('/'); return }
-      const { data: pol } = await supabase.from('politicas_viagem').select('*').eq('ativa', true).maybeSingle()
+      const userId = data.session.user.id
+      const [{ data: pol }, { data: usuario }] = await Promise.all([
+        supabase.from('politicas_viagem').select('*').eq('ativa', true).maybeSingle(),
+        supabase.from('usuarios_empresas').select('nome').eq('user_id', userId).maybeSingle(),
+      ])
       if (pol) setPolitica(pol as PoliticaViagem)
+      setNomeUsuario((usuario as { nome: string | null } | null)?.nome ?? null)
     })
   }, [router])
 
@@ -696,11 +895,12 @@ export default function Busca() {
     } else if (!origem || !destino || !dataIda) { setErroVoo('Preencha origem, destino e data de ida.'); return }
     setCarregando(true); setErroVoo(''); setGruposIda(null); setGruposVolta(null)
     setFase('ida'); setVooIdaSelecionado(null); setVooVoltaSelecionado(null)
+    const resolverCodigo = (c: string) => (resolverGrupo(c)?.join(',')) ?? c
     const res = await fetch('/api/buscar-voos', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        origem:  tipo === 'multiplos' ? trechos[0].origem  : origem,
-        destino: tipo === 'multiplos' ? trechos[0].destino : destino,
+        origem:  resolverCodigo(tipo === 'multiplos' ? trechos[0].origem  : origem),
+        destino: resolverCodigo(tipo === 'multiplos' ? trechos[0].destino : destino),
         dataIda: tipo === 'multiplos' ? trechos[0].data    : dataIda,
         dataVolta: tipo === 'idavolta' ? dataVolta : undefined,
         adultos, criancas, bebes, tipo,
@@ -817,41 +1017,91 @@ export default function Busca() {
   ]
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f0f4f8' }}>
-      <div className="px-4 sm:px-8 py-4 flex items-center justify-between border-b border-gray-200" style={{ backgroundColor: '#F4F5F3' }}>
+    <div className="min-h-screen" style={{ backgroundColor: FUNDO }}>
+      <div className="relative px-4 sm:px-8 py-4 flex items-center justify-between border-b border-gray-200" style={{ backgroundColor: FUNDO }}>
         <Image src="/logo.png" alt="Facilita Pass" width={120} height={38} style={{ objectFit: 'contain' }} />
-        <div className="flex items-center gap-3 sm:gap-5">
-          <button onClick={() => router.push('/painel')} className="text-xs sm:text-sm font-medium hover:opacity-60 transition-colors" style={{ color: '#1a2744' }}>Minhas reservas</button>
-          <button onClick={async () => { await createClient().auth.signOut(); router.replace('/') }} className="text-xs sm:text-sm hover:opacity-60 transition-colors" style={{ color: '#1a2744' }}>Sair</button>
+
+        <div className="hidden sm:flex items-center gap-5">
+          <button onClick={() => router.push('/painel')} className="text-sm font-medium hover:opacity-60 transition-colors" style={{ color: AZUL }}>Minhas reservas</button>
+          <button onClick={async () => { await createClient().auth.signOut(); router.replace('/') }} className="text-sm hover:opacity-60 transition-colors" style={{ color: AZUL }}>Sair</button>
         </div>
+
+        <button type="button" aria-label="Menu" onClick={() => setMenuMobileAberto(o => !o)}
+          className="sm:hidden w-9 h-9 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors" style={{ color: AZUL }}>
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            {menuMobileAberto
+              ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              : <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />}
+          </svg>
+        </button>
+
+        {menuMobileAberto && (
+          <div className="sm:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-md flex flex-col z-40">
+            <button onClick={() => { setMenuMobileAberto(false); router.push('/painel') }} className="text-left px-5 py-3 text-sm font-medium border-b border-gray-100" style={{ color: AZUL }}>Minhas reservas</button>
+            <button onClick={async () => { setMenuMobileAberto(false); await createClient().auth.signOut(); router.replace('/') }} className="text-left px-5 py-3 text-sm" style={{ color: AZUL }}>Sair</button>
+          </div>
+        )}
       </div>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
 
         {etapa === 'selecao' && (
           <div className="py-8 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold" style={{ color: AZUL }}>{nomeUsuario ? `Olá, ${nomeUsuario} 👋` : 'Olá 👋'}</h1>
+                <p className="text-sm text-gray-500 mt-1">Encontre as melhores tarifas para sua próxima viagem corporativa.</p>
+              </div>
+              <a href="https://wa.me/5544991272314?text=Ol%C3%A1%2C%20vim%20do%20suporte%20do%20sistema%2C%20e%20estou%20com%20uma%20d%C3%BAvida"
+                target="_blank" rel="noopener noreferrer"
+                className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: '#25D366' }}>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2.05 22l5.25-1.38a9.9 9.9 0 004.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 012.41 5.82c0 4.54-3.7 8.24-8.25 8.24a8.2 8.2 0 01-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.18 8.18 0 01-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24M8.53 6.87c-.16 0-.43.06-.65.31s-.86.85-.86 2.07.89 2.4 1.01 2.56 1.75 2.8 4.35 3.83c2.15.85 2.59.68 3.06.64s1.5-.61 1.71-1.2.21-1.09.15-1.2-.24-.17-.5-.3-1.5-.74-1.74-.82-.4-.13-.58.13-.68.82-.83 1-.31.19-.57.06a7.28 7.28 0 01-2.13-1.32 8.03 8.03 0 01-1.47-1.83c-.15-.26-.01-.4.12-.53.12-.12.27-.31.4-.47s.17-.26.26-.44.04-.33-.02-.46-.58-1.4-.79-1.92-.42-.44-.58-.45-.33-.01-.5-.01" /></svg>
+                Suporte
+              </a>
+            </div>
+
             <div className="bg-white rounded-2xl p-6 shadow-sm space-y-5">
               <div className="flex gap-2 flex-wrap">
                 {([{ v: 'idavolta', l: 'Ida e volta' }, { v: 'ida', l: 'Só ida' }, { v: 'multiplos', l: 'Múltiplos destinos' }] as const).map(op => (
                   <button key={op.v} onClick={() => setTipo(op.v)}
                     className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${tipo === op.v ? 'text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    style={tipo === op.v ? { backgroundColor: '#1a2744' } : {}}>{op.l}</button>
+                    style={tipo === op.v ? { backgroundColor: AZUL } : {}}>{op.l}</button>
                 ))}
               </div>
 
               {tipo !== 'multiplos' && (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div><label className="text-sm font-medium text-gray-700">Origem</label><AeroportoInput value={origem} onChange={setOrigem} placeholder="Ex: GRU ou São Paulo" /></div>
-                    <div><label className="text-sm font-medium text-gray-700">Destino</label><AeroportoInput value={destino} onChange={setDestino} placeholder="Ex: GIG ou Rio" /></div>
+                  <div className="relative grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 sm:gap-3 items-center">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Origem</label>
+                      <AeroportoInput value={origem} onChange={setOrigem} placeholder="Ex: GRU ou São Paulo"
+                        icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-3 2v1.5l4.5-1.5 4.5 1.5V21l-3-2v-5.5z" /></svg>} />
+                    </div>
+                    <button type="button" onClick={() => { setOrigem(destino); setDestino(origem) }}
+                      aria-label="Trocar origem e destino"
+                      className="mx-auto sm:mx-0 sm:mt-6 w-9 h-9 rounded-full border flex items-center justify-center shrink-0 transition-transform duration-300 rotate-90 sm:rotate-0 hover:rotate-[270deg] sm:hover:rotate-180"
+                      style={{ borderColor: DOURADO, color: DOURADO }}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" />
+                      </svg>
+                    </button>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Destino</label>
+                      <AeroportoInput value={destino} onChange={setDestino} placeholder="Ex: GIG ou Rio"
+                        icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 21s-7-6.2-7-11.5A7 7 0 0112 2a7 7 0 017 7.5C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>} />
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700">Data de ida</label>
-                      <input type="date" value={dataIda} onChange={e => { const v = e.target.value; setDataIda(v); if (dataVolta && dataVolta <= v) setDataVolta(''); if (tipo === 'idavolta') setTimeout(() => dataVoltaRef.current?.focus(), 80) }} className={INPUT} />
+                      <DatePicker value={dataIda} onChange={v => { setDataIda(v); if (dataVolta && dataVolta <= v) setDataVolta(''); if (tipo === 'idavolta') setVoltaAbrirSignal(s => s + 1) }} placeholder="dd/mm/aaaa" />
                     </div>
                     {tipo === 'idavolta' && (
-                      <div><label className="text-sm font-medium text-gray-700">Data de volta</label><input ref={dataVoltaRef} type="date" value={dataVolta} min={minDataVolta} onChange={e => setDataVolta(e.target.value)} className={INPUT} /></div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Data de volta</label>
+                        <DatePicker value={dataVolta} onChange={setDataVolta} minDate={minDataVolta} placeholder="dd/mm/aaaa" openSignal={voltaAbrirSignal} />
+                      </div>
                     )}
                   </div>
                 </>
@@ -873,28 +1123,15 @@ export default function Busca() {
                 </div>
               )}
 
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-gray-700">Passageiros</label>
-                  <span className="text-xs text-gray-400 font-medium">{adultos + criancas + bebes} {adultos + criancas + bebes === 1 ? 'passageiro' : 'passageiros'}</span>
-                </div>
-                <div className="border border-gray-200 rounded-xl divide-y divide-gray-100">
-                  {([{ label: 'Adultos', sub: 'Acima de 12 anos', val: adultos, set: setAdultos, min: 1 }, { label: 'Crianças', sub: '2 a 11 anos', val: criancas, set: setCriancas, min: 0 }, { label: 'Bebês', sub: 'Até 2 anos', val: bebes, set: setBebes, min: 0 }] as const).map(({ label, sub, val, set, min }) => (
-                    <div key={label} className="flex items-center justify-between px-4 py-3">
-                      <div><p className="text-sm font-medium text-gray-800">{label}</p><p className="text-xs text-gray-400">{sub}</p></div>
-                      <div className="flex items-center gap-3">
-                        <button type="button" onClick={() => val > min && set(val - 1)} disabled={val <= min} className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 text-lg font-medium hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">−</button>
-                        <span className="w-5 text-center text-sm font-bold text-gray-900">{val}</span>
-                        <button type="button" onClick={() => adultos + criancas + bebes < 9 && set(val + 1)} disabled={adultos + criancas + bebes >= 9} className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 text-lg font-medium hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">+</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {adultos + criancas + bebes >= 9 && <p className="text-amber-600 text-xs mt-2 font-medium">Máximo de 9 passageiros atingido.</p>}
-              </div>
+              <PassageirosDropdown adultos={adultos} criancas={criancas} bebes={bebes} setAdultos={setAdultos} setCriancas={setCriancas} setBebes={setBebes} />
 
               {erroVoo && <p className="text-red-500 text-sm">{erroVoo}</p>}
-              <button onClick={buscarVoos} disabled={carregando} className="w-full py-3 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50" style={{ backgroundColor: '#1a2744' }}>
+              <button onClick={buscarVoos} disabled={carregando} className="w-full py-3 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 inline-flex items-center justify-center gap-2" style={{ backgroundColor: AZUL }}>
+                {!carregando && (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <circle cx="11" cy="11" r="7" /><path strokeLinecap="round" d="M21 21l-4.35-4.35" />
+                  </svg>
+                )}
                 {carregando ? 'Buscando voos...' : 'Buscar voos'}
               </button>
             </div>
@@ -918,7 +1155,7 @@ export default function Busca() {
                     {ORDENACAO_OPTS.map(op => (
                       <button key={op.id} onClick={() => setOrdenacao(op.id)}
                         className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${ordenacao === op.id ? 'text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'}`}
-                        style={ordenacao === op.id ? { backgroundColor: '#1a2744' } : {}}>{op.label}</button>
+                        style={ordenacao === op.id ? { backgroundColor: '#18283A' } : {}}>{op.label}</button>
                     ))}
                   </div>
                 )}
@@ -994,7 +1231,7 @@ export default function Busca() {
               </div>
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <button onClick={() => setEtapa('selecao')} className="sm:w-auto w-full px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">← Voltar</button>
-                <button onClick={gerarReserva} disabled={carregandoReserva} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50" style={{ backgroundColor: '#1a2744' }}>{carregandoReserva ? 'Gerando reserva...' : 'Gerar reserva'}</button>
+                <button onClick={gerarReserva} disabled={carregandoReserva} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50" style={{ backgroundColor: '#18283A' }}>{carregandoReserva ? 'Gerando reserva...' : 'Gerar reserva'}</button>
               </div>
             </div>
           </div>
@@ -1060,7 +1297,7 @@ export default function Busca() {
                 {erroEmissao && <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200"><p className="text-red-600 text-sm">{erroEmissao}</p></div>}
                 <div className="flex flex-col sm:flex-row gap-3 mt-6">
                   <button onClick={() => setEtapa('passageiro')} className="sm:w-auto w-full px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">← Voltar</button>
-                  <button onClick={emitirPassagem} disabled={carregandoEmissao || carregandoFormas} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50" style={{ backgroundColor: '#1a2744' }}>{carregandoEmissao ? 'Emitindo passagem...' : 'Emitir passagem'}</button>
+                  <button onClick={emitirPassagem} disabled={carregandoEmissao || carregandoFormas} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50" style={{ backgroundColor: '#18283A' }}>{carregandoEmissao ? 'Emitindo passagem...' : 'Emitir passagem'}</button>
                 </div>
               </div>
             </div>
@@ -1085,7 +1322,7 @@ export default function Busca() {
                 {vooIdaSelecionado && <ResumoVoo viagem={vooIdaSelecionado} label="Ida" />}
                 {vooVoltaSelecionado && <ResumoVoo viagem={vooVoltaSelecionado} label="Volta" />}
               </div>
-              <button onClick={novaBusca} className="px-8 py-3 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ backgroundColor: '#1a2744' }}>Nova busca</button>
+              <button onClick={novaBusca} className="px-8 py-3 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ backgroundColor: '#18283A' }}>Nova busca</button>
             </div>
           </div>
         )}
@@ -1124,7 +1361,7 @@ export default function Busca() {
               </button>
               <button onClick={avisoPolitica.onContinuar}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: '#1a2744' }}>
+                style={{ backgroundColor: '#18283A' }}>
                 Continuar mesmo assim
               </button>
             </div>
