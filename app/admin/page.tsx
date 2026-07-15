@@ -23,6 +23,13 @@ interface Reserva {
   passageiro_nome: string | null; valor: number | null; status: string; created_at: string
 }
 interface InfoUsuario { empresa_id: string; empresa_nome: string; usuario_nome: string }
+interface Chamado {
+  id: string; user_id: string; reserva_id: string | null; localizador: string | null
+  tipo: 'Alteração' | 'Cancelamento' | 'Dúvida' | 'Outro'
+  mensagem: string
+  status: 'Aberto' | 'Em andamento' | 'Resolvido'
+  created_at: string
+}
 interface PoliticaViagem {
   id?: string; empresa_id: string; ativa: boolean
   limite_valor_nacional: number | null; limite_valor_internacional: number | null
@@ -33,7 +40,7 @@ interface PoliticaEditForm {
   antecedencia_minima_dias: string; familias_permitidas: string[]; max_parcelas: string
 }
 
-type Secao = 'empresas' | 'usuarios' | 'reservas' | 'politicas'
+type Secao = 'empresas' | 'usuarios' | 'reservas' | 'politicas' | 'chamados'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function mascaraCNPJ(v: string) {
@@ -55,6 +62,12 @@ const STATUS_BADGE: Record<string, { bg: string; color: string }> = {
   Cancelada: { bg: '#fee2e2', color: '#dc2626' },
   Expirada:  { bg: '#f3f4f6', color: '#6b7280' },
 }
+const STATUS_CHAMADO_BADGE: Record<Chamado['status'], { bg: string; color: string }> = {
+  'Aberto':       { bg: '#fef9c3', color: '#92400e' },
+  'Em andamento': { bg: '#dbeafe', color: '#1d4ed8' },
+  'Resolvido':    { bg: '#dcfce7', color: '#16a34a' },
+}
+const CHAMADO_STATUS_OPCOES: Chamado['status'][] = ['Aberto', 'Em andamento', 'Resolvido']
 
 const INPUT = 'w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow'
 
@@ -89,6 +102,15 @@ function IconPolitica({ cls }: { cls: string }) {
     <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
       <path strokeLinecap="round" strokeLinejoin="round"
         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  )
+}
+
+function IconChamado({ cls }: { cls: string }) {
+  return (
+    <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round"
+        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-1.163 0-2.274-.196-3.293-.552L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
     </svg>
   )
 }
@@ -156,6 +178,11 @@ export default function Admin() {
   const [politicaEdits, setPoliticaEdits] = useState<Record<string, PoliticaEditForm>>({})
   const [salvandoPolitica, setSalvandoPolitica] = useState<string | null>(null)
 
+  // Chamados
+  const [chamados, setChamados] = useState<Chamado[]>([])
+  const [filtroStatusChamado, setFiltroStatusChamado] = useState('')
+  const [salvandoStatusChamado, setSalvandoStatusChamado] = useState<string | null>(null)
+
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getSession().then(async ({ data }) => {
@@ -168,15 +195,17 @@ export default function Admin() {
   }, [router])
 
   async function carregarTudo(supabase: ReturnType<typeof createClient>) {
-    const [empRes, usrRes, resRes, polRes] = await Promise.all([
+    const [empRes, usrRes, resRes, polRes, chamRes] = await Promise.all([
       supabase.from('empresas').select('*').order('nome'),
       supabase.from('usuarios_empresas').select('*, empresas(nome)').order('created_at', { ascending: false }),
       supabase.from('reservas').select('*').order('created_at', { ascending: false }),
       supabase.from('politicas_viagem').select('*'),
+      supabase.from('chamados').select('*').order('created_at', { ascending: false }),
     ])
     setEmpresas((empRes.data ?? []) as Empresa[])
     setUsuarios((usrRes.data ?? []) as UsuarioEmpresa[])
     setReservas((resRes.data ?? []) as Reserva[])
+    setChamados((chamRes.data ?? []) as Chamado[])
 
     const mapa: Record<string, InfoUsuario> = {}
     for (const u of (usrRes.data ?? []) as UsuarioEmpresa[]) {
@@ -269,6 +298,14 @@ export default function Admin() {
     setSalvandoPolitica(null)
   }
 
+  async function mudarStatusChamado(chamado: Chamado, novoStatus: Chamado['status']) {
+    setSalvandoStatusChamado(chamado.id)
+    const supabase = createClient()
+    const { error } = await supabase.from('chamados').update({ status: novoStatus }).eq('id', chamado.id)
+    if (!error) setChamados(prev => prev.map(c => c.id === chamado.id ? { ...c, status: novoStatus } : c))
+    setSalvandoStatusChamado(null)
+  }
+
   // Reservas filtradas
   const reservasFiltradas = reservas.filter(r => {
     const info = mapaInfo[r.user_id]
@@ -277,11 +314,19 @@ export default function Admin() {
     return true
   })
 
-  const navItems: { id: Secao; label: string; icon: (active: boolean) => React.ReactNode }[] = [
+  // Chamados filtrados
+  const chamadosFiltrados = chamados.filter(c => {
+    if (filtroStatusChamado && c.status !== filtroStatusChamado) return false
+    return true
+  })
+  const chamadosAbertos = chamados.filter(c => c.status === 'Aberto').length
+
+  const navItems: { id: Secao; label: string; icon: (active: boolean) => React.ReactNode; badge?: number }[] = [
     { id: 'empresas',  label: 'Empresas',  icon: a => <IconPredio   cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
     { id: 'usuarios',  label: 'Usuários',  icon: a => <IconPessoa   cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
     { id: 'reservas',  label: 'Reservas',  icon: a => <IconPassagem cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
     { id: 'politicas', label: 'Políticas', icon: a => <IconPolitica cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
+    { id: 'chamados',  label: 'Chamados',  icon: a => <IconChamado  cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} />, badge: chamadosAbertos },
   ]
 
   if (carregando) {
@@ -355,7 +400,12 @@ export default function Admin() {
                 onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
               >
                 {item.icon(active)}
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {!!item.badge && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ backgroundColor: '#dc2626' }}>
+                    {item.badge}
+                  </span>
+                )}
               </button>
             )
           })}
@@ -607,6 +657,78 @@ export default function Admin() {
                       </div>
                     )
                   })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── CHAMADOS ─────────────────────────────────────────── */}
+          {secao === 'chamados' && (
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-wrap gap-3">
+                <h2 className="text-lg font-bold text-gray-900">Chamados</h2>
+                <select
+                  value={filtroStatusChamado}
+                  onChange={e => setFiltroStatusChamado(e.target.value)}
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">Todos os status</option>
+                  {CHAMADO_STATUS_OPCOES.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="px-6 py-2 bg-gray-50 border-b border-gray-100 text-xs text-gray-400">
+                {chamadosFiltrados.length} {chamadosFiltrados.length === 1 ? 'chamado' : 'chamados'}
+              </div>
+
+              {chamadosFiltrados.length === 0 ? (
+                <div className="py-16 text-center text-gray-400 text-sm">Nenhum chamado encontrado.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <TableHead cols={['Data', 'Empresa', 'Usuário', 'Localizador', 'Tipo', 'Mensagem', 'Status']} />
+                    <tbody className="divide-y divide-gray-50">
+                      {chamadosFiltrados.map(c => {
+                        const info = mapaInfo[c.user_id]
+                        const st = STATUS_CHAMADO_BADGE[c.status]
+                        const salvando = salvandoStatusChamado === c.id
+                        return (
+                          <tr key={c.id} className="hover:bg-gray-50 transition-colors align-top">
+                            <td className="py-3.5 px-4 text-sm text-gray-500 whitespace-nowrap">{formatData(c.created_at)}</td>
+                            <td className="py-3.5 px-4 text-sm text-gray-700 whitespace-nowrap">{info?.empresa_nome ?? '—'}</td>
+                            <td className="py-3.5 px-4 text-sm text-gray-700 whitespace-nowrap">{info?.usuario_nome ?? '—'}</td>
+                            <td className="py-3.5 px-4 text-sm font-bold text-gray-900 font-mono tracking-wider whitespace-nowrap">
+                              {c.localizador ?? '—'}
+                            </td>
+                            <td className="py-3.5 px-4 text-sm text-gray-700 whitespace-nowrap">{c.tipo}</td>
+                            <td className="py-3.5 px-4 text-sm text-gray-600 max-w-xs">{c.mensagem}</td>
+                            <td className="py-3.5 px-4">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className="text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+                                  style={{ backgroundColor: st.bg, color: st.color }}
+                                >
+                                  {c.status}
+                                </span>
+                                <select
+                                  value={c.status}
+                                  disabled={salvando}
+                                  onChange={e => mudarStatusChamado(c, e.target.value as Chamado['status'])}
+                                  className="text-xs border border-gray-200 rounded-lg px-2 py-1 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50"
+                                >
+                                  {CHAMADO_STATUS_OPCOES.map(s => (
+                                    <option key={s} value={s}>{s}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>

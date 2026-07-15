@@ -24,3 +24,26 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes barra-progresso-busca-anim {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+.barra-progresso-busca {
+  position: relative;
+  overflow: hidden;
+  height: 3px;
+  border-radius: 9999px;
+  background: #ece6de;
+}
+
+.barra-progresso-busca::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 30%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, transparent, #B79D7D, transparent);
+  animation: barra-progresso-busca-anim 1.3s ease-in-out infinite;
+}

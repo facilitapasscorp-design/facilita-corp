@@ -75,6 +75,14 @@ export default function Painel() {
   const [erroCancelamento,       setErroCancelamento]       = useState('')
   const [sucessoCancelamento,    setSucessoCancelamento]    = useState(false)
 
+  // ── Estado do modal de chamado (solicitar alteração) ───────────
+  const [chamadoReserva,   setChamadoReserva]   = useState<Reserva | null>(null)
+  const [chamadoTipo,      setChamadoTipo]      = useState<'Alteração' | 'Cancelamento' | 'Dúvida' | 'Outro'>('Alteração')
+  const [chamadoMensagem,  setChamadoMensagem]  = useState('')
+  const [enviandoChamado,  setEnviandoChamado]  = useState(false)
+  const [erroChamado,      setErroChamado]      = useState('')
+  const [chamadoEnviado,   setChamadoEnviado]   = useState(false)
+
   // ── Estado do modal de pagamento ────────────────────────────────
   const [modalReserva,      setModalReserva]      = useState<Reserva | null>(null)
   const [carregandoFormas,  setCarregandoFormas]  = useState(false)
@@ -274,6 +282,39 @@ export default function Painel() {
     setCancelarReserva(null); setErroCancelamento(''); setSucessoCancelamento(false)
   }
 
+  async function enviarChamado() {
+    if (!chamadoMensagem.trim()) { setErroChamado('Descreva sua solicitação.'); return }
+    if (!chamadoReserva) return
+    setEnviandoChamado(true); setErroChamado('')
+    try {
+      const supabase = createClient()
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData.session?.access_token
+      const res = await fetch('/api/chamados', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          reserva_id: chamadoReserva.id,
+          localizador: chamadoReserva.localizador,
+          tipo: chamadoTipo,
+          mensagem: chamadoMensagem,
+        }),
+      })
+      const data = await res.json()
+      if (data.erro) { setErroChamado(data.erro); return }
+      setChamadoEnviado(true)
+    } catch {
+      setErroChamado('Erro ao enviar solicitação')
+    } finally {
+      setEnviandoChamado(false)
+    }
+  }
+
+  function fecharModalChamado() {
+    setChamadoReserva(null); setChamadoTipo('Alteração'); setChamadoMensagem('')
+    setErroChamado(''); setChamadoEnviado(false)
+  }
+
   function statusExibido(r: Reserva): Reserva['status'] {
     if (r.status === 'Ativa') {
       const inicioDia = new Date()
@@ -445,32 +486,42 @@ export default function Painel() {
                       )}
                     </div>
 
-                    {exibido === 'Ativa' && (
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <button
-                          onClick={() => abrirModal(r)}
-                          className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-80"
-                          style={{ backgroundColor: '#18283A' }}
-                        >
-                          Pagar e emitir
-                        </button>
-                        <button
-                          onClick={() => { setCancelarReserva(r); setErroCancelamento(''); setSucessoCancelamento(false) }}
-                          className="px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
-                        >
-                          Cancelar
-                        </button>
-                        <span className="text-xs font-medium text-amber-600">
-                          ⚠️ Expira às 23:59 de hoje
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {exibido === 'Ativa' && (
+                        <>
+                          <button
+                            onClick={() => abrirModal(r)}
+                            className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-80"
+                            style={{ backgroundColor: '#18283A' }}
+                          >
+                            Pagar e emitir
+                          </button>
+                          <button
+                            onClick={() => { setCancelarReserva(r); setErroCancelamento(''); setSucessoCancelamento(false) }}
+                            className="px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                          <span className="text-xs font-medium text-amber-600">
+                            ⚠️ Expira às 23:59 de hoje
+                          </span>
+                        </>
+                      )}
 
-                    {exibido === 'Emitida' && (
-                      <button className="px-5 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
-                        Ver bilhete
+                      {exibido === 'Emitida' && (
+                        <button className="px-5 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
+                          Ver bilhete
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => { setChamadoReserva(r); setChamadoTipo('Alteração'); setChamadoMensagem(''); setErroChamado(''); setChamadoEnviado(false) }}
+                        className="text-xs font-medium underline transition-colors"
+                        style={{ color: '#6b7684' }}
+                      >
+                        Solicitar alteração
                       </button>
-                    )}
+                    </div>
                   </div>
                 )
               })}
@@ -534,6 +585,89 @@ export default function Painel() {
                     <button onClick={confirmarCancelamento} disabled={carregandoCancelamento}
                       className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-50">
                       {carregandoCancelamento ? 'Cancelando...' : 'Sim, cancelar'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal de chamado (solicitar alteração) ─────────────────── */}
+      {chamadoReserva && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+          onClick={e => { if (e.target === e.currentTarget) fecharModalChamado() }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+            <div className="px-6 py-5">
+              {chamadoEnviado ? (
+                <div className="text-center py-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="font-semibold text-gray-900 mb-1">Solicitação enviada!</p>
+                  <p className="text-sm text-gray-500 mb-5">Nossa equipe entrará em contato.</p>
+                  <button onClick={fecharModalChamado}
+                    className="w-full py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: '#18283A' }}>
+                    Fechar
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p className="font-semibold text-gray-900 mb-1">Solicitar alteração</p>
+                  <p className="text-xs text-gray-400 mb-4">Conte pra gente o que você precisa e nossa equipe entra em contato.</p>
+
+                  <div className="rounded-xl p-4 space-y-1.5 mb-4" style={{ backgroundColor: '#f8fafc' }}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400 uppercase tracking-wide">Localizador</span>
+                      <span className="font-mono font-bold text-gray-900 tracking-widest">{chamadoReserva.localizador}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400 uppercase tracking-wide">Rota</span>
+                      <span className="text-sm font-semibold text-gray-700">{chamadoReserva.origem} → {chamadoReserva.destino}</span>
+                    </div>
+                    {chamadoReserva.data_voo && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-400 uppercase tracking-wide">Data</span>
+                        <span className="text-sm text-gray-700">{formatData(chamadoReserva.data_voo)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <label className="text-sm font-medium text-gray-700">Tipo de solicitação</label>
+                  <select value={chamadoTipo} onChange={e => setChamadoTipo(e.target.value as typeof chamadoTipo)} className={`${INPUT} bg-white`}>
+                    <option value="Alteração">Alteração</option>
+                    <option value="Cancelamento">Cancelamento</option>
+                    <option value="Dúvida">Dúvida</option>
+                    <option value="Outro">Outro</option>
+                  </select>
+
+                  <label className="text-sm font-medium text-gray-700 mt-4 block">Descreva sua solicitação</label>
+                  <textarea value={chamadoMensagem} onChange={e => setChamadoMensagem(e.target.value)} rows={4}
+                    placeholder="Explique o que você precisa..."
+                    className={`${INPUT} resize-none`} />
+
+                  {erroChamado && (
+                    <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+                      <p className="text-red-600 text-sm">{erroChamado}</p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 mt-5">
+                    <button onClick={fecharModalChamado}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+                      Cancelar
+                    </button>
+                    <button onClick={enviarChamado} disabled={enviandoChamado}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                      style={{ backgroundColor: '#18283A' }}>
+                      {enviandoChamado ? 'Enviando...' : 'Enviar solicitação'}
                     </button>
                   </div>
                 </>

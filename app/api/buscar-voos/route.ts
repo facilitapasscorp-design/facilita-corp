@@ -27,6 +27,10 @@ async function buscarDisponibilidade(
       ...params,
       BuscarVoosComBagagem: comBagagem,
       BuscarVoosSemBagagem: !comBagagem,
+      // Flex:true na chamada com bagagem desbloqueia a família mais flexível
+      // (FLEX na GOL, tarifa adicional na LATAM) sem custo de chamada extra —
+      // confirmado empiricamente contra a API de produção da WOOBA.
+      Flex: comBagagem,
     }),
   })
   const data = await res.json()
@@ -198,7 +202,6 @@ export async function POST(request: NextRequest) {
       Sistema:            s.Sistema,
       ApenasVoosComBagagem: false,
       ApenasVoosDiretos:    false,
-      Flex:                 false,
       Recomendacao:         false,
     })
 

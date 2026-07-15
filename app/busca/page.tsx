@@ -1110,9 +1110,21 @@ export default function Busca() {
                 <div className="space-y-3">
                   {trechos.map((trecho, idx) => (
                     <div key={idx} className="flex gap-3 items-end">
-                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Origem</label>}<input type="text" placeholder="Ex: GRU" value={trecho.origem} maxLength={3} onChange={e => atualizarTrecho(idx, 'origem', e.target.value.toUpperCase())} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm text-[#18283A] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
-                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Destino</label>}<input type="text" placeholder="Ex: GIG" value={trecho.destino} maxLength={3} onChange={e => atualizarTrecho(idx, 'destino', e.target.value.toUpperCase())} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm text-[#18283A] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
-                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Data</label>}<input type="date" value={trecho.data} min={idx > 0 && trechos[idx-1].data ? diaSeguinte(trechos[idx-1].data) : undefined} onChange={e => atualizarTrecho(idx, 'data', e.target.value)} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm text-[#18283A] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
+                      <div className="flex-1">
+                        {idx === 0 && <label className="text-sm font-medium text-gray-700">Origem</label>}
+                        <AeroportoInput value={trecho.origem} onChange={v => atualizarTrecho(idx, 'origem', v)} placeholder="Ex: GRU"
+                          icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-3 2v1.5l4.5-1.5 4.5 1.5V21l-3-2v-5.5z" /></svg>} />
+                      </div>
+                      <div className="flex-1">
+                        {idx === 0 && <label className="text-sm font-medium text-gray-700">Destino</label>}
+                        <AeroportoInput value={trecho.destino} onChange={v => atualizarTrecho(idx, 'destino', v)} placeholder="Ex: GIG"
+                          icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 21s-7-6.2-7-11.5A7 7 0 0112 2a7 7 0 017 7.5C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>} />
+                      </div>
+                      <div className="flex-1">
+                        {idx === 0 && <label className="text-sm font-medium text-gray-700">Data</label>}
+                        <DatePicker value={trecho.data} onChange={v => atualizarTrecho(idx, 'data', v)}
+                          minDate={idx > 0 && trechos[idx - 1].data ? diaSeguinte(trechos[idx - 1].data) : undefined} placeholder="dd/mm/aaaa" />
+                      </div>
                       <div className={`shrink-0 ${idx === 0 ? 'mt-6' : ''}`}>
                         {idx >= 2 ? (<button onClick={() => removerTrecho(idx)} className="w-9 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>) : <div className="w-9" />}
                       </div>
@@ -1137,6 +1149,7 @@ export default function Busca() {
 
             {(carregando || gruposIda !== null) && (
               <div>
+                {carregando && <div className="barra-progresso-busca mb-4" aria-hidden="true" />}
                 {!carregando && fase === 'volta' && vooIdaSelecionado && (
                   <ResumoIdaSelecionada viagem={vooIdaSelecionado} onAlterar={() => { setFase('ida'); setVooIdaSelecionado(null) }} />
                 )}
