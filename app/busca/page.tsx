@@ -1018,7 +1018,7 @@ export default function Busca() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: FUNDO }}>
       <div className="relative px-4 sm:px-8 py-4 flex items-center justify-between border-b border-gray-200" style={{ backgroundColor: FUNDO }}>
-        <Image src="/logo-header.png" alt="Facilita Pass" width={260} height={42} className="h-9 sm:h-11 w-auto" style={{ objectFit: 'contain' }} />
+        <Image src="/logo-header.png" alt="Facilita Pass" width={163} height={36} className="h-7 sm:h-9 w-auto" style={{ objectFit: 'contain' }} />
 
         <div className="hidden sm:flex items-center gap-5">
           <button onClick={() => router.push('/painel')} className="text-sm font-medium hover:opacity-60 transition-colors" style={{ color: AZUL }}>Minhas reservas</button>
