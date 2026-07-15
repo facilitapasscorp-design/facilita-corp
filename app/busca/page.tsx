@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '../../lib/supabase'
-import { buscarAeroportos, resolverGrupo, Aeroporto } from '../../lib/aeroportos'
+import { buscarAeroportos, Aeroporto } from '../../lib/aeroportos'
 
 interface VooLeg {
   Numero: number
@@ -176,7 +176,7 @@ const CIA: Record<string, { label: string; bg: string }> = {
   IB: { label: 'Iberia',bg: '#8B1A1A' },
 }
 
-const INPUT = 'mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+const INPUT = 'mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694]'
 
 function AeroportoInput({ value, onChange, placeholder, icon }: { value: string; onChange: (iata: string) => void; placeholder: string; icon?: React.ReactNode }) {
   const [query, setQuery] = useState(value)
@@ -316,12 +316,12 @@ function DatePicker({ value, onChange, minDate, placeholder, openSignal }: {
   return (
     <div ref={containerRef} className="relative">
       <button type="button" onClick={() => setAberto(o => !o)}
-        className="mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-left bg-white flex items-center gap-2 focus:outline-none focus:ring-2 transition-colors"
+        className="mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm text-left bg-white flex items-center gap-2 focus:outline-none focus:ring-2 transition-colors"
         style={{ boxShadow: aberto ? `0 0 0 2px ${DOURADO}55` : undefined }}>
         <svg className="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <rect x="3" y="5" width="18" height="16" rx="2" /><path strokeLinecap="round" d="M3 9h18M8 3v4M16 3v4" />
         </svg>
-        <span className={value ? 'text-gray-900' : 'text-gray-400'}>{value ? formatDataExibicao(value) : (placeholder ?? 'dd/mm/aaaa')}</span>
+        <span className={value ? 'text-gray-900' : 'text-[#7a8694]'}>{value ? formatDataExibicao(value) : (placeholder ?? 'dd/mm/aaaa')}</span>
       </button>
 
       {aberto && (
@@ -408,7 +408,7 @@ function PassageirosDropdown({ adultos, criancas, bebes, setAdultos, setCriancas
     <div ref={containerRef} className="relative">
       <label className="text-sm font-medium text-gray-700">Passageiros</label>
       <button type="button" onClick={() => setAberto(o => !o)}
-        className="mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-left bg-white flex items-center justify-between gap-2 focus:outline-none transition-colors"
+        className="mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm text-left bg-white flex items-center justify-between gap-2 focus:outline-none transition-colors"
         style={{ boxShadow: aberto ? `0 0 0 2px ${DOURADO}55` : undefined }}>
         <span className="flex items-center gap-2 text-gray-900 truncate">
           <svg className="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -425,7 +425,7 @@ function PassageirosDropdown({ adultos, criancas, bebes, setAdultos, setCriancas
         <div className="absolute z-50 mt-1 left-0 right-0 sm:w-80 bg-white rounded-xl shadow-xl border border-gray-100 divide-y divide-gray-100 overflow-hidden">
           {linhas.map(({ label, sub, val, set, min, max }) => (
             <div key={label} className="flex items-center justify-between px-4 py-3">
-              <div><p className="text-sm font-medium text-gray-800">{label}</p><p className="text-xs text-gray-400">{sub}</p></div>
+              <div><p className="text-sm font-medium text-gray-800">{label}</p><p className="text-xs text-[#6b7684]">{sub}</p></div>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => val > min && set(val - 1)} disabled={val <= min}
                   className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 text-lg font-medium hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">−</button>
@@ -895,12 +895,11 @@ export default function Busca() {
     } else if (!origem || !destino || !dataIda) { setErroVoo('Preencha origem, destino e data de ida.'); return }
     setCarregando(true); setErroVoo(''); setGruposIda(null); setGruposVolta(null)
     setFase('ida'); setVooIdaSelecionado(null); setVooVoltaSelecionado(null)
-    const resolverCodigo = (c: string) => (resolverGrupo(c)?.join(',')) ?? c
     const res = await fetch('/api/buscar-voos', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        origem:  resolverCodigo(tipo === 'multiplos' ? trechos[0].origem  : origem),
-        destino: resolverCodigo(tipo === 'multiplos' ? trechos[0].destino : destino),
+        origem:  tipo === 'multiplos' ? trechos[0].origem  : origem,
+        destino: tipo === 'multiplos' ? trechos[0].destino : destino,
         dataIda: tipo === 'multiplos' ? trechos[0].data    : dataIda,
         dataVolta: tipo === 'idavolta' ? dataVolta : undefined,
         adultos, criancas, bebes, tipo,
@@ -1019,7 +1018,7 @@ export default function Busca() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: FUNDO }}>
       <div className="relative px-4 sm:px-8 py-4 flex items-center justify-between border-b border-gray-200" style={{ backgroundColor: FUNDO }}>
-        <Image src="/logo.png" alt="Facilita Pass" width={120} height={38} style={{ objectFit: 'contain' }} />
+        <Image src="/logo.png" alt="Facilita Pass" width={139} height={44} className="h-9 sm:h-11 w-auto" style={{ objectFit: 'contain' }} />
 
         <div className="hidden sm:flex items-center gap-5">
           <button onClick={() => router.push('/painel')} className="text-sm font-medium hover:opacity-60 transition-colors" style={{ color: AZUL }}>Minhas reservas</button>
@@ -1111,9 +1110,9 @@ export default function Busca() {
                 <div className="space-y-3">
                   {trechos.map((trecho, idx) => (
                     <div key={idx} className="flex gap-3 items-end">
-                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Origem</label>}<input type="text" placeholder="Ex: GRU" value={trecho.origem} maxLength={3} onChange={e => atualizarTrecho(idx, 'origem', e.target.value.toUpperCase())} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${idx === 0 ? 'mt-1' : ''}`} /></div>
-                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Destino</label>}<input type="text" placeholder="Ex: GIG" value={trecho.destino} maxLength={3} onChange={e => atualizarTrecho(idx, 'destino', e.target.value.toUpperCase())} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${idx === 0 ? 'mt-1' : ''}`} /></div>
-                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Data</label>}<input type="date" value={trecho.data} min={idx > 0 && trechos[idx-1].data ? diaSeguinte(trechos[idx-1].data) : undefined} onChange={e => atualizarTrecho(idx, 'data', e.target.value)} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${idx === 0 ? 'mt-1' : ''}`} /></div>
+                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Origem</label>}<input type="text" placeholder="Ex: GRU" value={trecho.origem} maxLength={3} onChange={e => atualizarTrecho(idx, 'origem', e.target.value.toUpperCase())} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
+                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Destino</label>}<input type="text" placeholder="Ex: GIG" value={trecho.destino} maxLength={3} onChange={e => atualizarTrecho(idx, 'destino', e.target.value.toUpperCase())} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
+                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Data</label>}<input type="date" value={trecho.data} min={idx > 0 && trechos[idx-1].data ? diaSeguinte(trechos[idx-1].data) : undefined} onChange={e => atualizarTrecho(idx, 'data', e.target.value)} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
                       <div className={`shrink-0 ${idx === 0 ? 'mt-6' : ''}`}>
                         {idx >= 2 ? (<button onClick={() => removerTrecho(idx)} className="w-9 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>) : <div className="w-9" />}
                       </div>

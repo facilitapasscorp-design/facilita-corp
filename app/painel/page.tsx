@@ -24,7 +24,7 @@ const STATUS: Record<string, { label: string; bg: string; color: string }> = {
   Expirada:  { label: 'Expirada',  bg: '#f3f4f6', color: '#6b7280' },
 }
 
-const INPUT = 'mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+const INPUT = 'mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 
 function formatData(d: string | null) {
   if (!d) return '—'
@@ -295,25 +295,28 @@ export default function Painel() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#1a2744' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#F4F5F3' }}>
       {/* Header */}
       <div
         className="px-4 sm:px-8 py-4 flex items-center justify-between border-b border-gray-200"
         style={{ backgroundColor: '#F4F5F3' }}
       >
-        <Image src="/logo.png" alt="Facilita Pass" width={120} height={38} style={{ objectFit: 'contain' }} />
+        <button type="button" onClick={() => router.push('/busca')} aria-label="Ir para a busca"
+          className="cursor-pointer transition-opacity hover:opacity-85">
+          <Image src="/logo.png" alt="Facilita Pass" width={139} height={44} className="h-9 sm:h-11 w-auto" style={{ objectFit: 'contain' }} />
+        </button>
         <div className="flex items-center gap-4 sm:gap-6">
           <button
             onClick={() => router.push('/busca')}
             className="text-sm font-medium transition-colors hover:opacity-60"
-            style={{ color: '#1a2744' }}
+            style={{ color: '#18283A' }}
           >
             Buscar voos
           </button>
           <button
             onClick={sair}
             className="text-sm transition-colors hover:opacity-60"
-            style={{ color: '#1a2744' }}
+            style={{ color: '#18283A' }}
           >
             Sair
           </button>
@@ -327,7 +330,7 @@ export default function Painel() {
             <button
               onClick={() => router.push('/busca')}
               className="px-4 sm:px-5 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-80"
-              style={{ backgroundColor: '#1a2744' }}
+              style={{ backgroundColor: '#18283A' }}
             >
               + Nova busca
             </button>
@@ -349,7 +352,7 @@ export default function Painel() {
                         ? 'text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
-                    style={filtroStatus === op.id ? { backgroundColor: '#1a2744' } : {}}>
+                    style={filtroStatus === op.id ? { backgroundColor: '#18283A' } : {}}>
                     {op.label}
                   </button>
                 ))}
@@ -385,8 +388,8 @@ export default function Painel() {
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              <p className="font-medium" style={{ color: '#9ca3af' }}>Nenhuma reserva encontrada</p>
-              <p className="text-sm mt-1" style={{ color: '#d1d5db' }}>Suas reservas aparecerão aqui após a busca.</p>
+              <p className="font-medium" style={{ color: '#6b7684' }}>Nenhuma reserva encontrada</p>
+              <p className="text-sm mt-1" style={{ color: '#7a8694' }}>Suas reservas aparecerão aqui após a busca.</p>
             </div>
           ) : reservasFiltradas.length === 0 ? (
             <div className="px-6 py-12 text-center">
@@ -447,7 +450,7 @@ export default function Painel() {
                         <button
                           onClick={() => abrirModal(r)}
                           className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-80"
-                          style={{ backgroundColor: '#1a2744' }}
+                          style={{ backgroundColor: '#18283A' }}
                         >
                           Pagar e emitir
                         </button>
@@ -498,7 +501,7 @@ export default function Painel() {
                   </p>
                   <button onClick={fecharModalCancelamento}
                     className="w-full py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-                    style={{ backgroundColor: '#1a2744' }}>
+                    style={{ backgroundColor: '#18283A' }}>
                     Fechar
                   </button>
                 </div>
@@ -722,7 +725,7 @@ export default function Painel() {
               {bilheteEmitido ? (
                 <button onClick={fecharModal}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: '#1a2744' }}>
+                  style={{ backgroundColor: '#18283A' }}>
                   Fechar
                 </button>
               ) : (
@@ -735,7 +738,7 @@ export default function Painel() {
                     onClick={emitir}
                     disabled={carregandoEmissao || carregandoFormas || carregandoParcelas}
                     className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
-                    style={{ backgroundColor: '#1a2744' }}
+                    style={{ backgroundColor: '#18283A' }}
                   >
                     {carregandoEmissao ? 'Emitindo...' : 'Emitir passagem'}
                   </button>

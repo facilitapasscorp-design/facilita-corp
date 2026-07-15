@@ -23,12 +23,6 @@ export const GRUPOS_CIDADE: GrupoCidade[] = [
   { codigo: 'BHZ', nome: 'Todos os aeroportos de Belo Horizonte', cidade: 'Belo Horizonte', aeroportos: ['CNF', 'PLU'], aliases: ['bh', 'bhz', 'belo horizonte'] },
 ]
 
-/** Se `iata` for o código de um grupo de cidade, retorna os códigos IATA que ele representa. */
-export function resolverGrupo(iata: string): string[] | null {
-  const g = GRUPOS_CIDADE.find(g => g.codigo === iata)
-  return g ? g.aeroportos : null
-}
-
 function grupoParaAeroporto(g: GrupoCidade): Aeroporto {
   return { iata: g.codigo, nome: g.nome, cidade: g.cidade, estado: '', pais: 'Brasil', aliases: g.aliases, grupo: g.aeroportos }
 }

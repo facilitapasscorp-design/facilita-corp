@@ -286,14 +286,14 @@ export default function Admin() {
 
   if (carregando) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#1a2744' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#18283A' }}>
         <p className="text-white/40 text-sm">Carregando painel...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#1a2744' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#18283A' }}>
       {/* Header */}
       <div
         className="px-4 sm:px-8 py-4 flex items-center justify-between shrink-0"
@@ -310,7 +310,10 @@ export default function Admin() {
             <span className="w-5 h-0.5 bg-white/70 rounded" />
             <span className="w-5 h-0.5 bg-white/70 rounded" />
           </button>
-          <Image src="/logo.png" alt="Facilita Pass" width={120} height={38} style={{ objectFit: 'contain' }} />
+          <button type="button" onClick={() => router.push('/busca')} aria-label="Ir para a busca"
+            className="cursor-pointer transition-opacity hover:opacity-85">
+            <Image src="/logo.png" alt="Facilita Pass" width={120} height={38} style={{ objectFit: 'contain' }} />
+          </button>
         </div>
         <button
           onClick={async () => { await createClient().auth.signOut(); router.replace('/') }}
@@ -335,7 +338,7 @@ export default function Admin() {
         {/* Sidebar — hidden on mobile unless menuAberto */}
         <aside
           className={`${menuAberto ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0 fixed sm:static z-50 sm:z-auto top-0 sm:top-auto left-0 sm:left-auto h-full sm:h-auto w-52 shrink-0 flex flex-col py-6 px-3 gap-1 transition-transform duration-200`}
-          style={{ backgroundColor: '#1a2744', borderRight: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ backgroundColor: '#18283A', borderRight: '1px solid rgba(255,255,255,0.06)' }}
         >
           {navItems.map(item => {
             const active = secao === item.id
@@ -369,7 +372,7 @@ export default function Admin() {
                 <button
                   onClick={() => { setErroEmpresa(''); setModalEmpresa(true) }}
                   className="px-5 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-80 transition-opacity"
-                  style={{ backgroundColor: '#1a2744' }}
+                  style={{ backgroundColor: '#18283A' }}
                 >
                   + Nova empresa
                 </button>
@@ -424,7 +427,7 @@ export default function Admin() {
                 <button
                   onClick={() => { setErroUsuario(''); setModalUsuario(true) }}
                   className="px-5 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-80 transition-opacity"
-                  style={{ backgroundColor: '#1a2744' }}
+                  style={{ backgroundColor: '#18283A' }}
                 >
                   + Novo usuário
                 </button>
@@ -597,7 +600,7 @@ export default function Admin() {
                         <div className="mt-5 flex justify-end">
                           <button onClick={() => salvarPolitica(empresa.id)} disabled={salvando}
                             className="px-5 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-80 transition-opacity disabled:opacity-50"
-                            style={{ backgroundColor: '#1a2744' }}>
+                            style={{ backgroundColor: '#18283A' }}>
                             {salvando ? 'Salvando...' : 'Salvar política'}
                           </button>
                         </div>
@@ -652,7 +655,7 @@ export default function Admin() {
               </button>
               <button onClick={salvarEmpresa} disabled={salvandoEmpresa}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-80 transition-opacity disabled:opacity-50"
-                style={{ backgroundColor: '#1a2744' }}>
+                style={{ backgroundColor: '#18283A' }}>
                 {salvandoEmpresa ? 'Salvando...' : 'Cadastrar'}
               </button>
             </div>
@@ -705,7 +708,7 @@ export default function Admin() {
               </button>
               <button onClick={salvarUsuario} disabled={salvandoUsuario}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-80 transition-opacity disabled:opacity-50"
-                style={{ backgroundColor: '#1a2744' }}>
+                style={{ backgroundColor: '#18283A' }}>
                 {salvandoUsuario ? 'Criando...' : 'Criar usuário'}
               </button>
             </div>

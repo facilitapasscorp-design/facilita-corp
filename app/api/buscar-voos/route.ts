@@ -19,6 +19,7 @@ async function buscarDisponibilidade(
   comBagagem: boolean,
   sistema: number,
 ): Promise<Resposta> {
+  const inicio = Date.now()
   const res = await fetch(url, {
     method: 'POST',
     headers,
@@ -28,7 +29,9 @@ async function buscarDisponibilidade(
       BuscarVoosSemBagagem: !comBagagem,
     }),
   })
-  return { data: await res.json(), comBagagem, sistema }
+  const data = await res.json()
+  console.log(`[BUSCAR-VOOS] Disponibilidade sistema=${sistema} bagagem=${comBagagem}: ${Date.now() - inicio}ms`)
+  return { data, comBagagem, sistema }
 }
 
 function normalizarCia(iata: string): string {
@@ -139,9 +142,12 @@ function agruparViagens(viagens: Viagem[]) {
 }
 
 export async function POST(request: NextRequest) {
+  const inicioTotal = Date.now()
   try {
     const body = await request.json()
     const { origem, destino, dataIda, dataVolta, adultos = 1, criancas = 0, bebes = 0, tipo } = body
+
+    console.log(`[BUSCAR-VOOS] origem recebida: "${origem}" | destino recebido: "${destino}"`)
 
     const BASE_URL   = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
     const login      = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
@@ -158,12 +164,14 @@ export async function POST(request: NextRequest) {
 
     const credenciais = { Login: login, Senha: senha }
 
+    const inicioSistemas = Date.now()
     const sistemasRes  = await fetch(`${BASE_URL}/RecuperarSistemasPesquisa`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ ...credenciais, Origem: origem, Destino: destino, Timeout: 15 }),
     })
     const sistemasData = await sistemasRes.json()
+    console.log(`[BUSCAR-VOOS] RecuperarSistemasPesquisa: ${Date.now() - inicioSistemas}ms | ${sistemasData.Sistemas?.length ?? 0} sistemas`)
 
     if (sistemasData.SessaoExpirada) {
       return NextResponse.json({ erro: 'Sessão expirada' }, { status: 401 })
@@ -195,13 +203,14 @@ export async function POST(request: NextRequest) {
     })
 
     // Duas chamadas por sistema: sem e com bagagem (restaura STANDARD da LATAM)
+    const inicioDisponibilidade = Date.now()
     const todasRespostas = await Promise.all(
       sistemasData.Sistemas.flatMap((s: { Sistema: number }) => [
         buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), false, s.Sistema),
         buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), true,  s.Sistema),
       ])
     )
-
+    console.log(`[BUSCAR-VOOS] Disponibilidade total (${todasRespostas.length} chamadas paralelas): ${Date.now() - inicioDisponibilidade}ms`)
 
     function extrairViagens(campo: 'ViagensTrecho1' | 'ViagensTrecho2'): Viagem[] {
       return todasRespostas.flatMap(({ data: d, comBagagem }) => {
@@ -217,6 +226,7 @@ export async function POST(request: NextRequest) {
     const gruposVolta = agruparViagens(voosVolta)
 
     console.log(`[BUSCAR-VOOS] voosIda=${voosIda.length} voosVolta=${voosVolta.length} grupos=${grupos.length} gruposVolta=${gruposVolta.length}`)
+    console.log(`[BUSCAR-VOOS] tempo total: ${Date.now() - inicioTotal}ms`)
 
     return NextResponse.json({ sistemas: sistemasData.Sistemas, grupos, gruposVolta })
 
