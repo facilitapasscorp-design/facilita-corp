@@ -176,7 +176,7 @@ const CIA: Record<string, { label: string; bg: string }> = {
   IB: { label: 'Iberia',bg: '#8B1A1A' },
 }
 
-const INPUT = 'mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694]'
+const INPUT = 'mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm text-[#18283A] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694]'
 
 function AeroportoInput({ value, onChange, placeholder, icon }: { value: string; onChange: (iata: string) => void; placeholder: string; icon?: React.ReactNode }) {
   const [query, setQuery] = useState(value)
@@ -251,8 +251,8 @@ function AeroportoInput({ value, onChange, placeholder, icon }: { value: string;
                 <span className="shrink-0 inline-flex items-center justify-center bg-blue-600 text-white font-bold text-xs rounded-lg px-2 py-1 min-w-[44px]">{a.iata}</span>
               )}
               <div className="min-w-0">
-                <p className={`text-sm font-medium truncate ${a.grupo ? 'text-gray-900' : 'text-gray-900'}`}>{a.nome}</p>
-                <p className="text-xs text-gray-400">{a.grupo ? `${a.grupo.join(', ')}` : `${a.cidade}${a.estado ? `, ${a.estado}` : ''} · ${a.pais}`}</p>
+                <p className="text-sm font-medium truncate text-[#18283A]">{a.nome}</p>
+                <p className="text-xs text-[#6b7684]">{a.grupo ? `${a.grupo.join(', ')}` : `${a.cidade}${a.estado ? `, ${a.estado}` : ''} · ${a.pais}`}</p>
               </div>
             </button>
           ))}
@@ -1018,7 +1018,7 @@ export default function Busca() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: FUNDO }}>
       <div className="relative px-4 sm:px-8 py-4 flex items-center justify-between border-b border-gray-200" style={{ backgroundColor: FUNDO }}>
-        <Image src="/logo.png" alt="Facilita Pass" width={139} height={44} className="h-9 sm:h-11 w-auto" style={{ objectFit: 'contain' }} />
+        <Image src="/logo-header.png" alt="Facilita Pass" width={260} height={42} className="h-9 sm:h-11 w-auto" style={{ objectFit: 'contain' }} />
 
         <div className="hidden sm:flex items-center gap-5">
           <button onClick={() => router.push('/painel')} className="text-sm font-medium hover:opacity-60 transition-colors" style={{ color: AZUL }}>Minhas reservas</button>
@@ -1110,9 +1110,9 @@ export default function Busca() {
                 <div className="space-y-3">
                   {trechos.map((trecho, idx) => (
                     <div key={idx} className="flex gap-3 items-end">
-                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Origem</label>}<input type="text" placeholder="Ex: GRU" value={trecho.origem} maxLength={3} onChange={e => atualizarTrecho(idx, 'origem', e.target.value.toUpperCase())} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
-                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Destino</label>}<input type="text" placeholder="Ex: GIG" value={trecho.destino} maxLength={3} onChange={e => atualizarTrecho(idx, 'destino', e.target.value.toUpperCase())} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
-                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Data</label>}<input type="date" value={trecho.data} min={idx > 0 && trechos[idx-1].data ? diaSeguinte(trechos[idx-1].data) : undefined} onChange={e => atualizarTrecho(idx, 'data', e.target.value)} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
+                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Origem</label>}<input type="text" placeholder="Ex: GRU" value={trecho.origem} maxLength={3} onChange={e => atualizarTrecho(idx, 'origem', e.target.value.toUpperCase())} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm text-[#18283A] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
+                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Destino</label>}<input type="text" placeholder="Ex: GIG" value={trecho.destino} maxLength={3} onChange={e => atualizarTrecho(idx, 'destino', e.target.value.toUpperCase())} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm text-[#18283A] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
+                      <div className="flex-1">{idx === 0 && <label className="text-sm font-medium text-gray-700">Data</label>}<input type="date" value={trecho.data} min={idx > 0 && trechos[idx-1].data ? diaSeguinte(trechos[idx-1].data) : undefined} onChange={e => atualizarTrecho(idx, 'data', e.target.value)} className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm text-[#18283A] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694] ${idx === 0 ? 'mt-1' : ''}`} /></div>
                       <div className={`shrink-0 ${idx === 0 ? 'mt-6' : ''}`}>
                         {idx >= 2 ? (<button onClick={() => removerTrecho(idx)} className="w-9 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>) : <div className="w-9" />}
                       </div>

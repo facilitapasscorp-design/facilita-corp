@@ -312,7 +312,7 @@ export default function Admin() {
           </button>
           <button type="button" onClick={() => router.push('/busca')} aria-label="Ir para a busca"
             className="cursor-pointer transition-opacity hover:opacity-85">
-            <Image src="/logo.png" alt="Facilita Pass" width={120} height={38} style={{ objectFit: 'contain' }} />
+            <Image src="/logo-header.png" alt="Facilita Pass" width={222} height={36} className="h-9 w-auto" style={{ objectFit: 'contain' }} />
           </button>
         </div>
         <button

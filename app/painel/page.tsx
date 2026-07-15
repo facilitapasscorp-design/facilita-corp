@@ -303,7 +303,7 @@ export default function Painel() {
       >
         <button type="button" onClick={() => router.push('/busca')} aria-label="Ir para a busca"
           className="cursor-pointer transition-opacity hover:opacity-85">
-          <Image src="/logo.png" alt="Facilita Pass" width={139} height={44} className="h-9 sm:h-11 w-auto" style={{ objectFit: 'contain' }} />
+          <Image src="/logo-header.png" alt="Facilita Pass" width={260} height={42} className="h-9 sm:h-11 w-auto" style={{ objectFit: 'contain' }} />
         </button>
         <div className="flex items-center gap-4 sm:gap-6">
           <button
