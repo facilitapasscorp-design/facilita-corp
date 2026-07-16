@@ -23,6 +23,9 @@ interface VooLeg {
   FamiliaCodigo?: string
   Cabine?: string
   Icone?: string | null
+  DataSaida?: string
+  DataChegada?: string
+  Conexao?: boolean
 }
 
 interface Viagem {
@@ -123,6 +126,25 @@ function duracaoMinutos(tempo: string): number {
   if (!tempo) return 0
   const [h, m] = tempo.split(':').map(Number)
   return (h || 0) * 60 + (m || 0)
+}
+const DIAS_SEMANA_ABREV = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+const MESES_ABREV = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+function parseWcfDate(v: string | undefined): Date | null {
+  if (!v) return null
+  const m = v.match(/\/Date\((-?\d+)/)
+  return m ? new Date(Number(m[1])) : null
+}
+function formatDataAbreviada(v: string | undefined): string {
+  const d = parseWcfDate(v)
+  if (!d) return ''
+  return `${DIAS_SEMANA_ABREV[d.getDay()]}, ${d.getDate()} ${MESES_ABREV[d.getMonth()]}`
+}
+function diasEntre(saida: string | undefined, chegada: string | undefined): number {
+  const ds = parseWcfDate(saida); const dc = parseWcfDate(chegada)
+  if (!ds || !dc) return 0
+  const a = new Date(ds.getFullYear(), ds.getMonth(), ds.getDate())
+  const b = new Date(dc.getFullYear(), dc.getMonth(), dc.getDate())
+  return Math.round((b.getTime() - a.getTime()) / 86400000)
 }
 function legMinutos(leg: VooLeg): number {
   const s = Math.floor(leg.HoraSaida / 100) * 60 + (leg.HoraSaida % 100)
@@ -679,22 +701,87 @@ function ResumoIdaSelecionada({ viagem, onAlterar }: { viagem: Viagem; onAlterar
   )
 }
 
-function ResumoVoo({ viagem, label }: { viagem: Viagem; label: string }) {
+function ResumoVoo({ viagem, label, detalhado = false }: { viagem: Viagem; label: string; detalhado?: boolean }) {
   const legs = getLegs(viagem); const first = legs[0]; const last = legs[legs.length - 1]
-  return (
-    <div className="flex items-center gap-3 py-2">
-      <AirlineBadge iata={viagem.CiaMandatoria?.CodigoIata ?? ''} icone={first?.Icone} />
-      <div className="flex-1">
-        <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-        <p className="text-sm font-semibold text-gray-800">
-          {viagem.Origem?.CodigoIata} → {viagem.Destino?.CodigoIata}
-          <span className="font-normal text-gray-500 ml-2 tabular-nums">
-            {first ? formatHora(first.HoraSaida) : '--'} → {last ? formatHora(last.HoraChegada) : '--'}
-          </span>
-          <span className="text-gray-400 ml-2">· {formatDuracao(viagem.TempoDeDuracao)}</span>
-        </p>
+
+  if (!detalhado) {
+    return (
+      <div className="flex items-center gap-3 py-2">
+        <AirlineBadge iata={viagem.CiaMandatoria?.CodigoIata ?? ''} icone={first?.Icone} />
+        <div className="flex-1">
+          <p className="text-xs text-gray-400 mb-0.5">{label}</p>
+          <p className="text-sm font-semibold text-gray-800">
+            {viagem.Origem?.CodigoIata} → {viagem.Destino?.CodigoIata}
+            <span className="font-normal text-gray-500 ml-2 tabular-nums">
+              {first ? formatHora(first.HoraSaida) : '--'} → {last ? formatHora(last.HoraChegada) : '--'}
+            </span>
+            <span className="text-gray-400 ml-2">· {formatDuracao(viagem.TempoDeDuracao)}</span>
+          </p>
+        </div>
+        <p className="text-sm font-bold text-gray-900">{formatPreco(viagem.Preco?.Total ?? 0)}</p>
       </div>
-      <p className="text-sm font-bold text-gray-900">{formatPreco(viagem.Preco?.Total ?? 0)}</p>
+    )
+  }
+
+  const numParadas = viagem.NumeroParadas ?? Math.max(legs.length - 1, 0)
+  const escalasTexto = numParadas === 0 ? 'Direto'
+    : numParadas === 1 ? `1 escala em ${legs[0]?.Destino?.CodigoIata ?? ''}`
+    : `${numParadas} escalas`
+  const bagagemInclusa = first?.BagagemInclusa ?? viagem.BagagemInclusa ?? false
+  const bagagemPeso = typeof first?.BagagemPeso === 'number' && first.BagagemPeso > 0 ? first.BagagemPeso : null
+  const familia = viagem.Familia || viagem.FamiliaCodigo || ''
+  const diffDias = diasEntre(first?.DataSaida, last?.DataChegada)
+
+  return (
+    <div className="py-3">
+      <div className="flex items-center gap-3">
+        <AirlineBadge iata={viagem.CiaMandatoria?.CodigoIata ?? ''} icone={first?.Icone} />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-gray-400 mb-0.5">{label} · {formatDataAbreviada(first?.DataSaida)}</p>
+          <p className="text-sm font-semibold text-gray-800 flex flex-wrap items-center gap-x-2">
+            <span>{viagem.Origem?.CodigoIata} → {viagem.Destino?.CodigoIata}</span>
+            <span className="font-normal text-gray-500 tabular-nums flex items-center gap-1">
+              {first ? formatHora(first.HoraSaida) : '--'} → {last ? formatHora(last.HoraChegada) : '--'}
+              {diffDias > 0 && (
+                <span className="inline-flex items-center justify-center text-[10px] font-bold text-white rounded px-1 leading-tight" style={{ backgroundColor: '#dc2626' }}>
+                  +{diffDias}
+                </span>
+              )}
+            </span>
+          </p>
+        </div>
+        <p className="text-sm font-bold text-gray-900 shrink-0">{formatPreco(viagem.Preco?.Total ?? 0)}</p>
+      </div>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2 ml-0 sm:ml-[60px]">
+        {familia && (
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm bg-slate-100 text-slate-600">{familia}</span>
+        )}
+        <span className="text-xs text-gray-400">{escalasTexto}</span>
+        <span className="text-xs text-gray-300">·</span>
+        <span className="flex items-center gap-1">
+          {bagagemInclusa ? (
+            <>
+              <svg className="w-3.5 h-3.5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <rect x="5" y="7" width="14" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                <line x1="12" y1="11" x2="12" y2="16" /><line x1="9.5" y1="13.5" x2="14.5" y2="13.5" />
+              </svg>
+              <span className="text-xs text-blue-600 font-medium">Bagagem incluída{bagagemPeso ? ` (${bagagemPeso}kg)` : ''}</span>
+            </>
+          ) : (
+            <>
+              <div className="relative w-3.5 h-3.5">
+                <svg className="w-3.5 h-3.5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <rect x="5" y="7" width="14" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                <svg className="absolute inset-0 w-3.5 h-3.5 text-red-400" viewBox="0 0 24 24">
+                  <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
+                </svg>
+              </div>
+              <span className="text-xs text-gray-400">Sem bagagem despachada</span>
+            </>
+          )}
+        </span>
+      </div>
     </div>
   )
 }
@@ -1298,8 +1385,16 @@ export default function Busca() {
             <div className="bg-white rounded-2xl p-6 shadow-sm space-y-6">
               <div className="border-b border-gray-100 pb-5">
                 <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Sua viagem</h3>
-                {vooIdaSelecionado && <ResumoVoo viagem={vooIdaSelecionado} label="Ida" />}
-                {vooVoltaSelecionado && <ResumoVoo viagem={vooVoltaSelecionado} label="Volta" />}
+                <div className="divide-y divide-gray-100">
+                  {vooIdaSelecionado && <ResumoVoo viagem={vooIdaSelecionado} label="Ida" detalhado />}
+                  {vooVoltaSelecionado && <ResumoVoo viagem={vooVoltaSelecionado} label="Volta" detalhado />}
+                </div>
+                {precoTotal > 0 && (
+                  <div className="flex items-center justify-between pt-3 mt-1 border-t border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">Total da viagem</span>
+                    <span className="text-lg font-bold text-gray-900">{formatPreco(precoTotal)}</span>
+                  </div>
+                )}
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-5">{passageiros.length === 1 ? 'Dados do passageiro' : 'Dados dos passageiros'}</h3>
