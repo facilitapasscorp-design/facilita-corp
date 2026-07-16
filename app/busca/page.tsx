@@ -74,6 +74,10 @@ interface PoliticaViagem {
 }
 
 interface Trecho { origem: string; destino: string; data: string }
+interface LocalizadorInfo {
+  localizador: string; companhia: string | null; origem: string | null; destino: string | null
+  trecho: 'ida' | 'volta'; valor: number | null; id: number
+}
 type TipoViagem = 'ida' | 'idavolta' | 'multiplos'
 type FaseSeleção = 'ida' | 'volta'
 type Etapa = 'selecao' | 'passageiro' | 'pagamento' | 'confirmacao'
@@ -111,7 +115,7 @@ function diaSeguinte(data: string): string {
   return d.toISOString().split('T')[0]
 }
 function nomeCompanhia(iata: string): string {
-  return iata === 'JJ' ? 'LATAM' : iata
+  return CIA[iata]?.label ?? iata
 }
 function duracaoMinutos(tempo: string): number {
   if (!tempo) return 0
@@ -809,6 +813,8 @@ export default function Busca() {
   const [carregandoReserva, setCarregandoReserva] = useState(false)
   const [erroReserva,       setErroReserva]       = useState('')
   const [localizador,       setLocalizador]        = useState('')
+  const [localizadores,     setLocalizadores]      = useState<LocalizadorInfo[]>([])
+  const [totalReservas,     setTotalReservas]      = useState(1)
   const [cartaoNumero,   setCartaoNumero]   = useState('')
   const [cartaoBandeira, setCartaoBandeira] = useState('VI')
   const [cartaoTitular,  setCartaoTitular]  = useState('')
@@ -925,6 +931,8 @@ export default function Busca() {
     }
     setCarregandoReserva(true); setErroReserva('')
     let loc = ''
+    let locs: LocalizadorInfo[] = []
+    let total = 1
     try {
       const res = await fetch('/api/tarifar-reservar', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -933,25 +941,44 @@ export default function Busca() {
       const data = await res.json()
       if (data.erro) { setErroReserva(data.erro); setCarregandoReserva(false); return }
       loc = data.localizador || ''
+      locs = data.localizadores ?? []
+      total = data.totalReservas ?? 1
     } catch (err: unknown) {
       setErroReserva(err instanceof Error ? err.message : 'Erro ao conectar')
       setCarregandoReserva(false); return
     }
     if (!loc) { setErroReserva('Não foi possível gerar a reserva'); setCarregandoReserva(false); return }
-    setLocalizador(loc)
+    setLocalizador(loc); setLocalizadores(locs); setTotalReservas(total)
     try {
       const supabase = createClient()
       const { data: sessionData } = await supabase.auth.getSession()
       if (sessionData.session) {
         const primAdulto = passageiros.find(p => p.tipo === 'ADT')
-        const valorTotal = (vooIdaSelecionado?.Preco?.Total ?? 0) + (vooVoltaSelecionado?.Preco?.Total ?? 0)
-        await supabase.from('reservas').insert({
-          user_id: sessionData.session.user.id, localizador: loc,
-          origem: vooIdaSelecionado?.Origem?.CodigoIata ?? '', destino: vooIdaSelecionado?.Destino?.CodigoIata ?? '',
-          data_voo: dataIda || null,
-          passageiro_nome: primAdulto ? `${primAdulto.nome} ${primAdulto.sobrenome}`.trim() : null,
-          valor: valorTotal > 0 ? valorTotal : null, status: 'Ativa',
-        })
+        const nomePassageiro = primAdulto ? `${primAdulto.nome} ${primAdulto.sobrenome}`.trim() : null
+        const userId = sessionData.session.user.id
+
+        if (total > 1 && locs.length > 1) {
+          const grupoReserva = crypto.randomUUID()
+          await supabase.from('reservas').insert(locs.map(l => ({
+            user_id: userId, localizador: l.localizador, companhia: l.companhia,
+            grupo_reserva: grupoReserva, trecho: l.trecho,
+            origem: l.origem ?? (l.trecho === 'volta' ? vooVoltaSelecionado?.Origem?.CodigoIata : vooIdaSelecionado?.Origem?.CodigoIata) ?? '',
+            destino: l.destino ?? (l.trecho === 'volta' ? vooVoltaSelecionado?.Destino?.CodigoIata : vooIdaSelecionado?.Destino?.CodigoIata) ?? '',
+            data_voo: (l.trecho === 'volta' ? dataVolta || dataIda : dataIda) || null,
+            passageiro_nome: nomePassageiro,
+            valor: l.valor ?? (l.trecho === 'volta' ? vooVoltaSelecionado?.Preco?.Total : vooIdaSelecionado?.Preco?.Total) ?? null,
+            status: 'Ativa',
+          })))
+        } else {
+          const valorTotal = (vooIdaSelecionado?.Preco?.Total ?? 0) + (vooVoltaSelecionado?.Preco?.Total ?? 0)
+          await supabase.from('reservas').insert({
+            user_id: userId, localizador: loc,
+            origem: vooIdaSelecionado?.Origem?.CodigoIata ?? '', destino: vooIdaSelecionado?.Destino?.CodigoIata ?? '',
+            data_voo: dataIda || null,
+            passageiro_nome: nomePassageiro,
+            valor: valorTotal > 0 ? valorTotal : null, status: 'Ativa',
+          })
+        }
       }
     } catch {}
     setCarregandoReserva(false); setEtapa('pagamento')
@@ -977,7 +1004,7 @@ export default function Busca() {
   function novaBusca() {
     setEtapa('selecao'); setGruposIda(null); setGruposVolta(null)
     setVooIdaSelecionado(null); setVooVoltaSelecionado(null); setFase('ida')
-    setLocalizador(''); setNumeroBilhete(''); setNomeBilhete('')
+    setLocalizador(''); setLocalizadores([]); setTotalReservas(1); setNumeroBilhete(''); setNomeBilhete('')
     setAdultos(1); setCriancas(0); setBebes(0); setPassageiros([passageiroVazio('ADT')])
     setOrigem(''); setDestino(''); setDataIda(''); setDataVolta('')
     setCartaoNumero(''); setCartaoTitular(''); setCartaoValidade(''); setCartaoCVV('')
@@ -1260,9 +1287,29 @@ export default function Busca() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900 text-sm">Reserva confirmada!</p>
-                    <p className="text-xs text-gray-500">Localizador: <span className="font-bold text-gray-800 tracking-widest">{localizador}</span></p>
+                    {totalReservas > 1 && localizadores.length > 1 ? (
+                      <div className="mt-1 space-y-0.5">
+                        {localizadores.map(l => (
+                          <p key={l.localizador} className="text-xs text-gray-500">
+                            ✈ {l.trecho === 'ida' ? 'Ida' : 'Volta'} — {nomeCompanhia(l.companhia ?? '')} — Localizador: <span className="font-bold text-gray-800 tracking-widest">{l.localizador}</span>
+                          </p>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500">Localizador: <span className="font-bold text-gray-800 tracking-widest">{localizador}</span></p>
+                    )}
                   </div>
                 </div>
+                {totalReservas > 1 && localizadores.length > 1 && (
+                  <div className="rounded-xl px-4 py-3 mb-4 flex items-start gap-2.5" style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
+                    <svg className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#2563eb' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4m0-4h.01" />
+                    </svg>
+                    <p className="text-xs" style={{ color: '#1e40af' }}>
+                      Como seus voos são de duas companhias diferentes, foram geradas duas reservas independentes. O pagamento também será feito separadamente, um para cada companhia.
+                    </p>
+                  </div>
+                )}
                 <div className="border-t border-gray-100 pt-4 space-y-1">
                   {vooIdaSelecionado && <ResumoVoo viagem={vooIdaSelecionado} label="Ida" />}
                   {vooVoltaSelecionado && <ResumoVoo viagem={vooVoltaSelecionado} label="Volta" />}

@@ -140,11 +140,50 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ erro: 'Nenhuma reserva retornada pela WOOBA' }, { status: 400 })
     }
 
-    const localizadores = reservas.map((r: any) => ({
-      localizador: r.Localizador,
-      companhia: r.Voos?.[0]?.CiaAerea?.CodigoIata ?? r.Bilhetes?.[0]?.Cia ?? null,
-      id: r.Id,
-    }))
+    // Loga a estrutura completa de Reservas[] para conferência — cada item traz
+    // seu próprio ValorPendenteParaPagamento (confirmado no XSD da WOOBA), mas
+    // isso ainda não foi observado numa reserva real com múltiplas companhias.
+    console.log('[RESERVAR] Reservas[] completo:', JSON.stringify(reservas))
+
+    interface LocalizadorEntry {
+      localizador: string; companhia: string | null; origem: string | null; destino: string | null
+      trecho: 'ida' | 'volta'; valor: number | null; id: number
+    }
+    const localizadores: LocalizadorEntry[] = reservas.map((r: any, idx: number) => {
+      const viagem = r.Viagens?.[0] ?? {}
+      const origem = viagem.Origem?.CodigoIata ?? null
+      const destino = viagem.Destino?.CodigoIata ?? null
+
+      let trecho: 'ida' | 'volta' = idx === 0 ? 'ida' : 'volta'
+      if (vooIda?.Origem?.CodigoIata === origem && vooIda?.Destino?.CodigoIata === destino) trecho = 'ida'
+      else if (vooVolta?.Origem?.CodigoIata === origem && vooVolta?.Destino?.CodigoIata === destino) trecho = 'volta'
+
+      return {
+        localizador: r.Localizador,
+        companhia: viagem.CiaMandatoria?.CodigoIata ?? null,
+        origem,
+        destino,
+        trecho,
+        valor: typeof r.ValorPendenteParaPagamento === 'number' ? r.ValorPendenteParaPagamento : null,
+        id: r.Id,
+      }
+    })
+
+    // Fallback: se a WOOBA não trouxe ValorPendenteParaPagamento em nenhum item,
+    // usa os preços já conhecidos da seleção (Tarifar) por trecho; se nem isso
+    // der pra casar, registra o valor cheio só no primeiro localizador.
+    if (localizadores.every(l => l.valor == null)) {
+      const precoIda   = vooIda?.Preco?.Total ?? 0
+      const precoVolta = vooVolta?.Preco?.Total ?? 0
+      let algumCasou = false
+      for (const l of localizadores) {
+        if (l.trecho === 'ida' && precoIda)   { l.valor = precoIda;   algumCasou = true }
+        if (l.trecho === 'volta' && precoVolta) { l.valor = precoVolta; algumCasou = true }
+      }
+      if (!algumCasou && localizadores[0]) {
+        localizadores[0].valor = precoIda + precoVolta
+      }
+    }
 
     console.log('[RESERVAR] Total de reservas:', reservas.length)
     console.log('[RESERVAR] Localizadores:', JSON.stringify(localizadores))

@@ -15,6 +15,9 @@ interface Reserva {
   valor: number | null
   status: 'Ativa' | 'Emitida' | 'Cancelada' | 'Expirada'
   created_at: string
+  companhia: string | null
+  grupo_reserva: string | null
+  trecho: 'ida' | 'volta' | null
 }
 
 const STATUS: Record<string, { label: string; bg: string; color: string }> = {
@@ -22,6 +25,12 @@ const STATUS: Record<string, { label: string; bg: string; color: string }> = {
   Emitida:   { label: 'Emitida',   bg: '#dbeafe', color: '#1d4ed8' },
   Cancelada: { label: 'Cancelada', bg: '#fee2e2', color: '#dc2626' },
   Expirada:  { label: 'Expirada',  bg: '#f3f4f6', color: '#6b7280' },
+}
+
+const NOME_CIA: Record<string, string> = { G3: 'GOL', LA: 'LATAM', JJ: 'LATAM', AD: 'AZUL', IB: 'Iberia' }
+function nomeCompanhia(iata: string | null): string {
+  if (!iata) return '—'
+  return NOME_CIA[iata] ?? iata
 }
 
 const INPUT = 'mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -335,6 +344,124 @@ export default function Painel() {
     Cancelada: reservas.filter(r => statusExibido(r) === 'Cancelada').length,
   }
 
+  // Agrupa reservas com o mesmo grupo_reserva (ida/volta de companhias
+  // diferentes); reservas sem grupo_reserva continuam soltas como hoje.
+  type ItemExibido = { tipo: 'unica'; reserva: Reserva } | { tipo: 'grupo'; grupoReserva: string; reservas: Reserva[] }
+  const itensExibidos: ItemExibido[] = []
+  const gruposVistos = new Set<string>()
+  for (const r of reservasFiltradas) {
+    if (r.grupo_reserva) {
+      if (gruposVistos.has(r.grupo_reserva)) continue
+      gruposVistos.add(r.grupo_reserva)
+      itensExibidos.push({
+        tipo: 'grupo', grupoReserva: r.grupo_reserva,
+        reservas: reservasFiltradas.filter(x => x.grupo_reserva === r.grupo_reserva),
+      })
+    } else {
+      itensExibidos.push({ tipo: 'unica', reserva: r })
+    }
+  }
+
+  function encontrarOutraDoGrupo(r: Reserva): Reserva | null {
+    if (!r.grupo_reserva) return null
+    return reservas.find(x => x.grupo_reserva === r.grupo_reserva && x.id !== r.id) ?? null
+  }
+
+  function renderReserva(r: Reserva, aninhada = false) {
+    const exibido = statusExibido(r)
+    const st = STATUS[exibido] ?? STATUS.Expirada
+    return (
+      <div
+        key={r.id}
+        className={aninhada ? 'rounded-lg border bg-white p-4 transition-colors' : 'rounded-xl border p-5 transition-colors'}
+        style={{ borderColor: '#f3f4f6' }}
+        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#e5e7eb' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#f3f4f6' }}
+      >
+        {aninhada && r.trecho && (
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#6b7684' }}>
+            {r.trecho === 'ida' ? '✈ Ida' : '✈ Volta'} — {nomeCompanhia(r.companhia)}
+          </p>
+        )}
+        <div className="flex items-start justify-between mb-3 gap-2">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="text-base sm:text-lg font-bold text-gray-900 tracking-widest font-mono">
+                {r.localizador}
+              </span>
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                style={{ backgroundColor: st.bg, color: st.color }}>
+                {st.label}
+              </span>
+            </div>
+            <p className="text-sm sm:text-base font-semibold text-gray-700">{r.origem} → {r.destino}</p>
+          </div>
+          <p className="text-base sm:text-lg font-bold text-gray-900 shrink-0">{formatValor(r.valor)}</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-4">
+          {r.passageiro_nome && (
+            <span className="flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              {r.passageiro_nome}
+            </span>
+          )}
+          {r.data_voo && (
+            <span className="flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {formatData(r.data_voo)}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3 flex-wrap">
+          {exibido === 'Ativa' && (
+            <>
+              <button
+                onClick={() => abrirModal(r)}
+                className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-80"
+                style={{ backgroundColor: '#18283A' }}
+              >
+                Pagar e emitir
+              </button>
+              <button
+                onClick={() => { setCancelarReserva(r); setErroCancelamento(''); setSucessoCancelamento(false) }}
+                className="px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <span className="text-xs font-medium text-amber-600">
+                ⚠️ Expira às 23:59 de hoje
+              </span>
+            </>
+          )}
+
+          {exibido === 'Emitida' && (
+            <button className="px-5 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
+              Ver bilhete
+            </button>
+          )}
+
+          <button
+            onClick={() => { setChamadoReserva(r); setChamadoTipo('Alteração'); setChamadoMensagem(''); setErroChamado(''); setChamadoEnviado(false) }}
+            className="text-xs font-medium underline transition-colors"
+            style={{ color: '#6b7684' }}
+          >
+            Solicitar alteração
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const outraDoGrupo = modalReserva ? encontrarOutraDoGrupo(modalReserva) : null
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F4F5F3' }}>
       {/* Header */}
@@ -438,89 +565,20 @@ export default function Painel() {
             </div>
           ) : (
             <div className="p-4 sm:p-6 space-y-4">
-              {reservasFiltradas.map(r => {
-                const exibido = statusExibido(r)
-                const st = STATUS[exibido] ?? STATUS.Expirada
+              {itensExibidos.map(item => {
+                if (item.tipo === 'unica') return renderReserva(item.reserva)
+                const grupo = item.reservas
+                const ida = grupo.find(r => r.trecho === 'ida') ?? grupo[0]
                 return (
-                  <div
-                    key={r.id}
-                    className="rounded-xl border p-5 transition-colors"
-                    style={{ borderColor: '#f3f4f6' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#e5e7eb' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#f3f4f6' }}
-                  >
-                    <div className="flex items-start justify-between mb-3 gap-2">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <span className="text-base sm:text-lg font-bold text-gray-900 tracking-widest font-mono">
-                            {r.localizador}
-                          </span>
-                          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
-                            style={{ backgroundColor: st.bg, color: st.color }}>
-                            {st.label}
-                          </span>
-                        </div>
-                        <p className="text-sm sm:text-base font-semibold text-gray-700">{r.origem} → {r.destino}</p>
-                      </div>
-                      <p className="text-base sm:text-lg font-bold text-gray-900 shrink-0">{formatValor(r.valor)}</p>
+                  <div key={item.grupoReserva} className="rounded-xl border-2 p-4 sm:p-5" style={{ borderColor: '#e5e7eb', backgroundColor: '#fafafa' }}>
+                    <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                      <h3 className="text-sm sm:text-base font-bold text-gray-900">Viagem {ida.origem} ⇄ {ida.destino}</h3>
+                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#ede9fe', color: '#6d28d9' }}>
+                        {grupo.length} companhias — {grupo.length} pagamentos
+                      </span>
                     </div>
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-4">
-                      {r.passageiro_nome && (
-                        <span className="flex items-center gap-1.5">
-                          <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round"
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          {r.passageiro_nome}
-                        </span>
-                      )}
-                      {r.data_voo && (
-                        <span className="flex items-center gap-1.5">
-                          <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round"
-                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          {formatData(r.data_voo)}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-3 flex-wrap">
-                      {exibido === 'Ativa' && (
-                        <>
-                          <button
-                            onClick={() => abrirModal(r)}
-                            className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-80"
-                            style={{ backgroundColor: '#18283A' }}
-                          >
-                            Pagar e emitir
-                          </button>
-                          <button
-                            onClick={() => { setCancelarReserva(r); setErroCancelamento(''); setSucessoCancelamento(false) }}
-                            className="px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
-                          >
-                            Cancelar
-                          </button>
-                          <span className="text-xs font-medium text-amber-600">
-                            ⚠️ Expira às 23:59 de hoje
-                          </span>
-                        </>
-                      )}
-
-                      {exibido === 'Emitida' && (
-                        <button className="px-5 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
-                          Ver bilhete
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => { setChamadoReserva(r); setChamadoTipo('Alteração'); setChamadoMensagem(''); setErroChamado(''); setChamadoEnviado(false) }}
-                        className="text-xs font-medium underline transition-colors"
-                        style={{ color: '#6b7684' }}
-                      >
-                        Solicitar alteração
-                      </button>
+                    <div className="space-y-3">
+                      {grupo.map(r => renderReserva(r, true))}
                     </div>
                   </div>
                 )
@@ -699,6 +757,20 @@ export default function Painel() {
             </div>
 
             <div className="px-6 py-5 space-y-5">
+              {/* Aviso de pagamento separado (reserva com múltiplos localizadores) */}
+              {outraDoGrupo && (
+                <div className="rounded-xl px-4 py-3 space-y-2" style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
+                  <p className="text-sm font-semibold" style={{ color: '#1e40af' }}>
+                    Você está pagando: {modalReserva.trecho === 'volta' ? 'Volta' : 'Ida'} — {nomeCompanhia(modalReserva.companhia)} — Localizador {modalReserva.localizador} — {modalReserva.origem} → {modalReserva.destino} — {formatValor(modalReserva.valor)}
+                  </p>
+                  {statusExibido(outraDoGrupo) !== 'Emitida' && (
+                    <p className="text-xs" style={{ color: '#1e40af' }}>
+                      Este pagamento cobre apenas o trecho da {nomeCompanhia(modalReserva.companhia)}. O trecho da {nomeCompanhia(outraDoGrupo.companhia)} (localizador {outraDoGrupo.localizador}) deve ser pago separadamente.
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Resumo da reserva */}
               <div className="rounded-xl p-4 space-y-1.5" style={{ backgroundColor: '#f8fafc' }}>
                 <div className="flex items-center justify-between">
@@ -757,6 +829,18 @@ export default function Painel() {
                     <div className="inline-block bg-gray-50 rounded-xl px-6 py-4">
                       <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">Número do bilhete</p>
                       <p className="text-2xl font-bold text-gray-900 tracking-wider">{bilheteEmitido.numero}</p>
+                    </div>
+                  )}
+                  {outraDoGrupo && statusExibido(outraDoGrupo) !== 'Emitida' && (
+                    <div className="mt-5 rounded-xl px-4 py-3 text-left" style={{ backgroundColor: '#fef9c3', border: '1px solid #fde68a' }}>
+                      <p className="text-sm" style={{ color: '#92400e' }}>
+                        Não esqueça de pagar o outro trecho ({nomeCompanhia(outraDoGrupo.companhia)} — {outraDoGrupo.localizador}) para garantir sua viagem completa.
+                      </p>
+                      <button onClick={() => abrirModal(outraDoGrupo)}
+                        className="mt-2.5 px-4 py-2 rounded-lg text-xs font-semibold text-white hover:opacity-90 transition-opacity"
+                        style={{ backgroundColor: '#92400e' }}>
+                        Pagar agora
+                      </button>
                     </div>
                   )}
                 </div>
