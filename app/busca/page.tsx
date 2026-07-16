@@ -22,6 +22,7 @@ interface VooLeg {
   Familia?: string
   FamiliaCodigo?: string
   Cabine?: string
+  Icone?: string | null
 }
 
 interface Viagem {
@@ -63,6 +64,7 @@ interface VooAgrupado {
   duracao: string
   companhia: string
   numParadas: number
+  icone: string | null
   voos: VooLeg[]
   tarifas: Tarifa[]
 }
@@ -188,16 +190,13 @@ function AeroportoInput({ value, onChange, placeholder, icon }: { value: string;
   const [sugestoes, setSugestoes] = useState<Aeroporto[]>([])
   const [focusIdx, setFocusIdx] = useState(-1)
   const containerRef = useRef<HTMLDivElement>(null)
-  const digitandoRef = useRef(false)
 
+  // Sincroniza a exibição só quando o valor CONFIRMADO (vindo do pai) muda —
+  // nunca durante a digitação, que é livre e não deve travar/auto-preencher.
   useEffect(() => {
-    if (digitandoRef.current) { digitandoRef.current = false; return }
     if (!value) { setQuery(''); return }
-    if (value.length === 3) {
-      const exact = buscarAeroportos(value).find(a => a.iata === value)
-      if (exact) { setQuery(`${exact.iata} - ${exact.nome}`); return }
-    }
-    setQuery(value)
+    const exact = buscarAeroportos(value).find(a => a.iata === value)
+    setQuery(exact ? `${exact.iata} - ${exact.nome}` : value)
   }, [value])
 
   useEffect(() => {
@@ -209,27 +208,25 @@ function AeroportoInput({ value, onChange, placeholder, icon }: { value: string;
   }, [])
 
   function abrir(v: string) {
-    const r = buscarAeroportos(v); setSugestoes(r); setAberto(r.length > 0)
+    const r = buscarAeroportos(v)
+    setSugestoes(r)
+    setAberto(r.length > 0)
+    setFocusIdx(r.length > 0 ? 0 : -1)
   }
   function handleChange(v: string) {
-    setQuery(v); abrir(v); setFocusIdx(-1)
-    const upper = v.trim().toUpperCase()
-    if (upper.length === 3) {
-      const exact = buscarAeroportos(upper).find(a => a.iata === upper && !a.grupo)
-      if (exact) { selecionar(exact); return }
-    }
-    const novoValor = upper.slice(0, 3)
-    if (novoValor !== value) digitandoRef.current = true
-    onChange(novoValor)
+    // Digitação livre: só atualiza o texto exibido e as sugestões. O valor
+    // (IATA) confirmado só muda via clique ou Enter em `selecionar`.
+    setQuery(v)
+    abrir(v)
   }
   function selecionar(a: Aeroporto) {
-    setQuery(`${a.iata} - ${a.nome}`); onChange(a.iata); setAberto(false); setSugestoes([])
+    setQuery(`${a.iata} - ${a.nome}`); onChange(a.iata); setAberto(false); setSugestoes([]); setFocusIdx(-1)
   }
   function handleKeyDown(e: React.KeyboardEvent) {
     if (!aberto) return
     if (e.key === 'ArrowDown') { e.preventDefault(); setFocusIdx(i => Math.min(i + 1, sugestoes.length - 1)) }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setFocusIdx(i => Math.max(i - 1, 0)) }
-    else if (e.key === 'Enter' && focusIdx >= 0) { e.preventDefault(); selecionar(sugestoes[focusIdx]) }
+    else if (e.key === 'Enter' && focusIdx >= 0 && sugestoes[focusIdx]) { e.preventDefault(); selecionar(sugestoes[focusIdx]) }
     else if (e.key === 'Escape') setAberto(false)
   }
 
@@ -370,8 +367,17 @@ function DatePicker({ value, onChange, minDate, placeholder, openSignal }: {
   )
 }
 
-function AirlineBadge({ iata }: { iata: string }) {
+function AirlineBadge({ iata, icone }: { iata: string; icone?: string | null }) {
   const c = CIA[iata] ?? { label: nomeCompanhia(iata), bg: '#4B5563' }
+  const [erroIcone, setErroIcone] = useState(false)
+  if (icone && !erroIcone) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={icone} alt={c.label} title={c.label}
+        className="h-6 w-auto max-w-[52px] object-contain shrink-0"
+        onError={() => setErroIcone(true)} />
+    )
+  }
   return (
     <span className="inline-flex items-center justify-center rounded-md text-white font-bold text-xs px-2 py-1 min-w-[48px]"
       style={{ backgroundColor: c.bg }}>{c.label}</span>
@@ -536,7 +542,7 @@ function VooCard({ voo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes, 
 
       {/* Cabeçalho compacto */}
       <div className="px-4 py-3 flex items-center gap-3">
-        <AirlineBadge iata={voo.companhia} />
+        <AirlineBadge iata={voo.companhia} icone={voo.icone} />
 
         {/* Horários */}
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -661,7 +667,7 @@ function ResumoIdaSelecionada({ viagem, onAlterar }: { viagem: Viagem; onAlterar
       </svg>
       <div className="flex-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
         <span className="text-xs font-semibold text-green-700">Ida selecionada</span>
-        <AirlineBadge iata={viagem.CiaMandatoria?.CodigoIata ?? ''} />
+        <AirlineBadge iata={viagem.CiaMandatoria?.CodigoIata ?? ''} icone={first?.Icone} />
         <span className="font-semibold text-gray-800 tabular-nums">
           {first ? formatHora(first.HoraSaida) : '--'} → {last ? formatHora(last.HoraChegada) : '--'}
         </span>
@@ -677,7 +683,7 @@ function ResumoVoo({ viagem, label }: { viagem: Viagem; label: string }) {
   const legs = getLegs(viagem); const first = legs[0]; const last = legs[legs.length - 1]
   return (
     <div className="flex items-center gap-3 py-2">
-      <AirlineBadge iata={viagem.CiaMandatoria?.CodigoIata ?? ''} />
+      <AirlineBadge iata={viagem.CiaMandatoria?.CodigoIata ?? ''} icone={first?.Icone} />
       <div className="flex-1">
         <p className="text-xs text-gray-400 mb-0.5">{label}</p>
         <p className="text-sm font-semibold text-gray-800">
@@ -780,7 +786,7 @@ function VooDetalhesModal({ viagem, onFechar }: { viagem: Viagem; onFechar: () =
           })}
           <div className="mt-3 pt-4 border-t border-gray-100 flex items-center justify-between">
             <span className="text-sm text-gray-500">Total: <span className="font-semibold text-gray-800">{formatDuracao(viagem.TempoDeDuracao)}</span></span>
-            <AirlineBadge iata={iata} />
+            <AirlineBadge iata={iata} icone={legs[0]?.Icone} />
           </div>
         </div>
       </div>
@@ -824,6 +830,7 @@ export default function Busca() {
   const [erroEmissao,       setErroEmissao]       = useState('')
   const [numeroBilhete,     setNumeroBilhete]      = useState('')
   const [nomeBilhete,       setNomeBilhete]        = useState('')
+  const [emitidos, setEmitidos] = useState<Record<string, { bilhete: string; passageiro: string }>>({})
   const [formasFinanciamento, setFormasFinanciamento] = useState<{ FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[]>([])
   const [financiamentoId,     setFinanciamentoId]     = useState<number>(61)
   const [parcelas,            setParcelas]            = useState<number>(1)
@@ -835,6 +842,8 @@ export default function Busca() {
   const [nomeUsuario, setNomeUsuario] = useState<string | null>(null)
   const [menuMobileAberto, setMenuMobileAberto] = useState(false)
   const [voltaAbrirSignal, setVoltaAbrirSignal] = useState(0)
+  const [filtroCia, setFiltroCia] = useState<string | null>(null)
+  const [filtroBagagem, setFiltroBagagem] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -901,6 +910,7 @@ export default function Busca() {
     } else if (!origem || !destino || !dataIda) { setErroVoo('Preencha origem, destino e data de ida.'); return }
     setCarregando(true); setErroVoo(''); setGruposIda(null); setGruposVolta(null)
     setFase('ida'); setVooIdaSelecionado(null); setVooVoltaSelecionado(null)
+    setFiltroCia(null); setFiltroBagagem(false)
     const res = await fetch('/api/buscar-voos', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -919,6 +929,7 @@ export default function Busca() {
 
   function selecionarVooIda(viagem: Viagem) {
     setVooIdaSelecionado(viagem)
+    setFiltroCia(null); setFiltroBagagem(false)
     if (tipo === 'idavolta') setFase('volta'); else setEtapa('passageiro')
   }
   function selecionarVooVolta(viagem: Viagem) { setVooVoltaSelecionado(viagem); setEtapa('passageiro') }
@@ -994,17 +1005,29 @@ export default function Busca() {
     })
     const data = await res.json()
     setCarregandoEmissao(false)
-    if (data.erro) { setErroEmissao(data.erro) }
-    else {
-      setNumeroBilhete(data.bilhete); setNomeBilhete(data.passageiro); setEtapa('confirmacao')
-      try { await createClient().from('reservas').update({ status: 'Emitida' }).eq('localizador', localizador) } catch {}
-    }
+    if (data.erro) { setErroEmissao(data.erro); return }
+
+    const localizadorPago = localizador
+    const novoEmitidos = { ...emitidos, [localizadorPago]: { bilhete: data.bilhete as string, passageiro: data.passageiro as string } }
+    setEmitidos(novoEmitidos)
+    setNumeroBilhete(data.bilhete); setNomeBilhete(data.passageiro)
+    try { await createClient().from('reservas').update({ status: 'Emitida' }).eq('localizador', localizadorPago) } catch {}
+
+    const faltaPagar = localizadores.some(l => l.localizador !== localizadorPago && !novoEmitidos[l.localizador])
+    if (!faltaPagar) setEtapa('confirmacao')
+  }
+
+  function pagarProximoTrecho(loc: LocalizadorInfo) {
+    setLocalizador(loc.localizador)
+    setCartaoNumero(''); setCartaoTitular(''); setCartaoValidade(''); setCartaoCVV('')
+    setFormasFinanciamento([]); setFinanciamentoId(61); setParcelas(1)
+    setChaveDeSeguranca(null); setErroEmissao('')
   }
 
   function novaBusca() {
     setEtapa('selecao'); setGruposIda(null); setGruposVolta(null)
     setVooIdaSelecionado(null); setVooVoltaSelecionado(null); setFase('ida')
-    setLocalizador(''); setLocalizadores([]); setTotalReservas(1); setNumeroBilhete(''); setNomeBilhete('')
+    setLocalizador(''); setLocalizadores([]); setTotalReservas(1); setNumeroBilhete(''); setNomeBilhete(''); setEmitidos({})
     setAdultos(1); setCriancas(0); setBebes(0); setPassageiros([passageiroVazio('ADT')])
     setOrigem(''); setDestino(''); setDataIda(''); setDataVolta('')
     setCartaoNumero(''); setCartaoTitular(''); setCartaoValidade(''); setCartaoCVV('')
@@ -1033,8 +1056,15 @@ export default function Busca() {
 
   const minDataVolta    = diaSeguinte(dataIda)
   const gruposExibidos  = fase === 'volta' ? gruposVolta : gruposIda
-  const gruposOrdenados = gruposExibidos ? ordenarGrupos(gruposExibidos, ordenacao) : null
+  const companhiasPresentes = Array.from(new Set((gruposExibidos ?? []).map(g => g.companhia).filter(Boolean)))
+  const filtrosAtivos = filtroCia !== null || filtroBagagem
+  const gruposFiltrados = gruposExibidos ? gruposExibidos.filter(g =>
+    (filtroCia === null || g.companhia === filtroCia) &&
+    (!filtroBagagem || g.tarifas.some(t => t.bagagemInclusa))
+  ) : null
+  const gruposOrdenados = gruposFiltrados ? ordenarGrupos(gruposFiltrados, ordenacao) : null
   const totalEncontrado = gruposExibidos?.length ?? 0
+  const totalFiltrado   = gruposFiltrados?.length ?? 0
   const precoTotal      = (vooIdaSelecionado?.Preco?.Total ?? 0) + (vooVoltaSelecionado?.Preco?.Total ?? 0)
 
   const ORDENACAO_OPTS: { id: Ordenacao; label: string }[] = [
@@ -1176,13 +1206,24 @@ export default function Busca() {
 
             {(carregando || gruposIda !== null) && (
               <div>
+                {tipo === 'idavolta' && (
+                  <div className="rounded-xl px-4 py-3 mb-4 flex items-start gap-2.5" style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
+                    <svg className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#2563eb' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4m0-4h.01" />
+                    </svg>
+                    <p className="text-xs" style={{ color: '#1e40af' }}>
+                      Se você combinar voos de companhias diferentes na ida e na volta, serão geradas duas reservas independentes — o pagamento também é feito separadamente, um para cada companhia.
+                    </p>
+                  </div>
+                )}
                 {carregando && <div className="barra-progresso-busca mb-4" aria-hidden="true" />}
                 {!carregando && fase === 'volta' && vooIdaSelecionado && (
                   <ResumoIdaSelecionada viagem={vooIdaSelecionado} onAlterar={() => { setFase('ida'); setVooIdaSelecionado(null) }} />
                 )}
                 <div className="flex items-baseline justify-between mb-3">
                   <h2 className="text-gray-700 font-semibold">
-                    {carregando ? 'Buscando...' : fase === 'volta' ? 'Selecione a volta' : totalEncontrado === 0 ? '' : `${totalEncontrado} ${totalEncontrado === 1 ? 'voo encontrado' : 'voos encontrados'}`}
+                    {carregando ? 'Buscando...' : fase === 'volta' ? 'Selecione a volta' : totalEncontrado === 0 ? '' :
+                      filtrosAtivos ? `${totalFiltrado} de ${totalEncontrado} voos` : `${totalEncontrado} ${totalEncontrado === 1 ? 'voo encontrado' : 'voos encontrados'}`}
                   </h2>
                   {!carregando && totalEncontrado > 0 && (
                     <span className="text-xs text-gray-400">{fase === 'volta' ? `${destino} → ${origem}` : `${origem} → ${destino}`}</span>
@@ -1191,11 +1232,29 @@ export default function Busca() {
 
                 {!carregando && totalEncontrado > 0 && (
                   <div className="flex gap-2 overflow-x-auto pb-1 mb-3">
+                    <button onClick={() => setFiltroCia(null)}
+                      className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroCia === null ? 'text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'}`}
+                      style={filtroCia === null ? { backgroundColor: '#18283A' } : {}}>Todas</button>
+                    {companhiasPresentes.map(cia => (
+                      <button key={cia} onClick={() => setFiltroCia(c => c === cia ? null : cia)}
+                        className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroCia === cia ? 'text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'}`}
+                        style={filtroCia === cia ? { backgroundColor: '#18283A' } : {}}>{nomeCompanhia(cia)}</button>
+                    ))}
+                    <button onClick={() => setFiltroBagagem(b => !b)}
+                      className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroBagagem ? 'text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'}`}
+                      style={filtroBagagem ? { backgroundColor: '#18283A' } : {}}>🧳 Apenas com bagagem</button>
+                    <span className="w-px bg-gray-200 shrink-0 my-1" />
                     {ORDENACAO_OPTS.map(op => (
                       <button key={op.id} onClick={() => setOrdenacao(op.id)}
                         className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${ordenacao === op.id ? 'text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'}`}
                         style={ordenacao === op.id ? { backgroundColor: '#18283A' } : {}}>{op.label}</button>
                     ))}
+                    {filtrosAtivos && (
+                      <button onClick={() => { setFiltroCia(null); setFiltroBagagem(false) }}
+                        className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors">
+                        Limpar filtros
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -1206,6 +1265,14 @@ export default function Busca() {
                     <svg className="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                     <p className="text-gray-500 font-medium text-sm">Nenhum voo encontrado para essa rota.</p>
                     <p className="text-gray-400 text-xs mt-1">Tente outras datas ou aeroportos.</p>
+                  </div>
+                )}
+
+                {!carregando && totalEncontrado > 0 && totalFiltrado === 0 && (
+                  <div className="bg-white rounded-xl px-8 py-12 text-center border border-gray-100">
+                    <svg className="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                    <p className="text-gray-500 font-medium text-sm">Nenhum voo encontrado com esses filtros.</p>
+                    <button onClick={() => { setFiltroCia(null); setFiltroBagagem(false) }} className="text-xs font-medium mt-2 hover:underline" style={{ color: '#2563eb' }}>Limpar filtros</button>
                   </div>
                 )}
 
@@ -1276,115 +1343,177 @@ export default function Busca() {
           </div>
         )}
 
-        {etapa === 'pagamento' && (
-          <div className="py-4">
-            <IndicadorEtapas etapa={etapa} />
-            <div className="space-y-4">
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 text-sm">Reserva confirmada!</p>
-                    {totalReservas > 1 && localizadores.length > 1 ? (
-                      <div className="mt-1 space-y-0.5">
-                        {localizadores.map(l => (
-                          <p key={l.localizador} className="text-xs text-gray-500">
-                            ✈ {l.trecho === 'ida' ? 'Ida' : 'Volta'} — {nomeCompanhia(l.companhia ?? '')} — Localizador: <span className="font-bold text-gray-800 tracking-widest">{l.localizador}</span>
-                          </p>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-gray-500">Localizador: <span className="font-bold text-gray-800 tracking-widest">{localizador}</span></p>
-                    )}
-                  </div>
-                </div>
-                {totalReservas > 1 && localizadores.length > 1 && (
-                  <div className="rounded-xl px-4 py-3 mb-4 flex items-start gap-2.5" style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
-                    <svg className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#2563eb' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4m0-4h.01" />
-                    </svg>
-                    <p className="text-xs" style={{ color: '#1e40af' }}>
-                      Como seus voos são de duas companhias diferentes, foram geradas duas reservas independentes. O pagamento também será feito separadamente, um para cada companhia.
-                    </p>
-                  </div>
-                )}
-                <div className="border-t border-gray-100 pt-4 space-y-1">
-                  {vooIdaSelecionado && <ResumoVoo viagem={vooIdaSelecionado} label="Ida" />}
-                  {vooVoltaSelecionado && <ResumoVoo viagem={vooVoltaSelecionado} label="Volta" />}
-                  {precoTotal > 0 && <div className="flex justify-between pt-3 border-t border-gray-100 mt-2"><span className="text-sm font-medium text-gray-700">Total</span><span className="text-base font-bold text-gray-900">{formatPreco(precoTotal)}</span></div>}
-                </div>
-              </div>
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-5">Pagamento</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Bandeira</label>
-                    <select value={cartaoBandeira} onChange={e => setCartaoBandeira(e.target.value)} className={`${INPUT} bg-white`}>
-                      <option value="VI">Visa</option>
-                      <option value="MC">Mastercard</option>
-                      <option value="AM">Amex</option>
-                      <option value="DC">Diners</option>
-                      <option value="EL">Elo</option>
-                      <option value="HC">Hipercard</option>
-                    </select>
-                  </div>
-                  <div><label className="text-sm font-medium text-gray-700">Número do cartão</label><input type="text" placeholder="0000 0000 0000 0000" value={cartaoNumero} onChange={e => { const val = mascaraCartao(e.target.value); setCartaoNumero(val) }} className={INPUT} /></div>
-                  <div><label className="text-sm font-medium text-gray-700">Nome no cartão</label><input type="text" placeholder="JOAO SILVA" value={cartaoTitular} onChange={e => setCartaoTitular(e.target.value.toUpperCase())} className={INPUT} /></div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <div><label className="text-sm font-medium text-gray-700">Validade</label><input type="text" placeholder="MM/AA" value={cartaoValidade} onChange={e => { const val = mascaraValidade(e.target.value); setCartaoValidade(val) }} className={INPUT} /></div>
-                    <div><label className="text-sm font-medium text-gray-700">CVV</label><input type="text" placeholder="123" maxLength={4} value={cartaoCVV} onChange={e => setCartaoCVV(e.target.value.replace(/\D/g, '').slice(0, 4))} className={INPUT} /></div>
+        {etapa === 'pagamento' && (() => {
+          const multi = totalReservas > 1 && localizadores.length > 1
+          const ativo = localizadores.find(l => l.localizador === localizador) ?? null
+          const pendentes = localizadores.filter(l => l.localizador !== localizador && !emitidos[l.localizador])
+          const atualJaEmitido = multi && !!emitidos[localizador]
+          return (
+            <div className="py-4">
+              <IndicadorEtapas etapa={etapa} />
+              <div className="space-y-4">
+                <div className="bg-white rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Parcelas</label>
-                      {carregandoFormas ? <div className={`${INPUT} flex items-center text-gray-400`}>Calculando parcelas...</div> : (
-                        <select value={financiamentoId} onChange={e => { const id = Number(e.target.value); const forma = formasFinanciamento.find(f => f.FinanciamentoId === id); setFinanciamentoId(id); setParcelas(forma?.Parcelas ?? 1) }} className={`${INPUT} bg-white`}>
-                          {formasFinanciamento.length > 0 ? formasFinanciamento.map(f => <option key={f.FinanciamentoId} value={f.FinanciamentoId}>{f.Parcelas === 1 ? `1x ${formatPreco(f.PrimeiraParcela)}` : `${f.Parcelas}x de ${formatPreco(f.DemaisParcela)}`}</option>) : <option value={61}>1x {precoTotal > 0 ? formatPreco(precoTotal) : ''}</option>}
-                        </select>
+                      <p className="font-semibold text-gray-900 text-sm">Reserva confirmada!</p>
+                      {multi ? (
+                        <div className="mt-1 space-y-0.5">
+                          {localizadores.map(l => (
+                            <p key={l.localizador} className="text-xs text-gray-500">
+                              {emitidos[l.localizador] ? '✅' : '✈'} {l.trecho === 'ida' ? 'Ida' : 'Volta'} — {nomeCompanhia(l.companhia ?? '')} — Localizador: <span className="font-bold text-gray-800 tracking-widest">{l.localizador}</span>
+                              {emitidos[l.localizador] && <span className="text-green-600 font-medium"> — Emitido</span>}
+                            </p>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500">Localizador: <span className="font-bold text-gray-800 tracking-widest">{localizador}</span></p>
                       )}
                     </div>
                   </div>
+                  {multi && (
+                    <div className="rounded-xl px-4 py-3 mb-4 flex items-start gap-2.5" style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
+                      <svg className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#2563eb' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4m0-4h.01" />
+                      </svg>
+                      <p className="text-xs" style={{ color: '#1e40af' }}>
+                        Como seus voos são de duas companhias diferentes, foram geradas duas reservas independentes. O pagamento também será feito separadamente, um para cada companhia.
+                      </p>
+                    </div>
+                  )}
+                  <div className="border-t border-gray-100 pt-4 space-y-1">
+                    {vooIdaSelecionado && <ResumoVoo viagem={vooIdaSelecionado} label="Ida" />}
+                    {vooVoltaSelecionado && <ResumoVoo viagem={vooVoltaSelecionado} label="Volta" />}
+                    {precoTotal > 0 && <div className="flex justify-between pt-3 border-t border-gray-100 mt-2"><span className="text-sm font-medium text-gray-700">Total</span><span className="text-base font-bold text-gray-900">{formatPreco(precoTotal)}</span></div>}
+                  </div>
                 </div>
-                {politica?.max_parcelas != null && parcelas > politica.max_parcelas && (
-                  <div className="mt-4 p-3 rounded-lg flex items-start gap-2" style={{ backgroundColor: '#fef9c3', border: '1px solid #fde68a' }}>
-                    <span className="shrink-0 mt-0.5">⚠️</span>
-                    <p className="text-sm" style={{ color: '#92400e' }}>
-                      {parcelas}x excede o máximo de {politica.max_parcelas}x permitido pela política de viagens da sua empresa.
-                    </p>
+
+                {atualJaEmitido && pendentes.length > 0 ? (
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                      <p className="text-sm font-semibold" style={{ color: '#15803d' }}>
+                        ✅ Bilhete de {ativo?.trecho === 'ida' ? 'ida' : 'volta'} emitido!
+                      </p>
+                    </div>
+                    {pendentes.map(p => (
+                      <div key={p.localizador} className="rounded-xl px-4 py-3 mb-4 flex items-start gap-2.5" style={{ backgroundColor: '#fef9c3', border: '1px solid #fde68a' }}>
+                        <span className="shrink-0 mt-0.5">⏳</span>
+                        <p className="text-sm" style={{ color: '#92400e' }}>
+                          Falta pagar: {p.trecho === 'ida' ? 'Ida' : 'Volta'} — {nomeCompanhia(p.companhia ?? '')} — {p.localizador}{p.valor != null ? ` — ${formatPreco(p.valor)}` : ''}
+                        </p>
+                      </div>
+                    ))}
+                    <button onClick={() => pagarProximoTrecho(pendentes[0])}
+                      className="w-full py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ backgroundColor: '#18283A' }}>
+                      Pagar trecho da {pendentes[0].trecho === 'ida' ? 'ida' : 'volta'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-5">Pagamento</h3>
+                    {multi && ativo && (
+                      <>
+                        <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
+                          <p className="text-sm font-semibold" style={{ color: '#1e40af' }}>
+                            Você está pagando: ✈ {ativo.trecho === 'ida' ? 'Ida' : 'Volta'} — {nomeCompanhia(ativo.companhia ?? '')} — {ativo.origem} → {ativo.destino} — Localizador {ativo.localizador}{ativo.valor != null ? ` — ${formatPreco(ativo.valor)}` : ''}
+                          </p>
+                        </div>
+                        {pendentes.length > 0 && (
+                          <div className="rounded-xl px-4 py-3 mb-4 flex items-start gap-2.5" style={{ backgroundColor: '#fef9c3', border: '1px solid #fde68a' }}>
+                            <span className="shrink-0 mt-0.5">⚠️</span>
+                            <p className="text-xs" style={{ color: '#92400e' }}>
+                              Este pagamento cobre apenas o trecho de {ativo.trecho === 'ida' ? 'ida' : 'volta'}. Depois de emitir, você vai precisar pagar separadamente o trecho de {pendentes[0].trecho === 'ida' ? 'ida' : 'volta'} ({nomeCompanhia(pendentes[0].companhia ?? '')}).
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Bandeira</label>
+                        <select value={cartaoBandeira} onChange={e => setCartaoBandeira(e.target.value)} className={`${INPUT} bg-white`}>
+                          <option value="VI">Visa</option>
+                          <option value="MC">Mastercard</option>
+                          <option value="AM">Amex</option>
+                          <option value="DC">Diners</option>
+                          <option value="EL">Elo</option>
+                          <option value="HC">Hipercard</option>
+                        </select>
+                      </div>
+                      <div><label className="text-sm font-medium text-gray-700">Número do cartão</label><input type="text" placeholder="0000 0000 0000 0000" value={cartaoNumero} onChange={e => { const val = mascaraCartao(e.target.value); setCartaoNumero(val) }} className={INPUT} /></div>
+                      <div><label className="text-sm font-medium text-gray-700">Nome no cartão</label><input type="text" placeholder="JOAO SILVA" value={cartaoTitular} onChange={e => setCartaoTitular(e.target.value.toUpperCase())} className={INPUT} /></div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <div><label className="text-sm font-medium text-gray-700">Validade</label><input type="text" placeholder="MM/AA" value={cartaoValidade} onChange={e => { const val = mascaraValidade(e.target.value); setCartaoValidade(val) }} className={INPUT} /></div>
+                        <div><label className="text-sm font-medium text-gray-700">CVV</label><input type="text" placeholder="123" maxLength={4} value={cartaoCVV} onChange={e => setCartaoCVV(e.target.value.replace(/\D/g, '').slice(0, 4))} className={INPUT} /></div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Parcelas</label>
+                          {carregandoFormas ? <div className={`${INPUT} flex items-center text-gray-400`}>Calculando parcelas...</div> : (
+                            <select value={financiamentoId} onChange={e => { const id = Number(e.target.value); const forma = formasFinanciamento.find(f => f.FinanciamentoId === id); setFinanciamentoId(id); setParcelas(forma?.Parcelas ?? 1) }} className={`${INPUT} bg-white`}>
+                              {formasFinanciamento.length > 0 ? formasFinanciamento.map(f => <option key={f.FinanciamentoId} value={f.FinanciamentoId}>{f.Parcelas === 1 ? `1x ${formatPreco(f.PrimeiraParcela)}` : `${f.Parcelas}x de ${formatPreco(f.DemaisParcela)}`}</option>) : <option value={61}>1x {precoTotal > 0 ? formatPreco(precoTotal) : ''}</option>}
+                            </select>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {politica?.max_parcelas != null && parcelas > politica.max_parcelas && (
+                      <div className="mt-4 p-3 rounded-lg flex items-start gap-2" style={{ backgroundColor: '#fef9c3', border: '1px solid #fde68a' }}>
+                        <span className="shrink-0 mt-0.5">⚠️</span>
+                        <p className="text-sm" style={{ color: '#92400e' }}>
+                          {parcelas}x excede o máximo de {politica.max_parcelas}x permitido pela política de viagens da sua empresa.
+                        </p>
+                      </div>
+                    )}
+                    {erroEmissao && <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200"><p className="text-red-600 text-sm">{erroEmissao}</p></div>}
+                    <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                      <button onClick={() => setEtapa('passageiro')} className="sm:w-auto w-full px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">← Voltar</button>
+                      <button onClick={emitirPassagem} disabled={carregandoEmissao || carregandoFormas} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50" style={{ backgroundColor: '#18283A' }}>{carregandoEmissao ? 'Emitindo passagem...' : `Emitir passagem${multi ? ` (${ativo?.trecho === 'ida' ? 'ida' : 'volta'})` : ''}`}</button>
+                    </div>
                   </div>
                 )}
-                {erroEmissao && <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200"><p className="text-red-600 text-sm">{erroEmissao}</p></div>}
-                <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                  <button onClick={() => setEtapa('passageiro')} className="sm:w-auto w-full px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">← Voltar</button>
-                  <button onClick={emitirPassagem} disabled={carregandoEmissao || carregandoFormas} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50" style={{ backgroundColor: '#18283A' }}>{carregandoEmissao ? 'Emitindo passagem...' : 'Emitir passagem'}</button>
-                </div>
               </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
-        {etapa === 'confirmacao' && (
-          <div className="py-4">
-            <IndicadorEtapas etapa={etapa} />
-            <div className="bg-white rounded-2xl p-10 shadow-sm text-center">
-              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
-                <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+        {etapa === 'confirmacao' && (() => {
+          const multi = totalReservas > 1 && localizadores.length > 1
+          return (
+            <div className="py-4">
+              <IndicadorEtapas etapa={etapa} />
+              <div className="bg-white rounded-2xl p-10 shadow-sm text-center">
+                <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                  <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">{multi ? 'Viagem completa confirmada!' : 'Passagem emitida!'}</h2>
+                <p className="text-gray-500 mb-6">{nomeBilhete && <><span className="font-medium text-gray-700">{nomeBilhete}</span>, sua viagem está confirmada.</>}</p>
+                {multi ? (
+                  <div className="inline-block bg-gray-50 rounded-2xl px-8 py-5 mb-8 text-left space-y-3">
+                    {localizadores.map(l => (
+                      <div key={l.localizador}>
+                        <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">{l.trecho === 'ida' ? 'Ida' : 'Volta'} — {nomeCompanhia(l.companhia ?? '')} — Bilhete</p>
+                        <p className="text-xl font-bold text-gray-900 tracking-wider">{emitidos[l.localizador]?.bilhete ?? '—'}</p>
+                        <p className="text-xs text-gray-400 mt-1">Localizador: <span className="font-semibold text-gray-600">{l.localizador}</span></p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="inline-block bg-gray-50 rounded-2xl px-8 py-5 mb-8 text-left">
+                    <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">Número do bilhete</p>
+                    <p className="text-3xl font-bold text-gray-900 tracking-wider">{numeroBilhete}</p>
+                    <p className="text-xs text-gray-400 mt-2">Localizador: <span className="font-semibold text-gray-600">{localizador}</span></p>
+                  </div>
+                )}
+                <div className="space-y-2 text-sm text-gray-500 border-t border-gray-100 pt-6 mb-8">
+                  {vooIdaSelecionado && <ResumoVoo viagem={vooIdaSelecionado} label="Ida" />}
+                  {vooVoltaSelecionado && <ResumoVoo viagem={vooVoltaSelecionado} label="Volta" />}
+                </div>
+                <button onClick={novaBusca} className="px-8 py-3 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ backgroundColor: '#18283A' }}>Nova busca</button>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Passagem emitida!</h2>
-              <p className="text-gray-500 mb-6">{nomeBilhete && <><span className="font-medium text-gray-700">{nomeBilhete}</span>, sua viagem está confirmada.</>}</p>
-              <div className="inline-block bg-gray-50 rounded-2xl px-8 py-5 mb-8 text-left">
-                <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">Número do bilhete</p>
-                <p className="text-3xl font-bold text-gray-900 tracking-wider">{numeroBilhete}</p>
-                <p className="text-xs text-gray-400 mt-2">Localizador: <span className="font-semibold text-gray-600">{localizador}</span></p>
-              </div>
-              <div className="space-y-2 text-sm text-gray-500 border-t border-gray-100 pt-6 mb-8">
-                {vooIdaSelecionado && <ResumoVoo viagem={vooIdaSelecionado} label="Ida" />}
-                {vooVoltaSelecionado && <ResumoVoo viagem={vooVoltaSelecionado} label="Volta" />}
-              </div>
-              <button onClick={novaBusca} className="px-8 py-3 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ backgroundColor: '#18283A' }}>Nova busca</button>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
       </div>
 

@@ -18,6 +18,7 @@ async function buscarDisponibilidade(
   params: Record<string, unknown>,
   comBagagem: boolean,
   sistema: number,
+  idavolta: boolean,
 ): Promise<Resposta> {
   const inicio = Date.now()
   const res = await fetch(url, {
@@ -28,9 +29,13 @@ async function buscarDisponibilidade(
       BuscarVoosComBagagem: comBagagem,
       BuscarVoosSemBagagem: !comBagagem,
       // Flex:true na chamada com bagagem desbloqueia a família mais flexível
-      // (FLEX na GOL, tarifa adicional na LATAM) sem custo de chamada extra —
-      // confirmado empiricamente contra a API de produção da WOOBA.
-      Flex: comBagagem,
+      // (FLEX na GOL, tarifa adicional na LATAM na LATAM: FULL) — mas confirmado
+      // empiricamente (via testes cruzados 3 sistemas x 2 datas) que Flex:true
+      // combinado com DataVolta zera ViagensTrecho2 em 100% dos casos. Por isso
+      // só habilitamos Flex em buscas de só ida; em idavolta ficamos em
+      // BuscarVoosComBagagem sem Flex, que traz STANDARD/CLASSIC nos dois
+      // trechos (perdendo FULL/FLEX, mas mantendo a volta funcional).
+      Flex: comBagagem && !idavolta,
     }),
   })
   const data = await res.json()
@@ -139,6 +144,7 @@ function agruparViagens(viagens: Viagem[]) {
       duracao:     (base.TempoDeDuracao as string) ?? '',
       companhia:   base.CiaMandatoria?.CodigoIata ?? '',
       numParadas:  (base.NumeroParadas as number) ?? 0,
+      icone:       typeof leg0.Icone === 'string' ? leg0.Icone : null,
       voos,
       tarifas,
     }
@@ -205,12 +211,14 @@ export async function POST(request: NextRequest) {
       Recomendacao:         false,
     })
 
+    const idavolta = tipo === 'idavolta' && !!dataVolta
+
     // Duas chamadas por sistema: sem e com bagagem (restaura STANDARD da LATAM)
     const inicioDisponibilidade = Date.now()
     const todasRespostas = await Promise.all(
       sistemasData.Sistemas.flatMap((s: { Sistema: number }) => [
-        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), false, s.Sistema),
-        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), true,  s.Sistema),
+        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), false, s.Sistema, idavolta),
+        buscarDisponibilidade(urlDisponibilidade, headers, baseParams(s), true,  s.Sistema, idavolta),
       ])
     )
     console.log(`[BUSCAR-VOOS] Disponibilidade total (${todasRespostas.length} chamadas paralelas): ${Date.now() - inicioDisponibilidade}ms`)

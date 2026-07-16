@@ -370,17 +370,19 @@ export default function Painel() {
   function renderReserva(r: Reserva, aninhada = false) {
     const exibido = statusExibido(r)
     const st = STATUS[exibido] ?? STATUS.Expirada
+    const pendenteAninhada = aninhada && exibido === 'Ativa'
     return (
       <div
         key={r.id}
-        className={aninhada ? 'rounded-lg border bg-white p-4 transition-colors' : 'rounded-xl border p-5 transition-colors'}
-        style={{ borderColor: '#f3f4f6' }}
-        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#e5e7eb' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#f3f4f6' }}
+        className={aninhada ? 'rounded-lg border p-4 transition-colors' : 'rounded-xl border p-5 transition-colors'}
+        style={{ borderColor: pendenteAninhada ? '#fbbf24' : '#f3f4f6', backgroundColor: pendenteAninhada ? '#fffbeb' : 'white' }}
+        onMouseEnter={e => { if (!pendenteAninhada) (e.currentTarget as HTMLDivElement).style.borderColor = '#e5e7eb' }}
+        onMouseLeave={e => { if (!pendenteAninhada) (e.currentTarget as HTMLDivElement).style.borderColor = '#f3f4f6' }}
       >
         {aninhada && r.trecho && (
-          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#6b7684' }}>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2 flex items-center gap-1.5" style={{ color: '#6b7684' }}>
             {r.trecho === 'ida' ? '✈ Ida' : '✈ Volta'} — {nomeCompanhia(r.companhia)}
+            {pendenteAninhada && <span style={{ color: '#b45309' }}>· Pagamento pendente</span>}
           </p>
         )}
         <div className="flex items-start justify-between mb-3 gap-2">
