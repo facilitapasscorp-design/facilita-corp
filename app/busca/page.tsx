@@ -843,7 +843,6 @@ export default function Busca() {
   const [menuMobileAberto, setMenuMobileAberto] = useState(false)
   const [voltaAbrirSignal, setVoltaAbrirSignal] = useState(0)
   const [filtroCia, setFiltroCia] = useState<string | null>(null)
-  const [filtroBagagem, setFiltroBagagem] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -910,7 +909,7 @@ export default function Busca() {
     } else if (!origem || !destino || !dataIda) { setErroVoo('Preencha origem, destino e data de ida.'); return }
     setCarregando(true); setErroVoo(''); setGruposIda(null); setGruposVolta(null)
     setFase('ida'); setVooIdaSelecionado(null); setVooVoltaSelecionado(null)
-    setFiltroCia(null); setFiltroBagagem(false)
+    setFiltroCia(null)
     const res = await fetch('/api/buscar-voos', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -929,7 +928,7 @@ export default function Busca() {
 
   function selecionarVooIda(viagem: Viagem) {
     setVooIdaSelecionado(viagem)
-    setFiltroCia(null); setFiltroBagagem(false)
+    setFiltroCia(null)
     if (tipo === 'idavolta') setFase('volta'); else setEtapa('passageiro')
   }
   function selecionarVooVolta(viagem: Viagem) { setVooVoltaSelecionado(viagem); setEtapa('passageiro') }
@@ -1057,10 +1056,9 @@ export default function Busca() {
   const minDataVolta    = diaSeguinte(dataIda)
   const gruposExibidos  = fase === 'volta' ? gruposVolta : gruposIda
   const companhiasPresentes = Array.from(new Set((gruposExibidos ?? []).map(g => g.companhia).filter(Boolean)))
-  const filtrosAtivos = filtroCia !== null || filtroBagagem
+  const filtrosAtivos = filtroCia !== null
   const gruposFiltrados = gruposExibidos ? gruposExibidos.filter(g =>
-    (filtroCia === null || g.companhia === filtroCia) &&
-    (!filtroBagagem || g.tarifas.some(t => t.bagagemInclusa))
+    filtroCia === null || g.companhia === filtroCia
   ) : null
   const gruposOrdenados = gruposFiltrados ? ordenarGrupos(gruposFiltrados, ordenacao) : null
   const totalEncontrado = gruposExibidos?.length ?? 0
@@ -1240,9 +1238,6 @@ export default function Busca() {
                         className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroCia === cia ? 'text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'}`}
                         style={filtroCia === cia ? { backgroundColor: '#18283A' } : {}}>{nomeCompanhia(cia)}</button>
                     ))}
-                    <button onClick={() => setFiltroBagagem(b => !b)}
-                      className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filtroBagagem ? 'text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'}`}
-                      style={filtroBagagem ? { backgroundColor: '#18283A' } : {}}>🧳 Apenas com bagagem</button>
                     <span className="w-px bg-gray-200 shrink-0 my-1" />
                     {ORDENACAO_OPTS.map(op => (
                       <button key={op.id} onClick={() => setOrdenacao(op.id)}
@@ -1250,7 +1245,7 @@ export default function Busca() {
                         style={ordenacao === op.id ? { backgroundColor: '#18283A' } : {}}>{op.label}</button>
                     ))}
                     {filtrosAtivos && (
-                      <button onClick={() => { setFiltroCia(null); setFiltroBagagem(false) }}
+                      <button onClick={() => { setFiltroCia(null) }}
                         className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors">
                         Limpar filtros
                       </button>
@@ -1272,7 +1267,7 @@ export default function Busca() {
                   <div className="bg-white rounded-xl px-8 py-12 text-center border border-gray-100">
                     <svg className="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                     <p className="text-gray-500 font-medium text-sm">Nenhum voo encontrado com esses filtros.</p>
-                    <button onClick={() => { setFiltroCia(null); setFiltroBagagem(false) }} className="text-xs font-medium mt-2 hover:underline" style={{ color: '#2563eb' }}>Limpar filtros</button>
+                    <button onClick={() => { setFiltroCia(null) }} className="text-xs font-medium mt-2 hover:underline" style={{ color: '#2563eb' }}>Limpar filtros</button>
                   </div>
                 )}
 
