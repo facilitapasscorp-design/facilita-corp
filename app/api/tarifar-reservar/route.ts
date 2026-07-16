@@ -53,21 +53,28 @@ export async function POST(req: NextRequest) {
 
     const classesIda   = extrairClasses(vooIda)
     const classesVolta = vooVolta ? extrairClasses(vooVolta) : []
+    // A WOOBA identifica cada perna pelo próprio NumeroDoVoo dentro de um único
+    // array — não existe campo "ClassesSelecionadasVolta" separado no schema.
+    // Quando ida/volta vêm de sessões diferentes (ex: companhias diferentes),
+    // enviar as classes em campos separados faz a API rejeitar ou ignorar a volta.
+    const classesCombinadas = [...classesIda, ...classesVolta]
 
     // 1. Tarifar
     const tarifaBody: any = {
       ...cred, ClienteId: 0,
       IdentificacaoDaViagem: vooIda.IdentificacaoDaViagem,
       ViagemIda: vooIda.Id,
-      ClassesSelecionadas: classesIda,
+      ClassesSelecionadas: classesCombinadas,
       RetornarPlanoDeFinanciamento: true,
       RetornarRegrasTarifarias: true,
       TarifarMelhorFamilia: true,
       TarifarMelhorPreco: true,
     }
     if (vooVolta) {
-      tarifaBody.ViagemVolta              = vooVolta.Id
-      tarifaBody.ClassesSelecionadasVolta = classesVolta
+      tarifaBody.ViagemVolta = vooVolta.Id
+      // Token de sessão da volta — sem isso a API não consegue resolver
+      // ViagemVolta quando ida e volta vêm de buscas/sistemas diferentes.
+      tarifaBody.IdentificacaoDaViagemVolta = vooVolta.IdentificacaoDaViagem
     }
 
     const tarifaRes  = await fetch(`${BASE}/Tarifar`, {
@@ -83,6 +90,11 @@ export async function POST(req: NextRequest) {
 
     const idViagem = tarifaData.ViagensTrecho1?.[0]?.IdentificacaoDaViagem
       || vooIda.IdentificacaoDaViagem
+    // ViagensTrecho2[0].IdentificacaoDaViagem normalmente vem null do Tarifar —
+    // cai no token original da própria busca da volta (mesmo padrão da ida).
+    const idViagemVolta = vooVolta
+      ? (tarifaData.ViagensTrecho2?.[0]?.IdentificacaoDaViagem || vooVolta.IdentificacaoDaViagem)
+      : null
 
     // 2. Reservar — estrutura exata da homologação WOOBA
     const primAdulto = passageiros.find((p: any) => (p.tipo || 'ADT') === 'ADT') || passageiros[0]
@@ -92,8 +104,8 @@ export async function POST(req: NextRequest) {
       ...cred,
       ClienteId: 0,
       IdentificacaoDaViagem: idViagem,
-      ClassesSelecionadas: classesIda,
-      ...(vooVolta ? { ClassesSelecionadasVolta: classesVolta } : {}),
+      ...(idViagemVolta ? { IdentificacaoDaViagemVolta: idViagemVolta } : {}),
+      ClassesSelecionadas: classesCombinadas,
       Passageiros: passageiros.map((p: any, i: number) => ({
         Nome:        p.nome.toUpperCase(),
         Sobrenome:   p.sobrenome.toUpperCase(),
