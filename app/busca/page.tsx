@@ -78,6 +78,10 @@ interface PoliticaViagem {
   antecedencia_minima_dias: number | null; familias_permitidas: string[] | null; max_parcelas: number | null
 }
 
+interface FormaFinanciamento {
+  FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number
+  SemJuros: boolean; Total: number
+}
 interface Trecho { origem: string; destino: string; data: string }
 interface LocalizadorInfo {
   localizador: string; companhia: string | null; origem: string | null; destino: string | null
@@ -106,6 +110,11 @@ function formatHora(hora: number): string {
 }
 function formatPreco(valor: number): string {
   return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+}
+function labelParcela(f: FormaFinanciamento): string {
+  if (f.Parcelas === 1) return `1x de ${formatPreco(f.PrimeiraParcela)}`
+  const base = `${f.Parcelas}x de ${formatPreco(f.DemaisParcela)}`
+  return f.SemJuros ? `${base} sem juros` : `${base} (total ${formatPreco(f.Total)})`
 }
 function formatDuracao(tempo: string): string {
   if (!tempo) return ''
@@ -918,7 +927,7 @@ export default function Busca() {
   const [numeroBilhete,     setNumeroBilhete]      = useState('')
   const [nomeBilhete,       setNomeBilhete]        = useState('')
   const [emitidos, setEmitidos] = useState<Record<string, { bilhete: string; passageiro: string }>>({})
-  const [formasFinanciamento, setFormasFinanciamento] = useState<{ FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[]>([])
+  const [formasFinanciamento, setFormasFinanciamento] = useState<FormaFinanciamento[]>([])
   const [financiamentoId,     setFinanciamentoId]     = useState<number>(61)
   const [parcelas,            setParcelas]            = useState<number>(1)
   const [chaveDeSeguranca,    setChaveDeSeguranca]    = useState<string | null>(null)
@@ -953,6 +962,19 @@ export default function Busca() {
     ])
   }, [adultos, criancas, bebes])
 
+  // Recebe a lista nova de formas de pagamento e só reseta a opção selecionada
+  // se a escolha atual do usuário não existir mais na lista — evita que digitar
+  // mais um dígito do cartão silenciosamente derrube a parcela já escolhida.
+  function aplicarNovasFormas(formas: FormaFinanciamento[]) {
+    setFormasFinanciamento(formas)
+    if (formas.length === 0) return
+    const aindaValida = formas.some(f => f.FinanciamentoId === financiamentoId)
+    if (!aindaValida) {
+      setFinanciamentoId(formas[0].FinanciamentoId)
+      setParcelas(formas[0].Parcelas)
+    }
+  }
+
   useEffect(() => {
     if (etapa !== 'pagamento' || !localizador) return
     setCarregandoFormas(true); setErroEmissao('')
@@ -962,12 +984,11 @@ export default function Busca() {
         if (data.erro) { setErroEmissao(data.erro); return }
         setChaveDeSeguranca(data.chaveDeSeguranca ?? null)
         setCodigoPagamento(data.codigoPagamento ?? 2)
-        const formas: { FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[] = data.formasFinanciamento ?? []
-        setFormasFinanciamento(formas)
-        if (formas.length > 0) { setFinanciamentoId(formas[0].FinanciamentoId); setParcelas(formas[0].Parcelas) }
+        aplicarNovasFormas(data.formasFinanciamento ?? [])
       })
       .catch(() => setErroEmissao('Erro ao carregar opções de pagamento'))
       .finally(() => setCarregandoFormas(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [etapa, localizador])
 
   useEffect(() => {
@@ -1097,7 +1118,7 @@ export default function Busca() {
     const novoEmitidos = { ...emitidos, [localizadorPago]: { bilhete: data.bilhete as string, passageiro: data.passageiro as string } }
     setEmitidos(novoEmitidos)
     setNumeroBilhete(data.bilhete); setNomeBilhete(data.passageiro)
-    try { await createClient().from('reservas').update({ status: 'Emitida' }).eq('localizador', localizadorPago) } catch {}
+    try { await createClient().from('reservas').update({ status: 'Emitida', numero_bilhete: data.bilhete }).eq('localizador', localizadorPago) } catch {}
 
     const faltaPagar = localizadores.some(l => l.localizador !== localizadorPago && !novoEmitidos[l.localizador])
     if (!faltaPagar) setEtapa('confirmacao')
@@ -1132,9 +1153,7 @@ export default function Busca() {
       })
       const data = await res.json()
       if (data.erro) return
-      const formas: { FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[] = data.formasFinanciamento ?? []
-      setFormasFinanciamento(formas)
-      if (formas.length > 0) { setFinanciamentoId(formas[0].FinanciamentoId); setParcelas(formas[0].Parcelas) }
+      aplicarNovasFormas(data.formasFinanciamento ?? [])
     } finally {
       setCarregandoFormas(false)
     }
@@ -1541,7 +1560,7 @@ export default function Busca() {
                           <label className="text-sm font-medium text-gray-700">Parcelas</label>
                           {carregandoFormas ? <div className={`${INPUT} flex items-center text-gray-400`}>Calculando parcelas...</div> : (
                             <select value={financiamentoId} onChange={e => { const id = Number(e.target.value); const forma = formasFinanciamento.find(f => f.FinanciamentoId === id); setFinanciamentoId(id); setParcelas(forma?.Parcelas ?? 1) }} className={`${INPUT} bg-white`}>
-                              {formasFinanciamento.length > 0 ? formasFinanciamento.map(f => <option key={f.FinanciamentoId} value={f.FinanciamentoId}>{f.Parcelas === 1 ? `1x ${formatPreco(f.PrimeiraParcela)}` : `${f.Parcelas}x de ${formatPreco(f.DemaisParcela)}`}</option>) : <option value={61}>1x {precoTotal > 0 ? formatPreco(precoTotal) : ''}</option>}
+                              {formasFinanciamento.length > 0 ? formasFinanciamento.map(f => <option key={f.FinanciamentoId} value={f.FinanciamentoId}>{labelParcela(f)}</option>) : <option value={61}>1x {precoTotal > 0 ? formatPreco(precoTotal) : ''}</option>}
                             </select>
                           )}
                         </div>

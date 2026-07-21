@@ -108,14 +108,28 @@ export async function POST(req: NextRequest) {
         parcelas:  (formasData.Financiamentos ?? []).length,
         erro:      formasData.Exception?.Message ?? null,
       }))
+      console.log('[FINANCIAMENTO-RAW]', JSON.stringify(formasData.Financiamentos ?? []))
 
       if (!formasData.Exception) {
-        formasFinanciamento = (formasData.Financiamentos ?? []).map((item: any) => ({
-          FinanciamentoId:  item.Id,
-          Parcelas:         item.Parcelas,
-          PrimeiraParcela:  item.PrimeiraParcela,
-          DemaisParcela:    item.DemaisParcela,
-        }))
+        // Nunca calculamos juros por conta própria — PrimeiraParcela e DemaisParcela já
+        // vêm prontos da WOOBA. O total é só a soma das parcelas que ela retornou
+        // (primeira + demais), não uma estimativa nossa. "Sem juros" vem literalmente
+        // dos campos CoeficienteJuros/vlJurosCalculado que a API já expõe.
+        formasFinanciamento = (formasData.Financiamentos ?? []).map((item: any) => {
+          const parcelas        = item.Parcelas ?? 1
+          const primeiraParcela = item.PrimeiraParcela ?? 0
+          const demaisParcela   = item.DemaisParcela ?? 0
+          const semJuros        = !item.CoeficienteJuros && !item.vlJurosCalculado
+          const total            = primeiraParcela + demaisParcela * Math.max(parcelas - 1, 0)
+          return {
+            FinanciamentoId:  item.Id,
+            Parcelas:         parcelas,
+            PrimeiraParcela:  primeiraParcela,
+            DemaisParcela:    demaisParcela,
+            SemJuros:         semJuros,
+            Total:            total,
+          }
+        })
       }
     } catch (e) {
       console.log('[FINANCIAMENTO-ERRO]', e instanceof Error ? e.message : String(e))

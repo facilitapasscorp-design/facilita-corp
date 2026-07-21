@@ -18,6 +18,7 @@ interface Reserva {
   companhia: string | null
   grupo_reserva: string | null
   trecho: 'ida' | 'volta' | null
+  numero_bilhete: string | null
 }
 
 const STATUS: Record<string, { label: string; bg: string; color: string }> = {
@@ -31,6 +32,60 @@ const NOME_CIA: Record<string, string> = { G3: 'GOL', LA: 'LATAM', JJ: 'LATAM', 
 function nomeCompanhia(iata: string | null): string {
   if (!iata) return '—'
   return NOME_CIA[iata] ?? iata
+}
+
+interface FormaFinanciamento {
+  FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number
+  SemJuros: boolean; Total: number
+}
+
+interface VooConsulta {
+  numero: string; companhia: string | null; origem: string | null; destino: string | null
+  dataSaida: string | null; dataChegada: string | null; horaSaida: number | null; horaChegada: number | null
+  duracao: string | null; numeroParadas: number; icone: string | null
+}
+interface ViagemConsulta { companhia: string | null; origem: string | null; destino: string | null; valorTotal: number | null; voos: VooConsulta[] }
+interface BilheteConsulta { numero: string | null; passageiro: string | null; dataDeEmissao: string | null; status: string | null }
+interface PassageiroConsulta { nome: string; sobrenome: string; tipo: string }
+interface ConsultaReserva {
+  localizador: string; status: string | null; valorPendente: number | null
+  bilhetes: BilheteConsulta[]; passageiros: PassageiroConsulta[]; viagens: ViagemConsulta[]
+  formaPagamento: { bandeira: number | string | null; parcelas: number | string | null } | null
+}
+function labelParcela(f: FormaFinanciamento): string {
+  if (f.Parcelas === 1) return `1x de ${formatValor(f.PrimeiraParcela)}`
+  const base = `${f.Parcelas}x de ${formatValor(f.DemaisParcela)}`
+  return f.SemJuros ? `${base} sem juros` : `${base} (total ${formatValor(f.Total)})`
+}
+const BANDEIRA_NOME: Record<string, string> = { '1': 'Visa', VI: 'Visa', '2': 'Amex', AM: 'Amex', '3': 'Mastercard', MC: 'Mastercard', '5': 'Diners', DC: 'Diners', '6': 'Hipercard', HC: 'Hipercard', '7': 'Elo', EL: 'Elo' }
+function nomeBandeira(b: number | string | null): string {
+  if (b == null) return ''
+  return BANDEIRA_NOME[String(b)] ?? String(b)
+}
+
+const DIAS_SEMANA_ABREV = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+const MESES_ABREV = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+function parseWcfDate(v: string | null | undefined): Date | null {
+  if (!v) return null
+  const m = v.match(/\/Date\((-?\d+)/)
+  return m ? new Date(Number(m[1])) : null
+}
+function formatDataAbreviada(v: string | null | undefined): string {
+  const d = parseWcfDate(v)
+  if (!d) return ''
+  return `${DIAS_SEMANA_ABREV[d.getDay()]}, ${d.getDate()} ${MESES_ABREV[d.getMonth()]}`
+}
+function diasEntre(saida: string | null | undefined, chegada: string | null | undefined): number {
+  const ds = parseWcfDate(saida); const dc = parseWcfDate(chegada)
+  if (!ds || !dc) return 0
+  const a = new Date(ds.getFullYear(), ds.getMonth(), ds.getDate())
+  const b = new Date(dc.getFullYear(), dc.getMonth(), dc.getDate())
+  return Math.round((b.getTime() - a.getTime()) / 86400000)
+}
+function formatHoraVoo(h: number | null): string {
+  if (h == null) return '--'
+  const s = String(h).padStart(4, '0')
+  return `${s.slice(0, 2)}:${s.slice(2)}`
 }
 
 const INPUT = 'mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -96,7 +151,7 @@ export default function Painel() {
   const [modalReserva,      setModalReserva]      = useState<Reserva | null>(null)
   const [carregandoFormas,  setCarregandoFormas]  = useState(false)
   const [carregandoParcelas, setCarregandoParcelas] = useState(false)
-  const [formasFinanciamento, setFormasFinanciamento] = useState<{ FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[]>([])
+  const [formasFinanciamento, setFormasFinanciamento] = useState<FormaFinanciamento[]>([])
   const [financiamentoId,   setFinanciamentoId]   = useState<number>(61)
   const [parcelas,          setParcelas]          = useState<number>(1)
   const [chaveDeSeguranca,  setChaveDeSeguranca]  = useState<string | null>(null)
@@ -109,6 +164,16 @@ export default function Painel() {
   const [carregandoEmissao, setCarregandoEmissao] = useState(false)
   const [erroEmissao,       setErroEmissao]       = useState('')
   const [bilheteEmitido,    setBilheteEmitido]    = useState<{ numero: string; passageiro: string } | null>(null)
+
+  // ── Estado do modal "Ver bilhete" ───────────────────────────────
+  const [verBilheteGrupo,     setVerBilheteGrupo]     = useState<Reserva[] | null>(null)
+  const [carregandoBilhete,   setCarregandoBilhete]   = useState(false)
+  const [erroBilhete,         setErroBilhete]         = useState('')
+  const [dadosBilhete,        setDadosBilhete]        = useState<ConsultaReserva[]>([])
+  const [emailReenvio,        setEmailReenvio]        = useState('')
+  const [enviandoComprovante, setEnviandoComprovante] = useState(false)
+  const [comprovanteEnviado,  setComprovanteEnviado]  = useState(false)
+  const [erroComprovante,     setErroComprovante]     = useState('')
 
   useEffect(() => {
     // Trigger server-side cancellation of expired reservas on page load
@@ -149,6 +214,18 @@ export default function Painel() {
     router.replace('/')
   }
 
+  // Recebe a lista nova de formas de pagamento e só reseta a opção selecionada
+  // se a escolha atual do usuário não existir mais na lista.
+  function aplicarNovasFormas(formas: FormaFinanciamento[]) {
+    setFormasFinanciamento(formas)
+    if (formas.length === 0) return
+    const aindaValida = formas.some(f => f.FinanciamentoId === financiamentoId)
+    if (!aindaValida) {
+      setFinanciamentoId(formas[0].FinanciamentoId)
+      setParcelas(formas[0].Parcelas)
+    }
+  }
+
   // ── Modal: abre e busca formas de financiamento ─────────────────
   async function abrirModal(reserva: Reserva) {
     setModalReserva(reserva)
@@ -167,12 +244,7 @@ export default function Painel() {
       if (data.erro) { setErroEmissao(data.erro); return }
       setChaveDeSeguranca(data.chaveDeSeguranca ?? null)
       setCodigoPagamento(data.codigoPagamento ?? 2)
-      const formas: { FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[] = data.formasFinanciamento ?? []
-      setFormasFinanciamento(formas)
-      if (formas.length > 0) {
-        setFinanciamentoId(formas[0].FinanciamentoId)
-        setParcelas(formas[0].Parcelas)
-      }
+      aplicarNovasFormas(data.formasFinanciamento ?? [])
     } catch {
       setErroEmissao('Erro ao carregar opções de pagamento')
     } finally {
@@ -202,12 +274,7 @@ export default function Painel() {
       })
       const data = await res.json()
       if (data.erro) return
-      const formas: { FinanciamentoId: number; Parcelas: number; PrimeiraParcela: number; DemaisParcela: number }[] = data.formasFinanciamento ?? []
-      setFormasFinanciamento(formas)
-      if (formas.length > 0) {
-        setFinanciamentoId(formas[0].FinanciamentoId)
-        setParcelas(formas[0].Parcelas)
-      }
+      aplicarNovasFormas(data.formasFinanciamento ?? [])
     } finally {
       setCarregandoParcelas(false)
     }
@@ -246,11 +313,11 @@ export default function Painel() {
       if (data.erro) { setErroEmissao(data.erro); return }
       setBilheteEmitido({ numero: data.bilhete, passageiro: data.passageiro })
       setReservas(prev => prev.map(r =>
-        r.id === modalReserva!.id ? { ...r, status: 'Emitida' } : r
+        r.id === modalReserva!.id ? { ...r, status: 'Emitida', numero_bilhete: data.bilhete } : r
       ))
       try {
         await createClient().from('reservas')
-          .update({ status: 'Emitida' })
+          .update({ status: 'Emitida', numero_bilhete: data.bilhete })
           .eq('localizador', modalReserva!.localizador)
       } catch {}
     } catch {
@@ -366,6 +433,57 @@ export default function Painel() {
     if (!r.grupo_reserva) return null
     return reservas.find(x => x.grupo_reserva === r.grupo_reserva && x.id !== r.id) ?? null
   }
+  function todasDoGrupo(r: Reserva): Reserva[] {
+    if (!r.grupo_reserva) return [r]
+    return reservas.filter(x => x.grupo_reserva === r.grupo_reserva)
+  }
+
+  // ── "Ver bilhete": consulta ao vivo na WOOBA (dados completos de voos,
+  // passageiros e pagamento não cabem no que guardamos localmente) ──────
+  async function abrirVerBilhete(r: Reserva) {
+    const grupo = todasDoGrupo(r)
+    setVerBilheteGrupo(grupo)
+    setDadosBilhete([]); setErroBilhete('')
+    setEmailReenvio(''); setComprovanteEnviado(false); setErroComprovante('')
+    setCarregandoBilhete(true)
+    try {
+      const resultados = await Promise.all(grupo.map(g =>
+        fetch('/api/consultar-reserva', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ localizador: g.localizador }),
+        }).then(res => res.json())
+      ))
+      const comErro = resultados.find(d => d.erro)
+      if (comErro) { setErroBilhete(comErro.erro); return }
+      setDadosBilhete(resultados as ConsultaReserva[])
+    } catch {
+      setErroBilhete('Erro ao consultar o bilhete.')
+    } finally {
+      setCarregandoBilhete(false)
+    }
+  }
+  function fecharVerBilhete() {
+    setVerBilheteGrupo(null); setDadosBilhete([]); setErroBilhete('')
+  }
+  async function reenviarComprovante() {
+    if (!verBilheteGrupo || !emailReenvio.trim()) return
+    setEnviandoComprovante(true); setErroComprovante(''); setComprovanteEnviado(false)
+    try {
+      const resultados = await Promise.all(verBilheteGrupo.map(g =>
+        fetch('/api/reenviar-comprovante', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ localizador: g.localizador, para: emailReenvio.trim() }),
+        }).then(res => res.json())
+      ))
+      const comErro = resultados.find(d => d.erro)
+      if (comErro) { setErroComprovante(comErro.erro); return }
+      setComprovanteEnviado(true)
+    } catch {
+      setErroComprovante('Erro ao reenviar o comprovante.')
+    } finally {
+      setEnviandoComprovante(false)
+    }
+  }
 
   function renderReserva(r: Reserva, aninhada = false) {
     const exibido = statusExibido(r)
@@ -445,7 +563,8 @@ export default function Painel() {
           )}
 
           {exibido === 'Emitida' && (
-            <button className="px-5 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
+            <button onClick={() => abrirVerBilhete(r)}
+              className="px-5 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
               Ver bilhete
             </button>
           )}
@@ -912,9 +1031,7 @@ export default function Painel() {
                         {formasFinanciamento.length > 0
                           ? formasFinanciamento.map(f => (
                               <option key={f.FinanciamentoId} value={f.FinanciamentoId}>
-                                {f.Parcelas === 1
-                                  ? `1x ${formatValor(f.PrimeiraParcela)}`
-                                  : `${f.Parcelas}x de ${formatValor(f.DemaisParcela)}`}
+                                {labelParcela(f)}
                               </option>
                             ))
                           : <option value={61}>1x {modalReserva.valor ? formatValor(modalReserva.valor) : ''}</option>
@@ -964,6 +1081,161 @@ export default function Painel() {
                   </button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal "Ver bilhete" ─────────────────────────────────── */}
+      {verBilheteGrupo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 print:relative print:p-0 print:bg-white"
+          style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+          onClick={e => { if (e.target === e.currentTarget) fecharVerBilhete() }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto print:shadow-none print:max-h-none print:max-w-none">
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between print:border-b-2" style={{ borderColor: '#18283A' }}>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#B79D7D' }}>Facilita Pass</p>
+                <h2 className="text-lg font-bold" style={{ color: '#18283A' }}>Comprovante da viagem</h2>
+              </div>
+              <button onClick={fecharVerBilhete} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 print:hidden">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-6">
+              {carregandoBilhete && (
+                <div className="space-y-3 animate-pulse">
+                  <div className="h-5 w-48 bg-gray-100 rounded" />
+                  <div className="h-24 bg-gray-100 rounded-xl" />
+                  <div className="h-24 bg-gray-100 rounded-xl" />
+                </div>
+              )}
+
+              {!carregandoBilhete && erroBilhete && (
+                <div className="rounded-lg p-3 bg-red-50 border border-red-200">
+                  <p className="text-red-600 text-sm">{erroBilhete}</p>
+                </div>
+              )}
+
+              {!carregandoBilhete && !erroBilhete && dadosBilhete.map(dados => (
+                <div key={dados.localizador} className="rounded-xl border border-gray-100 p-4 space-y-4">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wide">Localizador</p>
+                      <p className="text-base font-bold tracking-widest" style={{ color: '#18283A' }}>{dados.localizador}</p>
+                    </div>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#dbeafe', color: '#1d4ed8' }}>
+                      {dados.status ?? 'Emitida'}
+                    </span>
+                  </div>
+
+                  {dados.bilhetes.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-400 uppercase tracking-wide">Bilhete(s)</p>
+                      {dados.bilhetes.map((b, i) => (
+                        <p key={i} className="text-sm text-gray-700">
+                          <span className="font-mono font-semibold">{b.numero ?? '—'}</span>
+                          {b.passageiro && <span className="text-gray-400"> — {b.passageiro}</span>}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+
+                  {dados.passageiros.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-400 uppercase tracking-wide">Passageiro(s)</p>
+                      <p className="text-sm text-gray-700">
+                        {dados.passageiros.map(p => `${p.nome} ${p.sobrenome}`.trim()).join(', ')}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    {dados.viagens.map((v, vi) => {
+                      const numEscalas = Math.max(v.voos.length - 1, 0)
+                      const escalasTexto = numEscalas === 0 ? 'Direto'
+                        : numEscalas === 1 ? `1 escala em ${v.voos[0]?.destino ?? ''}`
+                        : `${numEscalas} escalas`
+                      const primeiro = v.voos[0]
+                      const ultimo = v.voos[v.voos.length - 1]
+                      const diffDias = diasEntre(primeiro?.dataSaida, ultimo?.dataChegada)
+                      return (
+                        <div key={vi} className="rounded-lg bg-gray-50 p-3">
+                          <div className="flex items-center justify-between flex-wrap gap-1 mb-1">
+                            <p className="text-sm font-semibold text-gray-800">
+                              {nomeCompanhia(v.companhia)} — {v.origem} → {v.destino}
+                            </p>
+                            <p className="text-xs text-gray-400">{formatDataAbreviada(primeiro?.dataSaida)}</p>
+                          </div>
+                          <p className="text-sm text-gray-600 flex items-center gap-1.5 flex-wrap">
+                            {formatHoraVoo(primeiro?.horaSaida ?? null)} → {formatHoraVoo(ultimo?.horaChegada ?? null)}
+                            {diffDias > 0 && (
+                              <span className="inline-flex items-center justify-center text-[10px] font-bold text-white rounded px-1 leading-tight" style={{ backgroundColor: '#dc2626' }}>
+                                +{diffDias}
+                              </span>
+                            )}
+                            <span className="text-gray-400">· {primeiro?.duracao ?? ''} · {escalasTexto}</span>
+                          </p>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wide">Valor pago</p>
+                      <p className="text-base font-bold text-gray-900">
+                        {formatValor(dados.viagens.reduce((s, v) => s + (v.valorTotal ?? 0), 0) || null)}
+                      </p>
+                    </div>
+                    {dados.formaPagamento?.parcelas != null && (
+                      <div className="text-right">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide">Forma de pagamento</p>
+                        <p className="text-sm text-gray-700">
+                          {nomeBandeira(dados.formaPagamento.bandeira)} — {dados.formaPagamento.parcelas}x
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {!carregandoBilhete && !erroBilhete && dadosBilhete.length > 0 && (
+                <div className="rounded-xl p-4 print:hidden" style={{ backgroundColor: '#faf7f2', border: '1px solid #B79D7D55' }}>
+                  <p className="text-sm font-semibold mb-2" style={{ color: '#18283A' }}>Reenviar comprovante por e-mail</p>
+                  {comprovanteEnviado ? (
+                    <p className="text-sm text-green-600">✅ Comprovante reenviado com sucesso.</p>
+                  ) : (
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input type="email" placeholder="email@destino.com" value={emailReenvio}
+                        onChange={e => setEmailReenvio(e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      <button onClick={reenviarComprovante} disabled={enviandoComprovante || !emailReenvio.trim()}
+                        className="px-4 py-2 rounded-lg text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+                        style={{ backgroundColor: '#18283A' }}>
+                        {enviandoComprovante ? 'Enviando...' : 'Reenviar'}
+                      </button>
+                    </div>
+                  )}
+                  {erroComprovante && <p className="text-sm text-red-600 mt-2">{erroComprovante}</p>}
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 flex gap-3 print:hidden">
+              <button onClick={() => window.print()}
+                className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+                Imprimir
+              </button>
+              <button onClick={fecharVerBilhete}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: '#18283A' }}>
+                Fechar
+              </button>
             </div>
           </div>
         </div>
