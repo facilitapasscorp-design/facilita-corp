@@ -38,7 +38,7 @@ const PASSAGEIRO = {
   Nome:        'JOAO',
   Sobrenome:   'SILVA',
   CPF:         '12345678901',
-  Nascimento:  '/Date(631152000000-0300)/', // 01/01/1990
+  Nascimento:  '/Date(631162800000-0300)/', // 01/01/1990
   Email:       'teste@facilitapass.com',
   FaixaEtaria: 'ADT',
   Sexo:        'M',

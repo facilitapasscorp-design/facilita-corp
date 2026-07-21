@@ -32,9 +32,9 @@ MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+wLgFuiBPG5EHfw0TSsU6uTe+JH3hQy76c58koF24
 -----END PUBLIC KEY-----`
 
 const ADT1 = { Nome: 'JOAO',  Sobrenome: 'SILVA',  CPF: '12345678901',
-  Nascimento: '/Date(631152000000-0300)/', Email: 'teste@facilitapass.com',  FaixaEtaria: 'ADT', Sexo: 'M' }
+  Nascimento: '/Date(631162800000-0300)/', Email: 'teste@facilitapass.com',  FaixaEtaria: 'ADT', Sexo: 'M' }
 const ADT2 = { Nome: 'MARIA', Sobrenome: 'SANTOS', CPF: '98765432100',
-  Nascimento: '/Date(473385600000-0300)/', Email: 'teste2@facilitapass.com', FaixaEtaria: 'ADT', Sexo: 'F' }
+  Nascimento: '/Date(473396400000-0300)/', Email: 'teste2@facilitapass.com', FaixaEtaria: 'ADT', Sexo: 'F' }
 
 const ORIGEM     = 'LIS'
 const DESTINO    = 'MAD'

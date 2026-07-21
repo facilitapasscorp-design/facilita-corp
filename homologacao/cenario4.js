@@ -31,14 +31,14 @@ MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+wLgFuiBPG5EHfw0TSsU6uTe+JH3hQy76c58koF24
 const ADULTO = {
   Nome: 'JOAO', Sobrenome: 'SILVA',
   CPF: '12345678901',
-  Nascimento: '/Date(' + new Date('1990-01-01T00:00:00.000Z').getTime() + '-0300)/',
+  Nascimento: '/Date(' + new Date('1990-01-01T03:00:00.000Z').getTime() + '-0300)/',
   Email: 'teste@facilitapass.com', FaixaEtaria: 'ADT', Sexo: 'M',
 }
 // Bebê deve ter < 2 anos na data da viagem (25/06/2026): nascido após 25/06/2024
 const BEBE = {
   Nome: 'PEDRO', Sobrenome: 'SILVA',
   CPF: '55566677788',
-  Nascimento: '/Date(' + new Date('2025-01-01T00:00:00.000Z').getTime() + '-0300)/',
+  Nascimento: '/Date(' + new Date('2025-01-01T03:00:00.000Z').getTime() + '-0300)/',
   Email: 'teste@facilitapass.com', FaixaEtaria: 'INF', Sexo: 'M',
 }
 

@@ -27,7 +27,9 @@ function extrairClasses(viagem: any) {
 }
 
 function toWcfDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00.000Z')
+  // Ancora em meia-noite LOCAL (-03:00), não UTC — senão o offset "-0300" no
+  // formato WCF faz a WOOBA reconstruir a data um dia antes do digitado.
+  const d = new Date(dateStr + 'T03:00:00.000Z')
   return `/Date(${d.getTime()}-0300)/`
 }
 

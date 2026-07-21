@@ -36,7 +36,7 @@ const ADULTO = {
   Nome:        'JOAO',
   Sobrenome:   'SILVA',
   CPF:         '12345678901',
-  Nascimento:  '/Date(' + new Date('1990-01-01T00:00:00.000Z').getTime() + '-0300)/',
+  Nascimento:  '/Date(' + new Date('1990-01-01T03:00:00.000Z').getTime() + '-0300)/',
   Email:       'teste@facilitapass.com',
   FaixaEtaria: 'ADT',
   Sexo:        'M',
@@ -46,7 +46,7 @@ const ADULTO = {
 const BEBE_INFANTIL = {
   InfantilNome:       'PEDRO',
   InfantilSobrenome:  'SILVA',
-  InfantilNascimento: '/Date(' + new Date('2025-03-15T00:00:00.000Z').getTime() + '-0300)/',
+  InfantilNascimento: '/Date(' + new Date('2025-03-15T03:00:00.000Z').getTime() + '-0300)/',
   InfantilSexo:       'M',
 }
 

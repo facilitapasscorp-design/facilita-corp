@@ -31,25 +31,25 @@ MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+wLgFuiBPG5EHfw0TSsU6uTe+JH3hQy76c58koF24
 const ADULTO1 = {
   Nome: 'JOAO',  Sobrenome: 'SILVA',
   CPF: '12345678901',
-  Nascimento: '/Date(' + new Date('1990-01-01T00:00:00.000Z').getTime() + '-0300)/',
+  Nascimento: '/Date(' + new Date('1990-01-01T03:00:00.000Z').getTime() + '-0300)/',
   Email: 'teste@facilitapass.com', FaixaEtaria: 'ADT', Sexo: 'M',
 }
 const ADULTO2 = {
   Nome: 'MARIA', Sobrenome: 'SANTOS',
   CPF: '98765432100',
-  Nascimento: '/Date(' + new Date('1985-01-01T00:00:00.000Z').getTime() + '-0300)/',
+  Nascimento: '/Date(' + new Date('1985-01-01T03:00:00.000Z').getTime() + '-0300)/',
   Email: 'teste2@facilitapass.com', FaixaEtaria: 'ADT', Sexo: 'F',
 }
 const CRIANCA = {
   Nome: 'ANA', Sobrenome: 'SILVA',
   CPF: '11122233344',
-  Nascimento: '/Date(' + new Date('2018-01-01T00:00:00.000Z').getTime() + '-0300)/',
+  Nascimento: '/Date(' + new Date('2018-01-01T03:00:00.000Z').getTime() + '-0300)/',
   Email: 'teste@facilitapass.com', FaixaEtaria: 'CHD', Sexo: 'F',
 }
 const BEBE = {
   Nome: 'PEDRO', Sobrenome: 'SILVA',
   CPF: '55566677788',
-  Nascimento: '/Date(' + new Date('2025-01-01T00:00:00.000Z').getTime() + '-0300)/',
+  Nascimento: '/Date(' + new Date('2025-01-01T03:00:00.000Z').getTime() + '-0300)/',
   Email: 'teste@facilitapass.com', FaixaEtaria: 'INF', Sexo: 'M',
 }
 
