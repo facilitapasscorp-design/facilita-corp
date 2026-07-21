@@ -47,3 +47,33 @@ body {
   background: linear-gradient(90deg, transparent, #B79D7D, transparent);
   animation: barra-progresso-busca-anim 1.3s ease-in-out infinite;
 }
+
+/* Impressão de comprovante (ex: modal "Ver bilhete" no painel): ao imprimir
+   com um .comprovante-imprimivel presente na página, some com tudo o resto
+   (header, listas, filtros, outros modais) e mostra só ele. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .comprovante-imprimivel,
+  .comprovante-imprimivel * {
+    visibility: visible;
+  }
+  .comprovante-imprimivel {
+    /* fixed (não absolute) pra escapar do max-height/overflow-y-auto do
+       modal que a envolve — senão o comprovante fica cortado na impressão. */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .no-imprimir {
+    display: none !important;
+  }
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+}

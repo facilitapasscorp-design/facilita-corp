@@ -1089,39 +1089,41 @@ export default function Painel() {
       {/* ── Modal "Ver bilhete" ─────────────────────────────────── */}
       {verBilheteGrupo && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 print:relative print:p-0 print:bg-white"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
           onClick={e => { if (e.target === e.currentTarget) fecharVerBilhete() }}
         >
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto print:shadow-none print:max-h-none print:max-w-none">
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between print:border-b-2" style={{ borderColor: '#18283A' }}>
-              <div>
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <button onClick={fecharVerBilhete} className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 no-imprimir">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Só o que está dentro desta div sai na impressão — ver regra
+                @media print em app/globals.css. */}
+            <div className="comprovante-imprimivel">
+              <div className="px-6 py-5 border-b border-gray-100" style={{ borderColor: '#18283A' }}>
                 <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#B79D7D' }}>Facilita Pass</p>
                 <h2 className="text-lg font-bold" style={{ color: '#18283A' }}>Comprovante da viagem</h2>
               </div>
-              <button onClick={fecharVerBilhete} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 print:hidden">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
 
-            <div className="px-6 py-5 space-y-6">
-              {carregandoBilhete && (
-                <div className="space-y-3 animate-pulse">
-                  <div className="h-5 w-48 bg-gray-100 rounded" />
-                  <div className="h-24 bg-gray-100 rounded-xl" />
-                  <div className="h-24 bg-gray-100 rounded-xl" />
-                </div>
-              )}
+              <div className="px-6 py-5 space-y-6">
+                {carregandoBilhete && (
+                  <div className="space-y-3 animate-pulse no-imprimir">
+                    <div className="h-5 w-48 bg-gray-100 rounded" />
+                    <div className="h-24 bg-gray-100 rounded-xl" />
+                    <div className="h-24 bg-gray-100 rounded-xl" />
+                  </div>
+                )}
 
-              {!carregandoBilhete && erroBilhete && (
-                <div className="rounded-lg p-3 bg-red-50 border border-red-200">
-                  <p className="text-red-600 text-sm">{erroBilhete}</p>
-                </div>
-              )}
+                {!carregandoBilhete && erroBilhete && (
+                  <div className="rounded-lg p-3 bg-red-50 border border-red-200 no-imprimir">
+                    <p className="text-red-600 text-sm">{erroBilhete}</p>
+                  </div>
+                )}
 
-              {!carregandoBilhete && !erroBilhete && dadosBilhete.map(dados => (
+                {!carregandoBilhete && !erroBilhete && dadosBilhete.map(dados => (
                 <div key={dados.localizador} className="rounded-xl border border-gray-100 p-4 space-y-4">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
@@ -1203,30 +1205,32 @@ export default function Painel() {
                   </div>
                 </div>
               ))}
-
-              {!carregandoBilhete && !erroBilhete && dadosBilhete.length > 0 && (
-                <div className="rounded-xl p-4 print:hidden" style={{ backgroundColor: '#faf7f2', border: '1px solid #B79D7D55' }}>
-                  <p className="text-sm font-semibold mb-2" style={{ color: '#18283A' }}>Reenviar comprovante por e-mail</p>
-                  {comprovanteEnviado ? (
-                    <p className="text-sm text-green-600">✅ Comprovante reenviado com sucesso.</p>
-                  ) : (
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input type="email" placeholder="email@destino.com" value={emailReenvio}
-                        onChange={e => setEmailReenvio(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                      <button onClick={reenviarComprovante} disabled={enviandoComprovante || !emailReenvio.trim()}
-                        className="px-4 py-2 rounded-lg text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
-                        style={{ backgroundColor: '#18283A' }}>
-                        {enviandoComprovante ? 'Enviando...' : 'Reenviar'}
-                      </button>
-                    </div>
-                  )}
-                  {erroComprovante && <p className="text-sm text-red-600 mt-2">{erroComprovante}</p>}
-                </div>
-              )}
+              </div>
             </div>
+            {/* fim de .comprovante-imprimivel — nada abaixo daqui sai impresso */}
 
-            <div className="px-6 py-4 border-t border-gray-100 flex gap-3 print:hidden">
+            {!carregandoBilhete && !erroBilhete && dadosBilhete.length > 0 && (
+              <div className="mx-6 mb-5 rounded-xl p-4 no-imprimir" style={{ backgroundColor: '#faf7f2', border: '1px solid #B79D7D55' }}>
+                <p className="text-sm font-semibold mb-2" style={{ color: '#18283A' }}>Reenviar comprovante por e-mail</p>
+                {comprovanteEnviado ? (
+                  <p className="text-sm text-green-600">✅ Comprovante reenviado com sucesso.</p>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input type="email" placeholder="email@destino.com" value={emailReenvio}
+                      onChange={e => setEmailReenvio(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <button onClick={reenviarComprovante} disabled={enviandoComprovante || !emailReenvio.trim()}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+                      style={{ backgroundColor: '#18283A' }}>
+                      {enviandoComprovante ? 'Enviando...' : 'Reenviar'}
+                    </button>
+                  </div>
+                )}
+                {erroComprovante && <p className="text-sm text-red-600 mt-2">{erroComprovante}</p>}
+              </div>
+            )}
+
+            <div className="px-6 py-4 border-t border-gray-100 flex gap-3 no-imprimir">
               <button onClick={() => window.print()}
                 className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
                 Imprimir
