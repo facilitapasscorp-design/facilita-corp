@@ -60,11 +60,9 @@ export async function POST(request: NextRequest) {
 /**
  * Notifica corp@facilitapass.com.br sobre um novo chamado.
  *
- * TODO: o Resend ainda não está configurado nesta conta. Para ativar:
- *   1. `npm install resend`
- *   2. Adicionar RESEND_API_KEY no .env.local (e nas envs de produção)
- *   3. Descomentar o bloco abaixo
- * Até lá, esta função só loga os dados do chamado no servidor.
+ * Exige RESEND_API_KEY no ambiente (.env.local e nas envs de produção) e o
+ * domínio facilitapass.com.br verificado no Resend. Sem a chave, a função
+ * apenas loga e retorna — nunca lança, porque o chamado já foi salvo.
  */
 async function enviarEmailNotificacaoChamado(dados: {
   localizador: string
@@ -78,19 +76,20 @@ async function enviarEmailNotificacaoChamado(dados: {
     return
   }
 
-  // const { Resend } = await import('resend')
-  // const resend = new Resend(process.env.RESEND_API_KEY)
-  // await resend.emails.send({
-  //   from: 'Facilita Pass <chamados@facilitapass.com.br>',
-  //   to: 'corp@facilitapass.com.br',
-  //   subject: `Novo chamado (${dados.tipo}) — ${dados.empresa}`,
-  //   html: `
-  //     <p><strong>Empresa:</strong> ${dados.empresa}</p>
-  //     <p><strong>Usuário:</strong> ${dados.usuario}</p>
-  //     <p><strong>Localizador:</strong> ${dados.localizador}</p>
-  //     <p><strong>Tipo:</strong> ${dados.tipo}</p>
-  //     <p><strong>Mensagem:</strong></p>
-  //     <p>${dados.mensagem.replace(/\n/g, '<br/>')}</p>
-  //   `,
-  // })
+  const { Resend } = await import('resend')
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  await resend.emails.send({
+    from: 'Facilita Pass <chamados@facilitapass.com.br>',
+    to: 'corp@facilitapass.com.br',
+    subject: `Novo chamado (${dados.tipo}) — ${dados.empresa}`,
+    html: `
+      <p><strong>Empresa:</strong> ${dados.empresa}</p>
+      <p><strong>Usuário:</strong> ${dados.usuario}</p>
+      <p><strong>Localizador:</strong> ${dados.localizador}</p>
+      <p><strong>Tipo:</strong> ${dados.tipo}</p>
+      <p><strong>Mensagem:</strong></p>
+      <p>${dados.mensagem.replace(/\n/g, '<br/>')}</p>
+    `,
+  })
 }
+

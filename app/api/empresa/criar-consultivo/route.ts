@@ -20,31 +20,29 @@ function gerarSenhaProvisoria(): string {
 /**
  * Envia a senha provisória por e-mail pro usuário recém-criado.
  *
- * TODO: o Resend ainda não está configurado nesta conta. Para ativar:
- *   1. `npm install resend`
- *   2. Adicionar RESEND_API_KEY no .env.local (e nas envs de produção)
- *   3. Descomentar o bloco abaixo
- * Até lá, a senha só é devolvida na resposta da API pro admin copiar.
+ * Exige RESEND_API_KEY no ambiente e o domínio verificado no Resend. Sem a
+ * chave, a senha continua sendo devolvida na resposta pro admin repassar.
  */
 async function enviarEmailBoasVindas(dados: { nome: string; email: string; senha: string; empresa: string }) {
   if (!process.env.RESEND_API_KEY) {
     console.log('[CRIAR-CONSULTIVO] RESEND_API_KEY não configurada — e-mail não enviado.', { email: dados.email })
     return
   }
-  // const { Resend } = await import('resend')
-  // const resend = new Resend(process.env.RESEND_API_KEY)
-  // await resend.emails.send({
-  //   from: 'Facilita Pass <acesso@facilitapass.com.br>',
-  //   to: dados.email,
-  //   subject: `Seu acesso à Facilita Pass — ${dados.empresa}`,
-  //   html: `
-  //     <p>Olá, ${dados.nome}!</p>
-  //     <p>Sua conta na Facilita Pass foi criada por um administrador da ${dados.empresa}.</p>
-  //     <p><strong>E-mail:</strong> ${dados.email}<br/><strong>Senha provisória:</strong> ${dados.senha}</p>
-  //     <p>Recomendamos trocar a senha no primeiro acesso.</p>
-  //   `,
-  // })
+  const { Resend } = await import('resend')
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  await resend.emails.send({
+    from: 'Facilita Pass <acesso@facilitapass.com.br>',
+    to: dados.email,
+    subject: `Seu acesso à Facilita Pass — ${dados.empresa}`,
+    html: `
+      <p>Olá, ${dados.nome}!</p>
+      <p>Sua conta na Facilita Pass foi criada por um administrador da ${dados.empresa}.</p>
+      <p><strong>E-mail:</strong> ${dados.email}<br/><strong>Senha provisória:</strong> ${dados.senha}</p>
+      <p>Recomendamos trocar a senha no primeiro acesso.</p>
+    `,
+  })
 }
+
 
 export async function POST(request: NextRequest) {
   // Autenticação: exige um usuário logado com token válido.
