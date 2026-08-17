@@ -3,19 +3,24 @@ import { randomUUID } from 'crypto'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
 import { autenticar, ehErro } from '../../../lib/auth-api'
 
+// A resposta da WOOBA e' JSON sem contrato tipado; mesmo padrao de
+// consultar-reserva/route.ts — um alias so, em vez de `any` espalhado.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Any = any
+
 const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
 
-function getLegs(viagem: any): any[] {
+function getLegs(viagem: Any): Any[] {
   return viagem.Voos?.length
     ? viagem.Voos
-    : (viagem.Segmentos || []).flatMap((s: any) => s.Voos || [])
+    : (viagem.Segmentos || []).flatMap((s: Any) => s.Voos || [])
 }
 
-function extrairClasses(viagem: any) {
+function extrairClasses(viagem: Any) {
   let classeRef = ''
   return getLegs(viagem)
-    .filter((leg: any) => leg.Numero || leg.NumeroDoVoo)
-    .map((leg: any) => {
+    .filter((leg: Any) => leg.Numero || leg.NumeroDoVoo)
+    .map((leg: Any) => {
       const bt = leg.BaseTarifaria?.[0]
       const classe = leg.Classe || bt?.Classe || classeRef
       if (classe) classeRef = classe
@@ -35,190 +40,253 @@ function toWcfDate(dateStr: string): string {
   return `/Date(${d.getTime()}-0300)/`
 }
 
+type Wooba = {
+  BASE: string
+  cred: { Login: string; Senha: string }
+  headers: () => Record<string, string>
+}
+
+/**
+ * Fornecedor de onde a viagem veio (SABRE, GOL GWS, NDC LATAM...). É esse
+ * código, e não a companhia aérea, que determina o que pode ser tarifado junto.
+ */
+function fornecedorDe(viagem: Any): number | null {
+  return viagem?.Fornecedor?.Codigo ?? null
+}
+
+/**
+ * Ida e volta só podem ir numa única tarifação quando vêm do MESMO fornecedor.
+ *
+ * Foi medido contra o sandbox: combinar GOL (GOL GWS) com LATAM (NDC LATAM)
+ * faz o Tarifar responder "é necessário selecionar somente segmentos NDCLatam"
+ * e devolver zero viagens — ou seja, a compra inteira morre antes de reservar.
+ * Fornecedor igual cobre o caso bom: dois trechos do mesmo GDS, ainda que de
+ * companhias diferentes, tarifam como ida e volta (RT), que costuma sair mais
+ * barato e gera um localizador só.
+ */
+function podeCombinar(vooIda: Any, vooVolta: Any): boolean {
+  if (!vooVolta) return true
+  const fi = fornecedorDe(vooIda)
+  const fv = fornecedorDe(vooVolta)
+  if (fi == null || fv == null) return false   // sem informação, não arrisca
+  return fi === fv
+}
+
+/** Tarifar + Reservar de um par (ou de um trecho sozinho, com vooVolta null). */
+async function tarifarEReservar(
+  w: Wooba, vooIda: Any, vooVolta: Any | null, passageiros: Any[], rotulo: string,
+): Promise<{ reservas: Any[] } | { erro: string }> {
+  const classes = [...extrairClasses(vooIda), ...(vooVolta ? extrairClasses(vooVolta) : [])]
+
+  const tarifaBody: Any = {
+    ...w.cred, ClienteId: 0,
+    IdentificacaoDaViagem: vooIda.IdentificacaoDaViagem,
+    ViagemIda: vooIda.Id,
+    ClassesSelecionadas: classes,
+    RetornarPlanoDeFinanciamento: true,
+    RetornarRegrasTarifarias: true,
+    TarifarMelhorFamilia: true,
+    TarifarMelhorPreco: true,
+  }
+  if (vooVolta) {
+    tarifaBody.ViagemVolta = vooVolta.Id
+    tarifaBody.IdentificacaoDaViagemVolta = vooVolta.IdentificacaoDaViagem
+  }
+
+  const tarifaRes  = await fetch(`${w.BASE}/Tarifar`, { method: 'POST', headers: w.headers(), body: JSON.stringify(tarifaBody) })
+  const tarifaData = await tarifaRes.json()
+  console.log(`[TARIFAR:${rotulo}] status:`, tarifaRes.status, '| Exception:', tarifaData.Exception?.Message ?? null,
+              '| ViagensTrecho1:', tarifaData.ViagensTrecho1?.length ?? 0)
+  if (tarifaData.Exception) return { erro: tarifaData.Exception.Message }
+
+  const idViagem = tarifaData.ViagensTrecho1?.[0]?.IdentificacaoDaViagem || vooIda.IdentificacaoDaViagem
+  const idViagemVolta = vooVolta
+    ? (tarifaData.ViagensTrecho2?.[0]?.IdentificacaoDaViagem || vooVolta.IdentificacaoDaViagem)
+    : null
+
+  const primAdulto = passageiros.find((p: Any) => (p.tipo || 'ADT') === 'ADT') || passageiros[0]
+  const telContato = primAdulto.telefone ? primAdulto.telefone.replace(/\D/g, '') : ''
+
+  const reservaBody = {
+    ...w.cred,
+    ClienteId: 0,
+    IdentificacaoDaViagem: idViagem,
+    ...(idViagemVolta ? { IdentificacaoDaViagemVolta: idViagemVolta } : {}),
+    ClassesSelecionadas: classes,
+    Passageiros: passageiros.map((p: Any, i: number) => ({
+      Nome:        p.nome.toUpperCase(),
+      Sobrenome:   p.sobrenome.toUpperCase(),
+      CPF:         p.cpf ? p.cpf.replace(/\D/g, '') : undefined,
+      Nascimento:  toWcfDate(p.nascimento),
+      Email:       p.email || undefined,
+      Telefone: p.telefone ? (() => { const tel = p.telefone.replace(/\D/g, ''); return { Id: 0, NumeroDDD: tel.slice(0, 2), NumeroDDI: '55', NumeroTelefone: tel.slice(2), Tipo: 1 } })() : undefined,
+      FaixaEtaria: p.tipo || 'ADT',
+      Sexo:        p.sexo || 'M',
+      Linha:       String(i + 1),
+    })),
+    InformacoesComplementaresPassageiro: passageiros.map((p: Any) => ({
+      Nome:      p.nome.toUpperCase(),
+      Sobrenome: p.sobrenome.toUpperCase(),
+      Tipo:      p.tipo || 'ADT',
+    })),
+    Contatos: [{
+      Nome:           `${primAdulto.nome} ${primAdulto.sobrenome}`.toUpperCase(),
+      Email:          primAdulto.email,
+      NumeroDDD:      telContato.slice(0, 2) || '11',
+      NumeroTelefone: telContato.slice(2) || '999999999',
+      NumeroDDI:      '55',
+      Tipo:           0,
+    }],
+    Solicitante:         primAdulto.nome.toUpperCase(),
+    ValidarAnaliseRisco: false,
+  }
+
+  const reservaRes  = await fetch(`${w.BASE}/Reservar`, { method: 'POST', headers: w.headers(), body: JSON.stringify(reservaBody) })
+  const reservaData = JSON.parse(await reservaRes.text())
+  console.log(`[RESERVAR:${rotulo}] status:`, reservaRes.status, '| Exception:', reservaData.Exception?.Message ?? null)
+  if (reservaData.Exception) return { erro: reservaData.Exception.Message }
+
+  const reservas = reservaData.Reservas ?? []
+  if (reservas.length === 0) return { erro: 'Nenhuma reserva retornada pela WOOBA' }
+  console.log(`[RESERVAR:${rotulo}] Reservas[]:`, JSON.stringify(reservas.map((r: Any) => r.Localizador)))
+  return { reservas }
+}
+
+/**
+ * Desfaz na WOOBA uma reserva que ESTA requisição acabou de criar.
+ *
+ * Escopo deliberadamente estreito: só é chamada com localizadores nascidos
+ * segundos antes, dentro do mesmo POST, quando o outro trecho falhou e deixar
+ * a ida de pé venderia meia viagem ao cliente. Não é — e não deve virar — uma
+ * função de cancelamento genérica.
+ */
+async function desfazerReserva(w: Wooba, localizador: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${w.BASE}/Cancelar`, {
+      method: 'POST', headers: w.headers(),
+      body: JSON.stringify({ ...w.cred, ClienteId: 0, Localizador: localizador }),
+    })
+    const data = await res.json()
+    const ok = !data.Exception
+    console.log('[DESFAZER] localizador:', localizador, '| ok:', ok, '| erro:', data.Exception?.Message ?? null)
+    return ok
+  } catch (e) {
+    console.error('[DESFAZER] falhou para', localizador, e instanceof Error ? e.message : e)
+    return false
+  }
+}
+
+interface LocalizadorEntry {
+  localizador: string; companhia: string | null; origem: string | null; destino: string | null
+  trecho: 'ida' | 'volta'; valor: number | null; id: number
+}
+
+function mapearLocalizadores(reservas: Any[], vooIda: Any, vooVolta: Any | null, trechoFixo?: 'ida' | 'volta'): LocalizadorEntry[] {
+  return reservas.map((r: Any, idx: number) => {
+    const viagem = r.Viagens?.[0] ?? {}
+    const origem = viagem.Origem?.CodigoIata ?? null
+    const destino = viagem.Destino?.CodigoIata ?? null
+
+    let trecho: 'ida' | 'volta' = trechoFixo ?? (idx === 0 ? 'ida' : 'volta')
+    if (!trechoFixo) {
+      if (vooIda?.Origem?.CodigoIata === origem && vooIda?.Destino?.CodigoIata === destino) trecho = 'ida'
+      else if (vooVolta?.Origem?.CodigoIata === origem && vooVolta?.Destino?.CodigoIata === destino) trecho = 'volta'
+    }
+
+    return {
+      localizador: r.Localizador,
+      companhia: viagem.CiaMandatoria?.CodigoIata ?? null,
+      origem, destino, trecho,
+      valor: typeof r.ValorPendenteParaPagamento === 'number' ? r.ValorPendenteParaPagamento : null,
+      id: r.Id,
+    }
+  })
+}
+
 export async function POST(req: NextRequest) {
   const ctx = await autenticar(req)
   if (ehErro(ctx)) return ctx
 
   try {
     const { vooIda, vooVolta, passageiros: passageirosRaw, dataIda, dataVolta } = await req.json()
-    const passageiros: any[] = Array.isArray(passageirosRaw) ? passageirosRaw : [passageirosRaw]
+    const passageiros: Any[] = Array.isArray(passageirosRaw) ? passageirosRaw : [passageirosRaw]
 
-    const BASE  = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
-    const login = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
-    const senha = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
     const token = process.env.WOOBA_TOKEN!
-    const cred  = { Login: login, Senha: senha }
-
-
-
-    const headers = () => ({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Developer-Token': token,
-      'Developer-Access-Code': gerarAccessCode(),
-    })
-
-    const classesIda   = extrairClasses(vooIda)
-    const classesVolta = vooVolta ? extrairClasses(vooVolta) : []
-    // A WOOBA identifica cada perna pelo próprio NumeroDoVoo dentro de um único
-    // array — não existe campo "ClassesSelecionadasVolta" separado no schema.
-    // Quando ida/volta vêm de sessões diferentes (ex: companhias diferentes),
-    // enviar as classes em campos separados faz a API rejeitar ou ignorar a volta.
-    const classesCombinadas = [...classesIda, ...classesVolta]
-
-    // 1. Tarifar
-    const tarifaBody: any = {
-      ...cred, ClienteId: 0,
-      IdentificacaoDaViagem: vooIda.IdentificacaoDaViagem,
-      ViagemIda: vooIda.Id,
-      ClassesSelecionadas: classesCombinadas,
-      RetornarPlanoDeFinanciamento: true,
-      RetornarRegrasTarifarias: true,
-      TarifarMelhorFamilia: true,
-      TarifarMelhorPreco: true,
-    }
-    if (vooVolta) {
-      tarifaBody.ViagemVolta = vooVolta.Id
-      // Token de sessão da volta — sem isso a API não consegue resolver
-      // ViagemVolta quando ida e volta vêm de buscas/sistemas diferentes.
-      tarifaBody.IdentificacaoDaViagemVolta = vooVolta.IdentificacaoDaViagem
+    const w: Wooba = {
+      BASE: process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX,
+      cred: {
+        Login: process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!,
+        Senha: process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!,
+      },
+      headers: () => ({
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Developer-Token': token,
+        'Developer-Access-Code': gerarAccessCode(),
+      }),
     }
 
-    const tarifaRes  = await fetch(`${BASE}/Tarifar`, {
-      method: 'POST', headers: headers(), body: JSON.stringify(tarifaBody),
-    })
-    const tarifaData = await tarifaRes.json()
-    console.log('[TARIFAR] status:', tarifaRes.status, '| Exception:', tarifaData.Exception?.Message ?? null)
-    console.log('[TARIFAR] ViagensTrecho1 count:', tarifaData.ViagensTrecho1?.length ?? 0)
+    const combinavel = podeCombinar(vooIda, vooVolta)
+    console.log('[FLUXO] fornecedorIda:', fornecedorDe(vooIda), '| fornecedorVolta:', fornecedorDe(vooVolta),
+                '| combinavel:', combinavel)
 
-    if (tarifaData.Exception) {
-      return NextResponse.json({ erro: tarifaData.Exception.Message }, { status: 400 })
-    }
+    let localizadores: LocalizadorEntry[]
 
-    const idViagem = tarifaData.ViagensTrecho1?.[0]?.IdentificacaoDaViagem
-      || vooIda.IdentificacaoDaViagem
-    // ViagensTrecho2[0].IdentificacaoDaViagem normalmente vem null do Tarifar —
-    // cai no token original da própria busca da volta (mesmo padrão da ida).
-    const idViagemVolta = vooVolta
-      ? (tarifaData.ViagensTrecho2?.[0]?.IdentificacaoDaViagem || vooVolta.IdentificacaoDaViagem)
-      : null
+    if (combinavel) {
+      // Caminho de sempre: uma tarifação só. Ida e volta do mesmo fornecedor
+      // viram tarifa RT, e a WOOBA decide se devolve um ou dois localizadores.
+      const r = await tarifarEReservar(w, vooIda, vooVolta, passageiros, 'combinado')
+      if ('erro' in r) return NextResponse.json({ erro: r.erro }, { status: 400 })
+      localizadores = mapearLocalizadores(r.reservas, vooIda, vooVolta)
+    } else {
+      // Fornecedores diferentes: duas reservas independentes, na ordem ida →
+      // volta. Cada uma é uma viagem só de ida do ponto de vista da WOOBA.
+      const rIda = await tarifarEReservar(w, vooIda, null, passageiros, 'ida')
+      if ('erro' in rIda) return NextResponse.json({ erro: rIda.erro }, { status: 400 })
 
-    // 2. Reservar — estrutura exata da homologação WOOBA
-    const primAdulto = passageiros.find((p: any) => (p.tipo || 'ADT') === 'ADT') || passageiros[0]
-    const telContato = primAdulto.telefone ? primAdulto.telefone.replace(/\D/g, '') : ''
-
-    const reservaBody = {
-      ...cred,
-      ClienteId: 0,
-      IdentificacaoDaViagem: idViagem,
-      ...(idViagemVolta ? { IdentificacaoDaViagemVolta: idViagemVolta } : {}),
-      ClassesSelecionadas: classesCombinadas,
-      Passageiros: passageiros.map((p: any, i: number) => ({
-        Nome:        p.nome.toUpperCase(),
-        Sobrenome:   p.sobrenome.toUpperCase(),
-        CPF:         p.cpf ? p.cpf.replace(/\D/g, '') : undefined,
-        Nascimento:  toWcfDate(p.nascimento),
-        Email:       p.email || undefined,
-        Telefone: p.telefone ? (() => { const tel = p.telefone.replace(/\D/g, ''); return { Id: 0, NumeroDDD: tel.slice(0, 2), NumeroDDI: '55', NumeroTelefone: tel.slice(2), Tipo: 1 } })() : undefined,
-        FaixaEtaria: p.tipo || 'ADT',
-        Sexo:        p.sexo || 'M',
-        Linha:       String(i + 1),
-      })),
-      InformacoesComplementaresPassageiro: passageiros.map((p: any) => ({
-        Nome:      p.nome.toUpperCase(),
-        Sobrenome: p.sobrenome.toUpperCase(),
-        Tipo:      p.tipo || 'ADT',
-      })),
-      Contatos: [
-        {
-          Nome:           `${primAdulto.nome} ${primAdulto.sobrenome}`.toUpperCase(),
-          Email:          primAdulto.email,
-          NumeroDDD:      telContato.slice(0, 2) || '11',
-          NumeroTelefone: telContato.slice(2) || '999999999',
-          NumeroDDI:      '55',
-          Tipo:           0,
-        },
-      ],
-      Solicitante:         primAdulto.nome.toUpperCase(),
-      ValidarAnaliseRisco: false,
-    }
-
-    const reservaRes  = await fetch(`${BASE}/Reservar`, {
-      method: 'POST', headers: headers(), body: JSON.stringify(reservaBody),
-    })
-    const reservaRaw = await reservaRes.text()
-    const reservaData = JSON.parse(reservaRaw)
-    console.log('[RESERVAR] status:', reservaRes.status, '| Exception:', reservaData.Exception?.Message ?? null)
-
-    if (reservaData.Exception) {
-      return NextResponse.json({ erro: reservaData.Exception.Message }, { status: 400 })
-    }
-
-    const reservas = reservaData.Reservas ?? []
-    if (reservas.length === 0) {
-      return NextResponse.json({ erro: 'Nenhuma reserva retornada pela WOOBA' }, { status: 400 })
-    }
-
-    // Loga a estrutura completa de Reservas[] para conferência — cada item traz
-    // seu próprio ValorPendenteParaPagamento (confirmado no XSD da WOOBA), mas
-    // isso ainda não foi observado numa reserva real com múltiplas companhias.
-    console.log('[RESERVAR] Reservas[] completo:', JSON.stringify(reservas))
-
-    interface LocalizadorEntry {
-      localizador: string; companhia: string | null; origem: string | null; destino: string | null
-      trecho: 'ida' | 'volta'; valor: number | null; id: number
-    }
-    const localizadores: LocalizadorEntry[] = reservas.map((r: any, idx: number) => {
-      const viagem = r.Viagens?.[0] ?? {}
-      const origem = viagem.Origem?.CodigoIata ?? null
-      const destino = viagem.Destino?.CodigoIata ?? null
-
-      let trecho: 'ida' | 'volta' = idx === 0 ? 'ida' : 'volta'
-      if (vooIda?.Origem?.CodigoIata === origem && vooIda?.Destino?.CodigoIata === destino) trecho = 'ida'
-      else if (vooVolta?.Origem?.CodigoIata === origem && vooVolta?.Destino?.CodigoIata === destino) trecho = 'volta'
-
-      return {
-        localizador: r.Localizador,
-        companhia: viagem.CiaMandatoria?.CodigoIata ?? null,
-        origem,
-        destino,
-        trecho,
-        valor: typeof r.ValorPendenteParaPagamento === 'number' ? r.ValorPendenteParaPagamento : null,
-        id: r.Id,
+      const rVolta = await tarifarEReservar(w, vooVolta, null, passageiros, 'volta')
+      if ('erro' in rVolta) {
+        // A ida já existe na companhia. Deixá-la de pé venderia meia viagem,
+        // então desfazemos antes de responder.
+        const locsIda = rIda.reservas.map((r: Any) => r.Localizador)
+        const desfeitas = await Promise.all(locsIda.map(l => desfazerReserva(w, l)))
+        const sobrou = locsIda.filter((_, i) => !desfeitas[i])
+        return NextResponse.json({
+          erro: sobrou.length
+            ? `Não foi possível reservar a volta (${rVolta.erro}). A ida ficou reservada sob o localizador ${sobrou.join(', ')} e precisa de atenção do suporte.`
+            : `Não foi possível reservar a volta: ${rVolta.erro}. A ida foi desfeita, nada foi cobrado.`,
+        }, { status: 400 })
       }
-    })
 
-    // Fallback: se a WOOBA não trouxe ValorPendenteParaPagamento em nenhum item,
-    // usa os preços já conhecidos da seleção (Tarifar) por trecho; se nem isso
-    // der pra casar, registra o valor cheio só no primeiro localizador.
+      localizadores = [
+        ...mapearLocalizadores(rIda.reservas,   vooIda,   null, 'ida'),
+        ...mapearLocalizadores(rVolta.reservas, vooVolta, null, 'volta'),
+      ]
+    }
+
+    // Fallback de valor: se a WOOBA não itemizou por localizador, usa os preços
+    // já conhecidos da seleção; se nem isso casar, joga o total no primeiro.
     if (localizadores.every(l => l.valor == null)) {
       const precoIda   = vooIda?.Preco?.Total ?? 0
       const precoVolta = vooVolta?.Preco?.Total ?? 0
       let algumCasou = false
       for (const l of localizadores) {
-        if (l.trecho === 'ida' && precoIda)   { l.valor = precoIda;   algumCasou = true }
+        if (l.trecho === 'ida' && precoIda)     { l.valor = precoIda;   algumCasou = true }
         if (l.trecho === 'volta' && precoVolta) { l.valor = precoVolta; algumCasou = true }
       }
-      if (!algumCasou && localizadores[0]) {
-        localizadores[0].valor = precoIda + precoVolta
-      }
+      if (!algumCasou && localizadores[0]) localizadores[0].valor = precoIda + precoVolta
     }
 
-    console.log('[RESERVAR] Total de reservas:', reservas.length)
-    console.log('[RESERVAR] Localizadores:', JSON.stringify(localizadores))
+    console.log('[RESERVAR] localizadores finais:', JSON.stringify(localizadores))
 
-
-    // Grava as reservas aqui, com a service role. Antes quem gravava era o
-    // frontend, dentro de um try/catch vazio: se falhasse, o cliente pagava,
-    // o bilhete saía e a reserva não aparecia no painel — sem erro, sem log.
-    // A reserva na companhia já existe neste ponto, então uma falha aqui NÃO
-    // pode derrubar a resposta; ela é registrada e devolvida pro frontend
-    // avisar o usuário com o localizador em mãos.
+    // Gravação no banco com a service role — ver histórico: antes isso era feito
+    // no frontend dentro de um try/catch vazio e falhava em silêncio.
     let erroGravacao: string | null = null
     try {
       const { data: vinculo } = await ctx.supabase
         .from('usuarios_empresas').select('empresa_id').eq('user_id', ctx.user.id).maybeSingle()
 
+      const primAdulto = passageiros.find((p: Any) => (p.tipo || 'ADT') === 'ADT') || passageiros[0]
       const nomePassageiro = [primAdulto?.nome, primAdulto?.sobrenome]
         .filter(Boolean).join(' ').trim().toUpperCase() || null
       const grupoReserva = localizadores.length > 1 ? randomUUID() : null
@@ -247,11 +315,10 @@ export async function POST(req: NextRequest) {
         '| user:', ctx.user.email, '|', erroGravacao)
     }
 
-    // Mantém compatibilidade: localizador principal é o primeiro
     return NextResponse.json({
       localizador: localizadores[0].localizador,
       localizadores,
-      totalReservas: reservas.length,
+      totalReservas: localizadores.length,
       erroGravacao,
     })
   } catch (err: unknown) {
