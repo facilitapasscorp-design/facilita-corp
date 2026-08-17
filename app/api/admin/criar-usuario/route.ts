@@ -23,10 +23,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ erro: 'Não autorizado' }, { status: 403 })
   }
 
-  const { nome, email, senha, empresa_id } = await request.json()
+  const { nome, email, senha, empresa_id, papel_empresa } = await request.json()
   if (!nome || !email || !senha || !empresa_id) {
     return NextResponse.json({ erro: 'Preencha todos os campos.' }, { status: 400 })
   }
+  const papel = papel_empresa === 'admin' ? 'admin' : 'consultivo'
 
   // Cria o usuário no Auth
   const { data: userData, error: createErr } = await supabase.auth.admin.createUser({
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest) {
     empresa_id,
     nome,
     email,
+    papel_empresa: papel,
   })
   if (linkErr) return NextResponse.json({ erro: linkErr.message }, { status: 400 })
 

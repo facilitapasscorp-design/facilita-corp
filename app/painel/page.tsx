@@ -130,6 +130,7 @@ export default function Painel() {
   const router = useRouter()
   const [reservas, setReservas] = useState<Reserva[]>([])
   const [carregando, setCarregando] = useState(true)
+  const [podeCancelar, setPodeCancelar] = useState(false)
   const [filtroStatus, setFiltroStatus] = useState<'todas' | 'Ativa' | 'Emitida' | 'Cancelada'>('todas')
   const [filtroPeriodo, setFiltroPeriodo] = useState<'todos' | 'hoje' | '7dias' | '30dias'>('todos')
 
@@ -184,6 +185,16 @@ export default function Painel() {
     const supabase = createClient()
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) { router.replace('/'); return }
+
+      // Cancelamento é ação de admin da empresa (ou dono do sistema) — o
+      // backend também trava isso, aqui é só pra esconder o botão.
+      if (data.session.user.email === 'corp@facilitapass.com.br') {
+        setPodeCancelar(true)
+      } else {
+        const { data: vinculo } = await supabase
+          .from('usuarios_empresas').select('papel_empresa').eq('user_id', data.session.user.id).maybeSingle()
+        setPodeCancelar(vinculo?.papel_empresa === 'admin')
+      }
 
       let query = supabase
         .from('reservas')
@@ -331,9 +342,11 @@ export default function Painel() {
     if (!cancelarReserva) return
     setCarregandoCancelamento(true); setErroCancelamento('')
     try {
+      const { data: sessionData } = await createClient().auth.getSession()
+      const token = sessionData.session?.access_token
       const res = await fetch('/api/cancelar-reserva', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ localizador: cancelarReserva.localizador }),
       })
       const data = await res.json()
@@ -342,11 +355,8 @@ export default function Painel() {
       setReservas(prev => prev.map(r =>
         r.id === cancelarReserva.id ? { ...r, status: 'Cancelada' } : r
       ))
-      try {
-        await createClient().from('reservas')
-          .update({ status: 'Cancelada' })
-          .eq('localizador', cancelarReserva.localizador)
-      } catch {}
+      // A gravação do status='Cancelada' agora acontece no backend (a RLS
+      // bloqueia o dono da reserva de gravar isso direto pelo client).
     } catch {
       setErroCancelamento('Erro ao cancelar reserva')
     } finally {
@@ -550,12 +560,14 @@ export default function Painel() {
               >
                 Pagar e emitir
               </button>
-              <button
-                onClick={() => { setCancelarReserva(r); setErroCancelamento(''); setSucessoCancelamento(false) }}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
-              >
-                Cancelar
-              </button>
+              {podeCancelar && (
+                <button
+                  onClick={() => { setCancelarReserva(r); setErroCancelamento(''); setSucessoCancelamento(false) }}
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+              )}
               <span className="text-xs font-medium text-amber-600">
                 ⚠️ Expira às 23:59 de hoje
               </span>

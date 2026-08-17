@@ -15,6 +15,7 @@ interface Empresa {
 interface UsuarioEmpresa {
   id: string; user_id: string; empresa_id: string
   nome: string | null; email: string | null; created_at: string
+  papel_empresa: 'admin' | 'consultivo'
   empresas?: { nome: string } | null
 }
 interface Reserva {
@@ -162,9 +163,10 @@ export default function Admin() {
   // Usuários
   const [usuarios, setUsuarios] = useState<UsuarioEmpresa[]>([])
   const [modalUsuario, setModalUsuario] = useState(false)
-  const [novoUsuario, setNovoUsuario] = useState({ nome: '', email: '', senha: '', empresa_id: '' })
+  const [novoUsuario, setNovoUsuario] = useState({ nome: '', email: '', senha: '', empresa_id: '', papel_empresa: 'consultivo' as 'admin' | 'consultivo' })
   const [salvandoUsuario, setSalvandoUsuario] = useState(false)
   const [erroUsuario, setErroUsuario] = useState('')
+  const [salvandoPapel, setSalvandoPapel] = useState<string | null>(null)
 
   // Reservas
   const [reservas, setReservas] = useState<Reserva[]>([])
@@ -260,20 +262,31 @@ export default function Admin() {
     setEmpresas(prev => prev.map(e => e.id === empresa.id ? { ...e, ativa: !e.ativa } : e))
   }
 
+  // Só o dono do sistema chega aqui (a própria página já bloqueia acesso
+  // fora do e-mail admin no useEffect de sessão), então promover/rebaixar
+  // papel é seguro fazer direto pelo client.
+  async function alterarPapel(usuario: UsuarioEmpresa, novoPapel: 'admin' | 'consultivo') {
+    setSalvandoPapel(usuario.id)
+    const supabase = createClient()
+    const { error } = await supabase.from('usuarios_empresas').update({ papel_empresa: novoPapel }).eq('id', usuario.id)
+    if (!error) setUsuarios(prev => prev.map(u => u.id === usuario.id ? { ...u, papel_empresa: novoPapel } : u))
+    setSalvandoPapel(null)
+  }
+
   async function salvarUsuario() {
-    const { nome, email, senha, empresa_id } = novoUsuario
+    const { nome, email, senha, empresa_id, papel_empresa } = novoUsuario
     if (!nome || !email || !senha || !empresa_id) { setErroUsuario('Preencha todos os campos.'); return }
     setSalvandoUsuario(true); setErroUsuario('')
     const res = await fetch('/api/admin/criar-usuario', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
-      body: JSON.stringify({ nome, email, senha, empresa_id }),
+      body: JSON.stringify({ nome, email, senha, empresa_id, papel_empresa }),
     })
     const data = await res.json()
     if (data.erro) { setErroUsuario(data.erro) }
     else {
       setModalUsuario(false)
-      setNovoUsuario({ nome: '', email: '', senha: '', empresa_id: '' })
+      setNovoUsuario({ nome: '', email: '', senha: '', empresa_id: '', papel_empresa: 'consultivo' })
       const supabase = createClient()
       const { data: rows } = await supabase.from('usuarios_empresas').select('*, empresas(nome)').order('created_at', { ascending: false })
       setUsuarios((rows ?? []) as UsuarioEmpresa[])
@@ -488,7 +501,7 @@ export default function Admin() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <TableHead cols={['Nome', 'E-mail', 'Empresa', 'Cadastrado em']} />
+                    <TableHead cols={['Nome', 'E-mail', 'Empresa', 'Papel', 'Cadastrado em']} />
                     <tbody className="divide-y divide-gray-50">
                       {usuarios.map(u => (
                         <tr key={u.id} className="hover:bg-gray-50 transition-colors">
@@ -496,6 +509,17 @@ export default function Admin() {
                           <td className="py-3.5 px-4 text-sm text-gray-500">{u.email ?? '—'}</td>
                           <td className="py-3.5 px-4 text-sm text-gray-700">
                             {(u.empresas as { nome: string } | null)?.nome ?? '—'}
+                          </td>
+                          <td className="py-3.5 px-4 text-sm">
+                            <select
+                              value={u.papel_empresa}
+                              disabled={salvandoPapel === u.id}
+                              onChange={e => alterarPapel(u, e.target.value as 'admin' | 'consultivo')}
+                              className="px-2 py-1 border border-gray-200 rounded-lg text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                            >
+                              <option value="admin">Admin</option>
+                              <option value="consultivo">Consultivo</option>
+                            </select>
                           </td>
                           <td className="py-3.5 px-4 text-sm text-gray-400">{formatData(u.created_at)}</td>
                         </tr>
@@ -818,6 +842,15 @@ export default function Admin() {
                 {empresas.filter(e => e.ativa).map(e => (
                   <option key={e.id} value={e.id}>{e.nome}</option>
                 ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-1.5">Papel *</label>
+              <select value={novoUsuario.papel_empresa}
+                onChange={e => setNovoUsuario(p => ({ ...p, papel_empresa: e.target.value as 'admin' | 'consultivo' }))}
+                className={`${INPUT} bg-white`}>
+                <option value="consultivo">Consultivo</option>
+                <option value="admin">Admin da empresa</option>
               </select>
             </div>
 
