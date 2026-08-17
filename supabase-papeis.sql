@@ -1,5 +1,9 @@
 -- Fundação de permissões: papéis de usuário dentro da empresa.
 --
+-- Seguro rodar quantas vezes quiser: as colunas usam `if not exists`, as
+-- funções usam `create or replace`, e cada policy é derrubada antes de ser
+-- recriada. Rodar de novo num banco que já tem tudo não muda nada.
+--
 -- Três camadas:
 --   1. Dono do sistema (corp@facilitapass.com.br) — já coberto pelas policies
 --      "for all" com check de e-mail em supabase-admin.sql / supabase-politicas.sql
@@ -41,6 +45,7 @@ $$;
 
 -- ── usuarios_empresas: admin da empresa enxerga os usuários da própria
 -- empresa (além do próprio vínculo, já coberto por policy existente) ─────
+drop policy if exists "Admin da empresa vê usuários da empresa" on usuarios_empresas;
 create policy "Admin da empresa vê usuários da empresa"
   on usuarios_empresas for select
   using (is_admin_empresa() and empresa_id = get_empresa_do_usuario());
@@ -50,6 +55,7 @@ create policy "Admin da empresa vê usuários da empresa"
 -- criar usuário em empresa diferente da sua. A rota de criação já força
 -- esses valores, mas a policy garante que não há furo se a rota for
 -- contornada.
+drop policy if exists "Admin da empresa cria consultivo na própria empresa" on usuarios_empresas;
 create policy "Admin da empresa cria consultivo na própria empresa"
   on usuarios_empresas for insert
   with check (
@@ -61,6 +67,7 @@ create policy "Admin da empresa cria consultivo na própria empresa"
 -- ── reservas: admin da empresa vê as reservas de todos os usuários da sua
 -- empresa, não só as próprias (consultivo continua só vendo/criando as
 -- suas, via policy "Usuário vê suas próprias reservas" já existente) ─────
+drop policy if exists "Admin da empresa vê reservas da empresa" on reservas;
 create policy "Admin da empresa vê reservas da empresa"
   on reservas for select
   using (
@@ -77,6 +84,7 @@ create policy "Admin da empresa vê reservas da empresa"
 -- direto pelo client Supabase, contornando a rota da API.
 drop policy if exists "Usuário atualiza suas próprias reservas" on reservas;
 
+drop policy if exists "Atualiza reserva conforme papel" on reservas;
 create policy "Atualiza reserva conforme papel"
   on reservas for update
   using (
