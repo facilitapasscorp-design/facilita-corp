@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
 import { autenticar, ehErro } from '../../../lib/auth-api'
 
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
   if (ehErro(ctx)) return ctx
 
   try {
-    const { vooIda, vooVolta, passageiros: passageirosRaw } = await req.json()
+    const { vooIda, vooVolta, passageiros: passageirosRaw, dataIda, dataVolta } = await req.json()
     const passageiros: any[] = Array.isArray(passageirosRaw) ? passageirosRaw : [passageirosRaw]
 
     const BASE  = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
@@ -206,11 +207,52 @@ export async function POST(req: NextRequest) {
     console.log('[RESERVAR] Total de reservas:', reservas.length)
     console.log('[RESERVAR] Localizadores:', JSON.stringify(localizadores))
 
+
+    // Grava as reservas aqui, com a service role. Antes quem gravava era o
+    // frontend, dentro de um try/catch vazio: se falhasse, o cliente pagava,
+    // o bilhete saía e a reserva não aparecia no painel — sem erro, sem log.
+    // A reserva na companhia já existe neste ponto, então uma falha aqui NÃO
+    // pode derrubar a resposta; ela é registrada e devolvida pro frontend
+    // avisar o usuário com o localizador em mãos.
+    let erroGravacao: string | null = null
+    try {
+      const { data: vinculo } = await ctx.supabase
+        .from('usuarios_empresas').select('empresa_id').eq('user_id', ctx.user.id).maybeSingle()
+
+      const nomePassageiro = [primAdulto?.nome, primAdulto?.sobrenome]
+        .filter(Boolean).join(' ').trim().toUpperCase() || null
+      const grupoReserva = localizadores.length > 1 ? randomUUID() : null
+
+      const linhas = localizadores.map(l => ({
+        user_id:         ctx.user.id,
+        empresa_id:      vinculo?.empresa_id ?? null,
+        localizador:     l.localizador,
+        companhia:       l.companhia,
+        grupo_reserva:   grupoReserva,
+        trecho:          localizadores.length > 1 ? l.trecho : null,
+        origem:          l.origem ?? (l.trecho === 'volta' ? vooVolta?.Origem?.CodigoIata : vooIda?.Origem?.CodigoIata) ?? '',
+        destino:         l.destino ?? (l.trecho === 'volta' ? vooVolta?.Destino?.CodigoIata : vooIda?.Destino?.CodigoIata) ?? '',
+        data_voo:        (l.trecho === 'volta' ? dataVolta || dataIda : dataIda) || null,
+        passageiro_nome: nomePassageiro,
+        valor:           l.valor,
+        status:          'Ativa',
+      }))
+
+      const { error } = await ctx.supabase.from('reservas').insert(linhas)
+      if (error) throw new Error(error.message)
+    } catch (e) {
+      erroGravacao = e instanceof Error ? e.message : 'Falha ao gravar a reserva'
+      console.error('[RESERVAR] FALHA AO GRAVAR NO BANCO —',
+        JSON.stringify(localizadores.map(l => l.localizador)),
+        '| user:', ctx.user.email, '|', erroGravacao)
+    }
+
     // Mantém compatibilidade: localizador principal é o primeiro
     return NextResponse.json({
       localizador: localizadores[0].localizador,
       localizadores,
       totalReservas: reservas.length,
+      erroGravacao,
     })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Erro interno'

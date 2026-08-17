@@ -936,6 +936,7 @@ export default function Busca() {
   const [carregandoFormas,    setCarregandoFormas]    = useState(false)
   const [politica, setPolitica] = useState<PoliticaViagem | null>(null)
   const [avisoPolitica, setAvisoPolitica] = useState<{ viagem: Viagem; motivos: string[]; onContinuar: () => void } | null>(null)
+  const [avisoGravacao, setAvisoGravacao] = useState<string | null>(null)
   const [nomeUsuario, setNomeUsuario] = useState<string | null>(null)
   const [menuMobileAberto, setMenuMobileAberto] = useState(false)
   const [voltaAbrirSignal, setVoltaAbrirSignal] = useState(0)
@@ -946,12 +947,19 @@ export default function Busca() {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) { router.replace('/'); return }
       const userId = data.session.user.id
-      const [{ data: pol }, { data: usuario }] = await Promise.all([
-        supabase.from('politicas_viagem').select('*').eq('ativa', true).maybeSingle(),
-        supabase.from('usuarios_empresas').select('nome').eq('user_id', userId).maybeSingle(),
-      ])
-      if (pol) setPolitica(pol as PoliticaViagem)
+      // A política é buscada pela empresa do usuário. Antes era um
+      // .eq('ativa', true).maybeSingle() solto, que estoura assim que quem
+      // entra enxerga mais de uma política (o dono do sistema vê todas).
+      const { data: usuario } = await supabase
+        .from('usuarios_empresas').select('nome, empresa_id').eq('user_id', userId).maybeSingle()
       setNomeUsuario((usuario as { nome: string | null } | null)?.nome ?? null)
+
+      const empresaId = (usuario as { empresa_id: string | null } | null)?.empresa_id
+      if (empresaId) {
+        const { data: pol } = await supabase
+          .from('politicas_viagem').select('*').eq('empresa_id', empresaId).eq('ativa', true).limit(1)
+        if (pol?.[0]) setPolitica(pol[0] as PoliticaViagem)
+      }
     })
   }, [router])
 
@@ -1052,54 +1060,28 @@ export default function Busca() {
     let loc = ''
     let locs: LocalizadorInfo[] = []
     let total = 1
+    let erroGravacao: string | null = null
     try {
       const res = await fetch('/api/tarifar-reservar', {
         method: 'POST', headers: await authHeaders(),
-        body: JSON.stringify({ vooIda: vooIdaSelecionado, vooVolta: vooVoltaSelecionado, passageiros }),
+        body: JSON.stringify({ vooIda: vooIdaSelecionado, vooVolta: vooVoltaSelecionado, passageiros, dataIda, dataVolta }),
       })
       const data = await res.json()
       if (data.erro) { setErroReserva(data.erro); setCarregandoReserva(false); return }
       loc = data.localizador || ''
       locs = data.localizadores ?? []
       total = data.totalReservas ?? 1
+      erroGravacao = data.erroGravacao ?? null
     } catch (err: unknown) {
       setErroReserva(err instanceof Error ? err.message : 'Erro ao conectar')
       setCarregandoReserva(false); return
     }
     if (!loc) { setErroReserva('Não foi possível gerar a reserva'); setCarregandoReserva(false); return }
     setLocalizador(loc); setLocalizadores(locs); setTotalReservas(total)
-    try {
-      const supabase = createClient()
-      const { data: sessionData } = await supabase.auth.getSession()
-      if (sessionData.session) {
-        const primAdulto = passageiros.find(p => p.tipo === 'ADT')
-        const nomePassageiro = primAdulto ? `${primAdulto.nome} ${primAdulto.sobrenome}`.trim() : null
-        const userId = sessionData.session.user.id
-
-        if (total > 1 && locs.length > 1) {
-          const grupoReserva = crypto.randomUUID()
-          await supabase.from('reservas').insert(locs.map(l => ({
-            user_id: userId, localizador: l.localizador, companhia: l.companhia,
-            grupo_reserva: grupoReserva, trecho: l.trecho,
-            origem: l.origem ?? (l.trecho === 'volta' ? vooVoltaSelecionado?.Origem?.CodigoIata : vooIdaSelecionado?.Origem?.CodigoIata) ?? '',
-            destino: l.destino ?? (l.trecho === 'volta' ? vooVoltaSelecionado?.Destino?.CodigoIata : vooIdaSelecionado?.Destino?.CodigoIata) ?? '',
-            data_voo: (l.trecho === 'volta' ? dataVolta || dataIda : dataIda) || null,
-            passageiro_nome: nomePassageiro,
-            valor: l.valor ?? (l.trecho === 'volta' ? vooVoltaSelecionado?.Preco?.Total : vooIdaSelecionado?.Preco?.Total) ?? null,
-            status: 'Ativa',
-          })))
-        } else {
-          const valorTotal = (vooIdaSelecionado?.Preco?.Total ?? 0) + (vooVoltaSelecionado?.Preco?.Total ?? 0)
-          await supabase.from('reservas').insert({
-            user_id: userId, localizador: loc,
-            origem: vooIdaSelecionado?.Origem?.CodigoIata ?? '', destino: vooIdaSelecionado?.Destino?.CodigoIata ?? '',
-            data_voo: dataIda || null,
-            passageiro_nome: nomePassageiro,
-            valor: valorTotal > 0 ? valorTotal : null, status: 'Ativa',
-          })
-        }
-      }
-    } catch {}
+    // A gravação no banco agora acontece dentro de /api/tarifar-reservar,
+    // com a service role. Se falhar, vem em erroGravacao e o usuário é
+    // avisado na tela de pagamento com o localizador em mãos.
+    setAvisoGravacao(erroGravacao)
     setCarregandoReserva(false); setEtapa('pagamento')
   }
 
@@ -1523,6 +1505,16 @@ export default function Busca() {
                 ) : (
                   <div className="bg-white rounded-2xl p-6 shadow-sm">
                     <h3 className="text-lg font-semibold text-gray-900 mb-5">Pagamento</h3>
+                    {avisoGravacao && (
+                      <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca' }}>
+                        <p className="text-sm font-semibold" style={{ color: '#b91c1c' }}>
+                          A reserva foi criada na companhia, mas não conseguimos salvá-la no seu painel.
+                        </p>
+                        <p className="text-xs mt-1" style={{ color: '#b91c1c' }}>
+                          Anote o localizador <strong>{localizador}</strong> e avise o suporte. Você pode seguir com o pagamento normalmente por aqui.
+                        </p>
+                      </div>
+                    )}
                     {multi && ativo && (
                       <>
                         <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
