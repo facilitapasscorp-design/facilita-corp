@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await supabase
       .from('reservas')
-      .update({ status: 'Cancelada' })
+      .update({ status: 'Expirada' })
       .eq('status', 'Ativa')
       .lt('created_at', hoje.toISOString())
       .select('id')
@@ -27,9 +27,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ erro: error.message }, { status: 500 })
     }
 
-    const canceladas = data?.length ?? 0
-    console.log(`[CANCELAR-EXPIRADAS] ${canceladas} reserva(s) cancelada(s)`)
-    return NextResponse.json({ canceladas })
+    const expiradas = data?.length ?? 0
+    console.log(`[CANCELAR-EXPIRADAS] ${expiradas} reserva(s) marcada(s) como Expirada`)
+    // `canceladas` fica no retorno só por compatibilidade com quem já consome.
+    return NextResponse.json({ expiradas, canceladas: expiradas })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
     return NextResponse.json({ erro: msg }, { status: 500 })

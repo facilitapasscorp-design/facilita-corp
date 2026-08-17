@@ -132,7 +132,7 @@ export default function Painel() {
   const [reservas, setReservas] = useState<Reserva[]>([])
   const [carregando, setCarregando] = useState(true)
   const [podeCancelar, setPodeCancelar] = useState(false)
-  const [filtroStatus, setFiltroStatus] = useState<'todas' | 'Ativa' | 'Emitida' | 'Cancelada'>('todas')
+  const [filtroStatus, setFiltroStatus] = useState<'todas' | 'Ativa' | 'Emitida' | 'Cancelada' | 'Expirada'>('todas')
   const [filtroPeriodo, setFiltroPeriodo] = useState<'todos' | 'hoje' | '7dias' | '30dias'>('todos')
 
   // ── Estado do modal de cancelamento ────────────────────────────
@@ -420,6 +420,7 @@ export default function Painel() {
     Ativa:     reservas.filter(r => statusExibido(r) === 'Ativa').length,
     Emitida:   reservas.filter(r => statusExibido(r) === 'Emitida').length,
     Cancelada: reservas.filter(r => statusExibido(r) === 'Cancelada').length,
+    Expirada:  reservas.filter(r => statusExibido(r) === 'Expirada').length,
   }
 
   // Agrupa reservas com o mesmo grupo_reserva (ida/volta de companhias
@@ -641,6 +642,7 @@ export default function Painel() {
                   { id: 'Ativa',     label: `Reservadas (${contagemStatus.Ativa})` },
                   { id: 'Emitida',   label: `Emitidas (${contagemStatus.Emitida})` },
                   { id: 'Cancelada', label: `Canceladas (${contagemStatus.Cancelada})` },
+                  { id: 'Expirada',  label: `Expiradas (${contagemStatus.Expirada})` },
                 ] as const).map(op => (
                   <button key={op.id} onClick={() => setFiltroStatus(op.id)}
                     className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
