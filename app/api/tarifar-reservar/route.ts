@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
+import { autenticar, ehErro } from '../../../lib/auth-api'
 
 const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
 
@@ -34,6 +35,9 @@ function toWcfDate(dateStr: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  const ctx = await autenticar(req)
+  if (ehErro(ctx)) return ctx
+
   try {
     const { vooIda, vooVolta, passageiros: passageirosRaw } = await req.json()
     const passageiros: any[] = Array.isArray(passageirosRaw) ? passageirosRaw : [passageirosRaw]

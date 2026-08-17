@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../../lib/supabase'
+import { apiPost, apiGet, authHeaders } from '../../lib/api-fetch'
 
 interface Reserva {
   id: string
@@ -178,7 +179,7 @@ export default function Painel() {
 
   useEffect(() => {
     // Trigger server-side cancellation of expired reservas on page load
-    fetch('/api/cancelar-expiradas').catch(() => {})
+    apiGet('/api/cancelar-expiradas').catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -248,7 +249,7 @@ export default function Painel() {
     try {
       const res = await fetch('/api/iniciar-emissao', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await authHeaders(),
         body: JSON.stringify({ localizador: reserva.localizador }),
       })
       const data = await res.json()
@@ -280,7 +281,7 @@ export default function Painel() {
     try {
       const res = await fetch('/api/iniciar-emissao', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await authHeaders(),
         body: JSON.stringify({ localizador: modalReserva.localizador, cartao: { numero, validade, titular, cvv, bandeira } }),
       })
       const data = await res.json()
@@ -311,7 +312,7 @@ export default function Painel() {
     try {
       const res = await fetch('/api/iniciar-emitir', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await authHeaders(),
         body: JSON.stringify({
           localizador:     modalReserva!.localizador,
           chaveDeSeguranca,
@@ -458,10 +459,7 @@ export default function Painel() {
     setCarregandoBilhete(true)
     try {
       const resultados = await Promise.all(grupo.map(g =>
-        fetch('/api/consultar-reserva', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ localizador: g.localizador }),
-        }).then(res => res.json())
+        apiPost('/api/consultar-reserva', { localizador: g.localizador }).then(res => res.json())
       ))
       const comErro = resultados.find(d => d.erro)
       if (comErro) { setErroBilhete(comErro.erro); return }
@@ -480,10 +478,7 @@ export default function Painel() {
     setEnviandoComprovante(true); setErroComprovante(''); setComprovanteEnviado(false)
     try {
       const resultados = await Promise.all(verBilheteGrupo.map(g =>
-        fetch('/api/reenviar-comprovante', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ localizador: g.localizador, para: emailReenvio.trim() }),
-        }).then(res => res.json())
+        apiPost('/api/reenviar-comprovante', { localizador: g.localizador, para: emailReenvio.trim() }).then(res => res.json())
       ))
       const comErro = resultados.find(d => d.erro)
       if (comErro) { setErroComprovante(comErro.erro); return }

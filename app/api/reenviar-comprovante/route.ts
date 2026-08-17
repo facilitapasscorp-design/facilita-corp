@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
+import { autenticar, ehErro, autorizarLocalizador } from '../../../lib/auth-api'
 
 const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
 
 export async function POST(req: NextRequest) {
+  const ctx = await autenticar(req)
+  if (ehErro(ctx)) return ctx
+
   try {
     const { localizador, para } = await req.json()
     if (!localizador) return NextResponse.json({ erro: 'Localizador é obrigatório' }, { status: 400 })
     if (!para)         return NextResponse.json({ erro: 'E-mail de destino é obrigatório' }, { status: 400 })
+
+    const bloqueio = await autorizarLocalizador(ctx, localizador)
+    if (bloqueio) return bloqueio
 
     const BASE  = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
     const login = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!

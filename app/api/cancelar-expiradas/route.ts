@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { autenticar, ehErro } from '../../../lib/auth-api'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const ctx = await autenticar(req)
+  if (ehErro(ctx)) return ctx
+
   try {
     const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const serviceKey   = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
+import { autenticar, ehErro } from '../../../lib/auth-api'
 
 const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
 
@@ -152,6 +153,9 @@ function agruparViagens(viagens: Viagem[]) {
 }
 
 export async function POST(request: NextRequest) {
+  const ctx = await autenticar(request)
+  if (ehErro(ctx)) return ctx
+
   const inicioTotal = Date.now()
   try {
     const body = await request.json()

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '../../lib/supabase'
+import { apiPost, authHeaders } from '../../lib/api-fetch'
 import { buscarAeroportos, Aeroporto } from '../../lib/aeroportos'
 
 interface VooLeg {
@@ -978,7 +979,7 @@ export default function Busca() {
   useEffect(() => {
     if (etapa !== 'pagamento' || !localizador) return
     setCarregandoFormas(true); setErroEmissao('')
-    fetch('/api/iniciar-emissao', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ localizador }) })
+    apiPost('/api/iniciar-emissao', { localizador })
       .then(r => r.json())
       .then(data => {
         if (data.erro) { setErroEmissao(data.erro); return }
@@ -1019,7 +1020,7 @@ export default function Busca() {
     setFase('ida'); setVooIdaSelecionado(null); setVooVoltaSelecionado(null)
     setFiltroCia(null)
     const res = await fetch('/api/buscar-voos', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: await authHeaders(),
       body: JSON.stringify({
         origem:  tipo === 'multiplos' ? trechos[0].origem  : origem,
         destino: tipo === 'multiplos' ? trechos[0].destino : destino,
@@ -1053,7 +1054,7 @@ export default function Busca() {
     let total = 1
     try {
       const res = await fetch('/api/tarifar-reservar', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: await authHeaders(),
         body: JSON.stringify({ vooIda: vooIdaSelecionado, vooVolta: vooVoltaSelecionado, passageiros }),
       })
       const data = await res.json()
@@ -1106,7 +1107,7 @@ export default function Busca() {
     if (!cartaoNumero || !cartaoTitular || !cartaoValidade || !cartaoCVV) { setErroEmissao('Preencha todos os dados do cartão.'); return }
     setCarregandoEmissao(true); setErroEmissao('')
     const res = await fetch('/api/iniciar-emitir', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: await authHeaders(),
       body: JSON.stringify({ localizador, chaveDeSeguranca, codigoPagamento, financiamentoId,
         cartao: { numero: cartaoNumero, titular: cartaoTitular, validade: cartaoValidade, cvv: cartaoCVV, parcelas, bandeira: cartaoBandeira } }),
     })
@@ -1148,7 +1149,7 @@ export default function Busca() {
     setCarregandoFormas(true)
     try {
       const res = await fetch('/api/iniciar-emissao', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: await authHeaders(),
         body: JSON.stringify({ localizador, cartao: { numero, validade, titular, cvv, bandeira } }),
       })
       const data = await res.json()

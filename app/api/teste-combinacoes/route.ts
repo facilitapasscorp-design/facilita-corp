@@ -67,6 +67,11 @@ function extrairClasses(viagem: Viagem) {
 }
 
 export async function GET() {
+  // Rota de diagnóstico — nunca deve responder em produção.
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ erro: 'Não encontrado' }, { status: 404 })
+  }
+
   const BASE  = process.env.WOOBA_URL_PRODUCAO ?? BASE_URL_SANDBOX
   const login = process.env.WOOBA_LOGIN_PRODUCAO ?? process.env.WOOBA_LOGIN!
   const senha = process.env.WOOBA_SENHA_PRODUCAO ?? process.env.WOOBA_SENHA!
