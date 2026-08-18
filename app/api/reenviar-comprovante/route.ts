@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
+import { mensagemAmigavel } from '../../../lib/erros-wooba'
 import { autenticar, ehErro, autorizarLocalizador } from '../../../lib/auth-api'
 
 const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
@@ -42,7 +43,8 @@ export async function POST(req: NextRequest) {
     }).then(r => r.json())
 
     if (data.Exception) {
-      return NextResponse.json({ erro: data.Exception.Message }, { status: 400 })
+      console.error('[REENVIAR] Exception:', data.Exception.Message)
+      return NextResponse.json({ erro: mensagemAmigavel(data.Exception.Message) }, { status: 400 })
     }
     if (!data.Sucesso) {
       return NextResponse.json({ erro: 'A WOOBA não confirmou o envio do comprovante.' }, { status: 400 })

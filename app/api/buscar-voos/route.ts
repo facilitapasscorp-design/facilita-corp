@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
+import { mensagemAmigavel } from '../../../lib/erros-wooba'
 import { autenticar, ehErro } from '../../../lib/auth-api'
 
 const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
@@ -63,6 +64,14 @@ function chaveVoo(v: Viagem): string {
   return `${cia}-${numeros}-${hora}-${aeroportos}`
 }
 
+/** Código da base tarifária (M9, W9...) — o que diferencia duas tarifas de mesmo nome. */
+function codigoBase(v: Viagem): string {
+  const bt = v?.BaseTarifaria
+  if (typeof bt === 'string') return bt
+  if (Array.isArray(bt)) return (bt[0] as { Codigo?: string } | undefined)?.Codigo ?? ''
+  return ''
+}
+
 function nomeFamilia(v: Viagem): string {
   if (v.Familia)       return v.Familia as string
   if (v.FamiliaCodigo) return v.FamiliaCodigo as string
@@ -99,7 +108,10 @@ function criarTarifa(v: Viagem): Tarifa {
     bagagemInclusa,
     bagagemPeso:           typeof leg0.BagagemPeso === 'number'      ? leg0.BagagemPeso       : null,
     bagagemQuantidade:     typeof leg0.BagagemQuantidade === 'number' ? leg0.BagagemQuantidade : null,
-    baseTarifaria:         typeof leg0.BaseTarifaria === 'string'     ? leg0.BaseTarifaria     : '',
+    // BaseTarifaria vem como array de objetos ({ Codigo, Familia, ... }),
+    // nunca como string — o teste antigo por `typeof === 'string'` nunca era
+    // verdadeiro e este campo ficava sempre vazio.
+    baseTarifaria:         codigoBase(leg0) || codigoBase(v),
     classe:                typeof leg0.Classe === 'string'            ? leg0.Classe            : (typeof leg0.Cabine === 'string' ? leg0.Cabine : ''),
     identificacaoDaViagem: v.IdentificacaoDaViagem    ?? '',
     viagem:                v,
@@ -115,15 +127,22 @@ function agruparViagens(viagens: Viagem[]) {
 
     const entry = mapa.get(chave)
     if (entry) {
-      const jaExiste = entry.tarifas.some(t =>
-        t.familia === tarifa.familia &&
-        t.bagagemInclusa === tarifa.bagagemInclusa &&
-        t.preco === tarifa.preco
-      )
-      if (!jaExiste) {
+      // Uma linha por família + bagagem, ficando com a mais barata.
+      //
+      // O mesmo voo volta de mais de um fornecedor (a LATAM aparece via NDC
+      // LATAM e via GDS, com ~R$50 de diferença). Antes cada uma virava um
+      // botão, e o cliente via "LIGHT / LIGHT / STANDARD / STANDARD" sem
+      // nenhuma explicação — parecia defeito. São o mesmo assento; mostrar
+      // duas vezes só transfere pro comprador uma escolha que ele não tem
+      // como fazer.
+      const chaveTarifa = (t: Tarifa) => `${t.familia}|${t.bagagemInclusa}`
+      const idx = entry.tarifas.findIndex(t => chaveTarifa(t) === chaveTarifa(tarifa))
+      if (idx === -1) {
         entry.tarifas.push(tarifa)
-        entry.tarifas.sort((a, b) => a.preco - b.preco)
+      } else if (tarifa.preco < entry.tarifas[idx].preco) {
+        entry.tarifas[idx] = tarifa
       }
+      entry.tarifas.sort((a, b) => a.preco - b.preco)
     } else {
       mapa.set(chave, { base: v, tarifas: [tarifa] })
     }
@@ -143,7 +162,10 @@ function agruparViagens(viagens: Viagem[]) {
       horaSaida:   (leg0.HoraSaida  as number) ?? 0,
       horaChegada: (legN.HoraChegada as number) ?? 0,
       duracao:     (base.TempoDeDuracao as string) ?? '',
-      companhia:   base.CiaMandatoria?.CodigoIata ?? '',
+      // normalizarCia (JJ -> LA) já era usado na chave de agrupamento, mas não
+      // aqui — então a LATAM aparecia duas vezes na barra de filtros, com o
+      // mesmo nome e o mesmo logo, parecendo defeito.
+      companhia:   normalizarCia(base.CiaMandatoria?.CodigoIata ?? ''),
       numParadas:  (base.NumeroParadas as number) ?? 0,
       icone:       typeof leg0.Icone === 'string' ? leg0.Icone : null,
       voos,
@@ -191,7 +213,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ erro: 'Sessão expirada' }, { status: 401 })
     }
     if (sistemasData.Exception) {
-      return NextResponse.json({ erro: sistemasData.Exception.Message || 'Erro ao recuperar sistemas' }, { status: 400 })
+      console.error('[BUSCAR-VOOS] Exception:', sistemasData.Exception.Message)
+      return NextResponse.json({ erro: mensagemAmigavel(sistemasData.Exception.Message) }, { status: 400 })
     }
     if (!sistemasData.Sistemas?.length) {
       return NextResponse.json({ erro: 'Nenhum sistema disponível para este trecho' }, { status: 404 })
@@ -235,6 +258,23 @@ export async function POST(request: NextRequest) {
       })
     }
 
+
+    // Um sistema só conta como falho se NENHUMA das suas duas chamadas (com e
+    // sem bagagem) respondeu. Antes, uma falha era engolida em silêncio: o
+    // cliente via a lista sem a Azul e concluía que não havia voo da Azul.
+    const respondeu = new Set<number>()
+    const falhou    = new Set<number>()
+    for (const r of todasRespostas) {
+      if (r.data?.Exception || r.data?.SessaoExpirada) falhou.add(r.sistema)
+      else respondeu.add(r.sistema)
+    }
+    const semResposta = [...falhou].filter(s => !respondeu.has(s))
+    const avisos: string[] = []
+    if (semResposta.length) {
+      console.warn('[BUSCAR-VOOS] sistemas sem resposta:', semResposta.join(', '))
+      avisos.push('Algumas companhias não responderam nesta busca, então a lista pode estar incompleta. Se não achar o voo que procura, tente buscar de novo em instantes.')
+    }
+
     const voosIda   = extrairViagens('ViagensTrecho1')
     const voosVolta = extrairViagens('ViagensTrecho2')
     const grupos      = agruparViagens(voosIda)
@@ -243,7 +283,7 @@ export async function POST(request: NextRequest) {
     console.log(`[BUSCAR-VOOS] voosIda=${voosIda.length} voosVolta=${voosVolta.length} grupos=${grupos.length} gruposVolta=${gruposVolta.length}`)
     console.log(`[BUSCAR-VOOS] tempo total: ${Date.now() - inicioTotal}ms`)
 
-    return NextResponse.json({ sistemas: sistemasData.Sistemas, grupos, gruposVolta })
+    return NextResponse.json({ sistemas: sistemasData.Sistemas, grupos, gruposVolta, avisos })
 
   } catch (error: unknown) {
     console.error('Erro WOOBA:', error)

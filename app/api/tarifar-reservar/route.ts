@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
+import { mensagemAmigavel } from '../../../lib/erros-wooba'
 import { autenticar, ehErro } from '../../../lib/auth-api'
 
 // A resposta da WOOBA e' JSON sem contrato tipado; mesmo padrao de
@@ -236,13 +237,13 @@ export async function POST(req: NextRequest) {
       // Caminho de sempre: uma tarifação só. Ida e volta do mesmo fornecedor
       // viram tarifa RT, e a WOOBA decide se devolve um ou dois localizadores.
       const r = await tarifarEReservar(w, vooIda, vooVolta, passageiros, 'combinado')
-      if ('erro' in r) return NextResponse.json({ erro: r.erro }, { status: 400 })
+      if ('erro' in r) return NextResponse.json({ erro: mensagemAmigavel(r.erro) }, { status: 400 })
       localizadores = mapearLocalizadores(r.reservas, vooIda, vooVolta)
     } else {
       // Fornecedores diferentes: duas reservas independentes, na ordem ida →
       // volta. Cada uma é uma viagem só de ida do ponto de vista da WOOBA.
       const rIda = await tarifarEReservar(w, vooIda, null, passageiros, 'ida')
-      if ('erro' in rIda) return NextResponse.json({ erro: rIda.erro }, { status: 400 })
+      if ('erro' in rIda) return NextResponse.json({ erro: mensagemAmigavel(rIda.erro) }, { status: 400 })
 
       const rVolta = await tarifarEReservar(w, vooVolta, null, passageiros, 'volta')
       if ('erro' in rVolta) {
@@ -251,10 +252,11 @@ export async function POST(req: NextRequest) {
         const locsIda = rIda.reservas.map((r: Any) => r.Localizador)
         const desfeitas = await Promise.all(locsIda.map(l => desfazerReserva(w, l)))
         const sobrou = locsIda.filter((_, i) => !desfeitas[i])
+        const motivo = mensagemAmigavel(rVolta.erro)
         return NextResponse.json({
           erro: sobrou.length
-            ? `Não foi possível reservar a volta (${rVolta.erro}). A ida ficou reservada sob o localizador ${sobrou.join(', ')} e precisa de atenção do suporte.`
-            : `Não foi possível reservar a volta: ${rVolta.erro}. A ida foi desfeita, nada foi cobrado.`,
+            ? `${motivo} A ida chegou a ser reservada (localizador ${sobrou.join(', ')}) e não conseguimos desfazer sozinhos — fale com o Suporte antes de tentar de novo.`
+            : `${motivo} A reserva da ida foi desfeita e nada foi cobrado.`,
         }, { status: 400 })
       }
 
@@ -323,6 +325,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
-    return NextResponse.json({ erro: msg }, { status: 500 })
+    console.error('[TARIFAR-RESERVAR] erro inesperado:', msg)
+    return NextResponse.json({ erro: mensagemAmigavel(msg) }, { status: 500 })
   }
 }

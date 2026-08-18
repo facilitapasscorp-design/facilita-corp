@@ -937,6 +937,7 @@ export default function Busca() {
   const [politica, setPolitica] = useState<PoliticaViagem | null>(null)
   const [avisoPolitica, setAvisoPolitica] = useState<{ viagem: Viagem; motivos: string[]; onContinuar: () => void } | null>(null)
   const [avisoGravacao, setAvisoGravacao] = useState<string | null>(null)
+  const [avisosBusca, setAvisosBusca] = useState<string[]>([])
   const [nomeUsuario, setNomeUsuario] = useState<string | null>(null)
   const [menuMobileAberto, setMenuMobileAberto] = useState(false)
   const [voltaAbrirSignal, setVoltaAbrirSignal] = useState(0)
@@ -1040,7 +1041,10 @@ export default function Busca() {
     const data = await res.json()
     setCarregando(false)
     if (data.erro) setErroVoo(data.erro)
-    else { setGruposIda(data.grupos ?? []); setGruposVolta(data.gruposVolta ?? []) }
+    else {
+      setGruposIda(data.grupos ?? []); setGruposVolta(data.gruposVolta ?? [])
+      setAvisosBusca(data.avisos ?? [])
+    }
   }
 
   function selecionarVooIda(viagem: Viagem) {
@@ -1306,6 +1310,15 @@ export default function Busca() {
                 {carregando && <div className="barra-progresso-busca mb-4" aria-hidden="true" />}
                 {!carregando && fase === 'volta' && vooIdaSelecionado && (
                   <ResumoIdaSelecionada viagem={vooIdaSelecionado} onAlterar={() => { setFase('ida'); setVooIdaSelecionado(null) }} />
+                )}
+                {!carregando && avisosBusca.length > 0 && (
+                  <div className="rounded-xl px-4 py-3 mb-3 flex items-start gap-2.5"
+                    style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a' }}>
+                    <svg className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#b45309' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4m0-4h.01" />
+                    </svg>
+                    <p className="text-xs" style={{ color: '#92400e' }}>{avisosBusca.join(' ')}</p>
+                  </div>
                 )}
                 <div className="flex items-baseline justify-between mb-3">
                   <h2 className="text-gray-700 font-semibold">

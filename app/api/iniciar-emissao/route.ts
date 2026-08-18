@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
+import { mensagemAmigavel } from '../../../lib/erros-wooba'
 import { autenticar, ehErro, autorizarLocalizador } from '../../../lib/auth-api'
 
 const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
@@ -69,7 +70,8 @@ export async function POST(req: NextRequest) {
       }))
 
       if (inicioData.Exception) {
-        return NextResponse.json({ erro: inicioData.Exception.Message }, { status: 400 })
+        console.error('[INICIAR-EMISSAO] Exception:', inicioData.Exception.Message)
+        return NextResponse.json({ erro: mensagemAmigavel(inicioData.Exception.Message) }, { status: 400 })
       }
 
       chaveDeSeguranca = inicioData.ChaveDeSeguranca || null

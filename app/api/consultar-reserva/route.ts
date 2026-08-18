@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { gerarAccessCode } from '../../../lib/wooba-auth'
+import { mensagemAmigavel } from '../../../lib/erros-wooba'
 import { autenticar, ehErro, autorizarLocalizador } from '../../../lib/auth-api'
 
 const BASE_URL_SANDBOX = 'https://wooba-sandbox-api.travellink.com.br/wcfTravellinkJson/AereoNoSession.svc'
@@ -39,7 +40,8 @@ export async function POST(req: NextRequest) {
     }).then(r => r.json())
 
     if (buscaData.Exception) {
-      return NextResponse.json({ erro: buscaData.Exception.Message }, { status: 400 })
+      console.error('[CONSULTAR] Exception na busca:', buscaData.Exception.Message)
+      return NextResponse.json({ erro: mensagemAmigavel(buscaData.Exception.Message) }, { status: 400 })
     }
     const sistema = buscaData.Itens?.[0]?.Sistema
     if (!sistema) {
@@ -53,7 +55,8 @@ export async function POST(req: NextRequest) {
     }).then(r => r.json())
 
     if (consultaData.Exception) {
-      return NextResponse.json({ erro: consultaData.Exception.Message }, { status: 400 })
+      console.error('[CONSULTAR] Exception:', consultaData.Exception.Message)
+      return NextResponse.json({ erro: mensagemAmigavel(consultaData.Exception.Message) }, { status: 400 })
     }
 
     const reserva: Any = consultaData.Reserva
