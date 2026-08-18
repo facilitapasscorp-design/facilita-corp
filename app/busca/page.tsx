@@ -958,6 +958,11 @@ export default function Busca() {
   const [passageirosSalvos, setPassageirosSalvos] = useState<PassageiroSalvo[]>([])
   const [listaAberta, setListaAberta]             = useState<number | null>(null)
   const [passageirosCarregados, setPassageirosCarregados] = useState(false)
+  const [buscaPassageiro, setBuscaPassageiro]     = useState('')
+  const [empresaId, setEmpresaId]                 = useState<string | null>(null)
+  const [salvandoPassageiro, setSalvandoPassageiro] = useState<number | null>(null)
+  const [passageiroSalvoIdx, setPassageiroSalvoIdx] = useState<number | null>(null)
+  const [erroSalvarPassageiro, setErroSalvarPassageiro] = useState('')
   const [carregandoReserva, setCarregandoReserva] = useState(false)
   const [erroReserva,       setErroReserva]       = useState('')
   const [localizador,       setLocalizador]        = useState('')
@@ -1004,6 +1009,7 @@ export default function Busca() {
       setNomeUsuario((usuario as { nome: string | null } | null)?.nome ?? null)
 
       const empresaId = (usuario as { empresa_id: string | null } | null)?.empresa_id
+      setEmpresaId(empresaId ?? null)
       if (empresaId) {
         const { data: pol } = await supabase
           .from('politicas_viagem').select('*').eq('empresa_id', empresaId).eq('ativa', true).limit(1)
@@ -1078,6 +1084,63 @@ export default function Busca() {
     setPassageirosCarregados(true)
   }
 
+  // Salva na base da empresa. Só roda quando a pessoa clica: ninguém guarda
+  // CPF de terceiro por acidente.
+  async function salvarPassageiro(idx: number) {
+    const p = passageiros[idx]
+    setErroSalvarPassageiro('')
+
+    if (!p.nome.trim() || !p.sobrenome.trim()) {
+      setErroSalvarPassageiro('Preencha nome e sobrenome antes de salvar.')
+      return
+    }
+    if (!empresaId) {
+      setErroSalvarPassageiro('Seu usuário não está vinculado a uma empresa.')
+      return
+    }
+
+    setSalvandoPassageiro(idx)
+    const cpf = p.cpf.replace(/\D/g, '') || null
+    const linha = {
+      empresa_id: empresaId,
+      nome:       p.nome.toUpperCase().trim(),
+      sobrenome:  p.sobrenome.toUpperCase().trim(),
+      cpf,
+      nascimento: p.nascimento || null,
+      email:      p.email || null,
+      telefone:   p.telefone || null,
+      sexo:       p.sexo,
+      tipo:       p.tipo,
+      updated_at: new Date().toISOString(),
+    }
+
+    const supabase = createClient()
+    const { error } = cpf
+      ? await supabase.from('passageiros').upsert(linha, { onConflict: 'empresa_id,cpf' })
+      : await supabase.from('passageiros').insert(linha)
+
+    if (error) {
+      setErroSalvarPassageiro('Não conseguimos salvar agora. A reserva continua normal.')
+      setSalvandoPassageiro(null)
+      return
+    }
+
+    await carregarPassageirosSalvos()
+    setPassageiroSalvoIdx(idx)
+    setSalvandoPassageiro(null)
+  }
+
+  function filtrarPassageiros(termo: string) {
+    const t = termo.trim().toLowerCase()
+    if (!t) return passageirosSalvos
+    const soDigitos = t.replace(/\D/g, '')
+    return passageirosSalvos.filter(p => {
+      const nomeCompleto = `${p.nome} ${p.sobrenome}`.toLowerCase()
+      if (nomeCompleto.includes(t)) return true
+      return !!soDigitos && !!p.cpf && p.cpf.replace(/\D/g, '').includes(soDigitos)
+    })
+  }
+
   function usarPassageiroSalvo(idx: number, salvo: PassageiroSalvo) {
     setPassageiros(prev => prev.map((p, i) => i === idx ? {
       ...p,
@@ -1090,6 +1153,7 @@ export default function Busca() {
       sexo:       salvo.sexo === 'F' ? 'F' : 'M',
     } : p))
     setListaAberta(null)
+    setBuscaPassageiro('')
   }
 
 
@@ -1514,35 +1578,52 @@ export default function Busca() {
                               onClick={() => {
                                 const abrindo = listaAberta !== idx
                                 setListaAberta(abrindo ? idx : null)
+                                setBuscaPassageiro('')
                                 if (abrindo && !passageirosCarregados) carregarPassageirosSalvos()
                               }}
                               className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
                             >
-                              Usar pessoa salva
+                              Buscar passageiro
                             </button>
                             {listaAberta === idx && (
                               <>
                                 <div className="fixed inset-0 z-10" onClick={() => setListaAberta(null)} />
-                                <div className="absolute right-0 top-9 z-20 w-72 max-h-72 overflow-auto bg-white border border-gray-200 rounded-xl shadow-xl">
-                                  {!passageirosCarregados ? (
-                                    <p className="px-4 py-6 text-center text-xs text-gray-400">Carregando...</p>
-                                  ) : passageirosSalvos.length === 0 ? (
-                                    <p className="px-4 py-6 text-center text-xs text-gray-400">
-                                      Ninguém salvo ainda. Quem você reservar hoje aparece aqui na próxima compra.
-                                    </p>
-                                  ) : (
-                                    passageirosSalvos.map(sv => (
-                                      <button
-                                        key={sv.id}
-                                        type="button"
-                                        onClick={() => usarPassageiroSalvo(idx, sv)}
-                                        className="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0"
-                                      >
-                                        <span className="block text-sm font-semibold text-gray-800">{sv.nome} {sv.sobrenome}</span>
-                                        <span className="block text-xs text-gray-400">{sv.cpf ? mascaraCPF(sv.cpf) : 'sem CPF'}</span>
-                                      </button>
-                                    ))
-                                  )}
+                                <div className="absolute right-0 top-9 z-20 w-80 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                                  <div className="p-2 border-b border-gray-100">
+                                    <input
+                                      type="text"
+                                      autoFocus
+                                      placeholder="Digite o nome ou o CPF"
+                                      value={buscaPassageiro}
+                                      onChange={e => setBuscaPassageiro(e.target.value)}
+                                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                  <div className="max-h-64 overflow-auto">
+                                    {!passageirosCarregados ? (
+                                      <p className="px-4 py-6 text-center text-xs text-gray-400">Carregando...</p>
+                                    ) : passageirosSalvos.length === 0 ? (
+                                      <p className="px-4 py-6 text-center text-xs text-gray-400">
+                                        Nenhum passageiro salvo ainda. Preencha os dados abaixo e clique em Salvar passageiro.
+                                      </p>
+                                    ) : filtrarPassageiros(buscaPassageiro).length === 0 ? (
+                                      <p className="px-4 py-6 text-center text-xs text-gray-400">
+                                        Ninguém encontrado com esse nome.
+                                      </p>
+                                    ) : (
+                                      filtrarPassageiros(buscaPassageiro).map(sv => (
+                                        <button
+                                          key={sv.id}
+                                          type="button"
+                                          onClick={() => usarPassageiroSalvo(idx, sv)}
+                                          className="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0"
+                                        >
+                                          <span className="block text-sm font-semibold text-gray-800">{sv.nome} {sv.sobrenome}</span>
+                                          <span className="block text-xs text-gray-400">{sv.cpf ? mascaraCPF(sv.cpf) : 'sem CPF'}</span>
+                                        </button>
+                                      ))
+                                    )}
+                                  </div>
                                 </div>
                               </>
                             )}
@@ -1561,6 +1642,31 @@ export default function Busca() {
                           {p.tipo === 'ADT' && <div><label className="text-sm font-medium text-gray-700">Telefone</label><input type="text" placeholder="(11) 99999-9999" value={p.telefone} onChange={e => atualizarPassageiro(idx, 'telefone', mascaraTel(e.target.value))} className={INPUT} /></div>}
                           <div><label className="text-sm font-medium text-gray-700">Sexo</label><select value={p.sexo} onChange={e => atualizarPassageiro(idx, 'sexo', e.target.value as 'M' | 'F')} className={`${INPUT} bg-white`}><option value="M">Masculino</option><option value="F">Feminino</option></select></div>
                         </div>
+
+                        <div className="flex items-center gap-3 flex-wrap pt-1">
+                          <button
+                            type="button"
+                            onClick={() => salvarPassageiro(idx)}
+                            disabled={salvandoPassageiro === idx}
+                            className="text-xs font-semibold px-3 py-2 rounded-lg border transition-colors disabled:opacity-50"
+                            style={{ borderColor: '#E3E4E0', color: '#18283A' }}
+                          >
+                            {salvandoPassageiro === idx ? 'Salvando...' : 'Salvar passageiro'}
+                          </button>
+                          {passageiroSalvoIdx === idx && salvandoPassageiro !== idx && (
+                            <span className="text-xs font-semibold text-green-700">
+                              Salvo. Na próxima compra ele aparece em Buscar passageiro.
+                            </span>
+                          )}
+                          {passageiroSalvoIdx !== idx && (
+                            <span className="text-xs text-gray-400">
+                              Guarda os dados desta pessoa para as próximas compras da empresa.
+                            </span>
+                          )}
+                        </div>
+                        {erroSalvarPassageiro && salvandoPassageiro === null && (
+                          <p className="text-xs text-red-600">{erroSalvarPassageiro}</p>
+                        )}
                       </div>
                     )
                   })}

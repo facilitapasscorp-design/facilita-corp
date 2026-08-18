@@ -326,12 +326,6 @@ export async function POST(req: NextRequest) {
       const { error } = await ctx.supabase.from('reservas').insert(linhas)
       if (error) throw new Error(error.message)
 
-      // Guarda os passageiros para a próxima compra. É um extra: se falhar,
-      // a reserva já está gravada e ninguém perde nada.
-      if (vinculo?.empresa_id) {
-        salvarPassageiros(ctx, vinculo.empresa_id, passageiros)
-          .catch(e => console.error('[RESERVAR] Falha ao salvar passageiros:', e))
-      }
     } catch (e) {
       erroGravacao = e instanceof Error ? e.message : 'Falha ao gravar a reserva'
       console.error('[RESERVAR] FALHA AO GRAVAR NO BANCO —',
@@ -349,47 +343,5 @@ export async function POST(req: NextRequest) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
     console.error('[TARIFAR-RESERVAR] erro inesperado:', msg)
     return NextResponse.json({ erro: mensagemAmigavel(msg) }, { status: 500 })
-  }
-}
-
-/**
- * Salva (ou atualiza) os passageiros na base da empresa, para que a próxima
- * compra possa aproveitá-los. Quem tem CPF é identificado pelo CPF; bebê de
- * colo, que costuma não ter, é identificado por nome e nascimento.
- */
-async function salvarPassageiros(ctx: Any, empresaId: string, passageiros: Any[]) {
-  for (const p of passageiros) {
-    const cpf = String(p.cpf ?? '').replace(/\D/g, '') || null
-    const linha = {
-      empresa_id: empresaId,
-      criado_por: ctx.user.id,
-      nome:       String(p.nome ?? '').toUpperCase().trim(),
-      sobrenome:  String(p.sobrenome ?? '').toUpperCase().trim(),
-      cpf,
-      nascimento: p.nascimento || null,
-      email:      p.email || null,
-      telefone:   p.telefone || null,
-      sexo:       p.sexo === 'F' ? 'F' : 'M',
-      tipo:       p.tipo || 'ADT',
-      updated_at: new Date().toISOString(),
-    }
-    if (!linha.nome || !linha.sobrenome) continue
-
-    if (cpf) {
-      await ctx.supabase.from('passageiros')
-        .upsert(linha, { onConflict: 'empresa_id,cpf' })
-      continue
-    }
-
-    const { data: existente } = await ctx.supabase
-      .from('passageiros').select('id')
-      .eq('empresa_id', empresaId)
-      .eq('nome', linha.nome)
-      .eq('sobrenome', linha.sobrenome)
-      .is('cpf', null)
-      .maybeSingle()
-
-    if (existente?.id) await ctx.supabase.from('passageiros').update(linha).eq('id', existente.id)
-    else               await ctx.supabase.from('passageiros').insert(linha)
   }
 }
