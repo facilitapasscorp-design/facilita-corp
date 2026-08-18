@@ -73,13 +73,22 @@
 }
 .heroiConteudo { position: relative; z-index: 2; padding: 92px 0 0; }
 .heroi h1 {
-  font-size: clamp(32px, 4.8vw, 50px); line-height: 1.1; letter-spacing: -.028em;
-  color: #fff; font-weight: 700; max-width: 19ch;
+  font-size: clamp(32px, 4.6vw, 48px); line-height: 1.1; letter-spacing: -.028em;
+  color: #fff; font-weight: 700; max-width: 17ch;
 }
 .heroi h1 em { font-style: normal; color: var(--gold); }
-.subHeroi { font-size: 19px; max-width: 50ch; margin-top: 28px; color: rgba(255, 255, 255, .8); }
+.subHeroi { font-size: 19px; max-width: 54ch; margin-top: 26px; color: rgba(255, 255, 255, .78); }
+.subHeroi strong { display: block; margin-bottom: 6px; font-size: 20px; font-weight: 600; color: #fff; }
 .ctaLinha { display: flex; align-items: center; gap: 22px; margin-top: 34px; flex-wrap: wrap; }
-.notaPreco { font-size: 14px; color: rgba(255, 255, 255, .65); max-width: 34ch; line-height: 1.45; }
+.notaPreco { font-size: 15px; color: rgba(255, 255, 255, .68); max-width: 34ch; line-height: 1.45; }
+
+/* A frase do preco e a mais forte do site: ganha filete dourado e o trecho
+   decisivo em branco, numa linha so. */
+.preco {
+  margin-top: 26px; font-size: 16px; color: rgba(255, 255, 255, .72);
+  border-left: 3px solid var(--gold); padding-left: 16px; max-width: 52ch;
+}
+.preco b { display: block; margin-top: 2px; color: #fff; font-weight: 700; }
 
 .confianca {
   position: relative; z-index: 2; margin-top: 64px; background: var(--navy);

@@ -22,7 +22,7 @@ export default function Site() {
           </Link>
           <nav className={s.navDir}>
             <Link href="/entrar" className={s.linkCliente}>Área do cliente</Link>
-            <a href="#contato" className={s.btn}>Falar com a gente</a>
+            <a href="#contato" className={s.btn}>Cadastrar empresa</a>
           </nav>
         </div>
       </header>
@@ -43,24 +43,29 @@ export default function Site() {
         <div className={s.heroiConteudo}>
           <div className={s.wrap}>
             <h1>
-              Ajudamos sua empresa a <em>viajar melhor</em>, com mais controle,
-              economia e gestão.
+              A <em>forma inteligente</em> de cuidar das viagens da sua empresa.
             </h1>
             <p className={s.subHeroi}>
-              Tecnologia própria para emitir em minutos e atendimento humano quando precisar.
+              <strong>Economize tempo e dinheiro em cada viagem.</strong>
+              Pesquise e reserve passagens com agilidade, tenha controle sobre o que a
+              empresa gasta e conte com atendimento humano sempre que precisar.
             </p>
             <div className={s.ctaLinha}>
-              <a href="#contato" className={`${s.btn} ${s.btnOuro} ${s.btnG}`}>Falar com a gente</a>
+              <a href="#contato" className={`${s.btn} ${s.btnOuro} ${s.btnG}`}>Cadastrar minha empresa</a>
               <p className={s.notaPreco}>
-                Sua empresa não paga nada a mais por usar.
+                Você preenche, a gente configura a política da sua empresa e libera o acesso.
               </p>
             </div>
+            <p className={s.preco}>
+              Sem mensalidade. Sem taxa de adesão.
+              <b>Sua empresa não paga nada a mais para usar.</b>
+            </p>
           </div>
         </div>
 
         <div className={s.confianca}>
           <div className={`${s.wrap} ${s.confiancaGrid}`}>
-            <div><b>Sem mensalidade</b>Sem taxa de adesão e sem fidelidade.</div>
+            <div><b>Emissão em minutos</b>Sua equipe pesquisa, reserva e emite na hora.</div>
             <div><b>Regra aplicada na compra</b>A política da sua empresa vale na hora, não depois.</div>
             <div><b>Atendimento por WhatsApp</b>Uma pessoa resolve remarcação e cancelamento.</div>
           </div>

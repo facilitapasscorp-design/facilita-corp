@@ -104,7 +104,7 @@ export default function FormLead() {
       {erro && <p className={s.erroForm}>{erro}</p>}
 
       <button type="submit" disabled={enviando}>
-        {enviando ? 'Enviando...' : 'Quero falar com a Facilita Pass'}
+        {enviando ? 'Enviando...' : 'Cadastrar minha empresa'}
       </button>
     </form>
   )
