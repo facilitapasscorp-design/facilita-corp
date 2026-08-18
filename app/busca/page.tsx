@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '../../lib/supabase'
+import { linkWhatsApp } from '../../lib/atendimento'
 import { apiPost, authHeaders } from '../../lib/api-fetch'
 import { buscarAeroportos, Aeroporto } from '../../lib/aeroportos'
 
@@ -1239,7 +1240,7 @@ export default function Busca() {
                 <h1 className="text-xl sm:text-2xl font-bold" style={{ color: AZUL }}>{nomeUsuario ? `Olá, ${nomeUsuario} 👋` : 'Olá 👋'}</h1>
                 <p className="text-sm text-gray-500 mt-1">Encontre as melhores tarifas para sua próxima viagem corporativa.</p>
               </div>
-              <a href="https://wa.me/5544991272314?text=Ol%C3%A1%2C%20vim%20do%20suporte%20do%20sistema%2C%20e%20estou%20com%20uma%20d%C3%BAvida"
+              <a href={linkWhatsApp('Olá, vim do suporte do sistema, e estou com uma dúvida')}
                 target="_blank" rel="noopener noreferrer"
                 className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: '#25D366' }}>

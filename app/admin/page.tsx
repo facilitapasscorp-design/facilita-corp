@@ -368,6 +368,12 @@ export default function Admin() {
     setSalvandoStatusChamado(null)
   }
 
+  // O chamado guarda quem abriu, mas o telefone mora no cadastro da empresa.
+  function telefoneDaEmpresa(empresaId: string | undefined) {
+    if (!empresaId) return null
+    return empresas.find(e => e.id === empresaId)?.telefone ?? null
+  }
+
   async function mudarStatusLead(lead: Lead, novoStatus: Lead['status']) {
     setSalvandoStatusLead(lead.id)
     const supabase = createClient()
@@ -780,7 +786,7 @@ export default function Admin() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <TableHead cols={['Data', 'Empresa', 'Usuário', 'Localizador', 'Tipo', 'Mensagem', 'Status']} />
+                    <TableHead cols={['Data', 'Empresa', 'Usuário', 'Contato', 'Localizador', 'Tipo', 'Mensagem', 'Status']} />
                     <tbody className="divide-y divide-gray-50">
                       {chamadosFiltrados.map(c => {
                         const info = mapaInfo[c.user_id]
@@ -791,6 +797,20 @@ export default function Admin() {
                             <td className="py-3.5 px-4 text-sm text-gray-500 whitespace-nowrap">{formatData(c.created_at)}</td>
                             <td className="py-3.5 px-4 text-sm text-gray-700 whitespace-nowrap">{info?.empresa_nome ?? '—'}</td>
                             <td className="py-3.5 px-4 text-sm text-gray-700 whitespace-nowrap">{info?.usuario_nome ?? '—'}</td>
+                            <td className="py-3.5 px-4 text-sm whitespace-nowrap">
+                              {telefoneDaEmpresa(info?.empresa_id) ? (
+                                <a
+                                  href={`https://wa.me/55${telefoneDaEmpresa(info?.empresa_id)!.replace(/\D/g, '')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-green-700 hover:underline"
+                                >
+                                  {telefoneDaEmpresa(info?.empresa_id)}
+                                </a>
+                              ) : (
+                                <span className="text-gray-300">—</span>
+                              )}
+                            </td>
                             <td className="py-3.5 px-4 text-sm font-bold text-gray-900 font-mono tracking-wider whitespace-nowrap">
                               {c.localizador ?? '—'}
                             </td>
