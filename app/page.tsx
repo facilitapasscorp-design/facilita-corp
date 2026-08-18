@@ -43,12 +43,12 @@ export default function Site() {
         <div className={s.heroiConteudo}>
           <div className={s.wrap}>
             <h1>
-              Sua empresa já gasta com passagem aérea. A diferença é saber{' '}
-              <em>quanto, quem e por&nbsp;quê</em>.
+              Viagem a trabalho pode ser simples: com regra, com relatório e{' '}
+              <em>com gente do&nbsp;lado</em>.
             </h1>
             <p className={s.subHeroi}>
-              Plataforma de viagens corporativas com política de compra, relatório de gastos
-              e gente de verdade quando o voo atrasa.
+              Sua equipe compra em poucos cliques, a política da empresa vale na hora
+              e você vê o gasto antes da fatura chegar.
             </p>
             <div className={s.ctaLinha}>
               <a href="#contato" className={`${s.btn} ${s.btnOuro} ${s.btnG}`}>Falar com a gente</a>
