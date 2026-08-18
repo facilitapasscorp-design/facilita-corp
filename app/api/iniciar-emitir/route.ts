@@ -80,7 +80,23 @@ export async function POST(req: NextRequest) {
     const bilhete    = emitirData.Bilhetes?.[0]?.Numero ?? ''
     const passageiro = emitirData.Bilhetes?.[0]?.Passageiro ?? ''
 
-    return NextResponse.json({ bilhete, passageiro })
+    // Marca a reserva como emitida aqui, com a service role. Antes quem
+    // gravava era o frontend, dentro de um try/catch vazio — o mesmo padrão
+    // que já tinha escondido falhas na criação da reserva. Aqui é pior: a
+    // passagem saiu e o cartão foi cobrado, então uma gravação perdida deixa
+    // o painel mostrando "Ativa" para uma viagem já paga, sem erro em lugar
+    // nenhum. A emissão nunca falha por causa disto; o aviso volta ao cliente.
+    let erroGravacao: string | null = null
+    const { error: erroUpdate } = await ctx.supabase.from('reservas')
+      .update({ status: 'Emitida', numero_bilhete: bilhete })
+      .eq('localizador', localizador)
+    if (erroUpdate) {
+      erroGravacao = erroUpdate.message
+      console.error('[EMITIR] FALHA AO GRAVAR — localizador:', localizador,
+        '| bilhete:', bilhete, '| user:', ctx.user.email, '|', erroUpdate.message)
+    }
+
+    return NextResponse.json({ bilhete, passageiro, erroGravacao })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Erro interno'
     return NextResponse.json({ erro: msg }, { status: 500 })

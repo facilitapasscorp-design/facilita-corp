@@ -1105,7 +1105,8 @@ export default function Busca() {
     const novoEmitidos = { ...emitidos, [localizadorPago]: { bilhete: data.bilhete as string, passageiro: data.passageiro as string } }
     setEmitidos(novoEmitidos)
     setNumeroBilhete(data.bilhete); setNomeBilhete(data.passageiro)
-    try { await createClient().from('reservas').update({ status: 'Emitida', numero_bilhete: data.bilhete }).eq('localizador', localizadorPago) } catch {}
+    // A gravação acontece dentro de /api/iniciar-emitir, com a service role.
+    if (data.erroGravacao) setAvisoGravacao(`A passagem foi emitida (bilhete ${data.bilhete}), mas não conseguimos atualizar o seu painel. Anote esse número e avise o Suporte — a viagem está garantida.`)
 
     const faltaPagar = localizadores.some(l => l.localizador !== localizadorPago && !novoEmitidos[l.localizador])
     if (!faltaPagar) setEtapa('confirmacao')
@@ -1538,9 +1539,17 @@ export default function Busca() {
                         {pendentes.length > 0 && (
                           <div className="rounded-xl px-4 py-3 mb-4 flex items-start gap-2.5" style={{ backgroundColor: '#fef9c3', border: '1px solid #fde68a' }}>
                             <span className="shrink-0 mt-0.5">⚠️</span>
-                            <p className="text-xs" style={{ color: '#92400e' }}>
-                              Este pagamento cobre apenas o trecho de {ativo.trecho === 'ida' ? 'ida' : 'volta'}. Depois de emitir, você vai precisar pagar separadamente o trecho de {pendentes[0].trecho === 'ida' ? 'ida' : 'volta'} ({nomeCompanhia(pendentes[0].companhia ?? '')}).
-                            </p>
+                            <div>
+                              <p className="text-xs font-semibold mb-1" style={{ color: '#92400e' }}>
+                                Esta viagem tem dois pagamentos.
+                              </p>
+                              <p className="text-xs" style={{ color: '#92400e' }}>
+                                Você está pagando agora só o trecho de {ativo.trecho === 'ida' ? 'ida' : 'volta'}. Depois de emitir, ainda precisa pagar o trecho de {pendentes[0].trecho === 'ida' ? 'ida' : 'volta'} ({nomeCompanhia(pendentes[0].companhia ?? '')}) — ele só fica garantido depois desse segundo pagamento, e a reserva dele vence hoje às 23:59.
+                              </p>
+                              <p className="text-xs mt-1" style={{ color: '#92400e' }}>
+                                Se você parar no meio, fica com {ativo.trecho === 'ida' ? 'a ida' : 'a volta'} emitida e sem {pendentes[0].trecho === 'ida' ? 'a ida' : 'a volta'}.
+                              </p>
+                            </div>
                           </div>
                         )}
                       </>
@@ -1603,6 +1612,11 @@ export default function Busca() {
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{multi ? 'Viagem completa confirmada!' : 'Passagem emitida!'}</h2>
                 <p className="text-gray-500 mb-6">{nomeBilhete && <><span className="font-medium text-gray-700">{nomeBilhete}</span>, sua viagem está confirmada.</>}</p>
+                {avisoGravacao && (
+                  <div className="rounded-xl px-4 py-3 mb-6 text-left" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca' }}>
+                    <p className="text-sm" style={{ color: '#b91c1c' }}>{avisoGravacao}</p>
+                  </div>
+                )}
                 {multi ? (
                   <div className="inline-block bg-gray-50 rounded-2xl px-8 py-5 mb-8 text-left space-y-3">
                     {localizadores.map(l => (

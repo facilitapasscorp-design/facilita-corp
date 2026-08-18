@@ -166,6 +166,7 @@ export default function Painel() {
   const [carregandoEmissao, setCarregandoEmissao] = useState(false)
   const [erroEmissao,       setErroEmissao]       = useState('')
   const [bilheteEmitido,    setBilheteEmitido]    = useState<{ numero: string; passageiro: string } | null>(null)
+  const [avisoEmissao,        setAvisoEmissao]        = useState<string | null>(null)
 
   // ── Estado do modal "Ver bilhete" ───────────────────────────────
   const [verBilheteGrupo,     setVerBilheteGrupo]     = useState<Reserva[] | null>(null)
@@ -327,11 +328,10 @@ export default function Painel() {
       setReservas(prev => prev.map(r =>
         r.id === modalReserva!.id ? { ...r, status: 'Emitida', numero_bilhete: data.bilhete } : r
       ))
-      try {
-        await createClient().from('reservas')
-          .update({ status: 'Emitida', numero_bilhete: data.bilhete })
-          .eq('localizador', modalReserva!.localizador)
-      } catch {}
+      // A gravação acontece dentro de /api/iniciar-emitir, com a service role.
+      if (data.erroGravacao) {
+        setAvisoEmissao(`A passagem foi emitida (bilhete ${data.bilhete}), mas não conseguimos atualizar o painel. Anote esse número e avise o Suporte — a viagem está garantida.`)
+      }
     } catch {
       setErroEmissao('Erro ao emitir passagem')
     } finally {
@@ -950,6 +950,11 @@ export default function Painel() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
+                  {avisoEmissao && (
+                    <div className="rounded-xl px-4 py-3 mb-4 text-left" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca' }}>
+                      <p className="text-sm" style={{ color: '#b91c1c' }}>{avisoEmissao}</p>
+                    </div>
+                  )}
                   {bilheteEmitido.passageiro && (
                     <p className="text-sm text-gray-500 mb-3">
                       <span className="font-medium text-gray-700">{bilheteEmitido.passageiro}</span>, sua viagem está confirmada.
