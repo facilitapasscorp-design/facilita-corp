@@ -22,7 +22,7 @@ import { NextRequest, NextResponse } from 'next/server'
  * para `proxy` (node_modules/next/dist/docs — file-conventions/proxy.md).
  * Usar `middleware.ts` ainda funciona, mas emite aviso de depreciação.
  */
-const ROTAS_PROTEGIDAS = ['/busca', '/painel', '/admin']
+const ROTAS_PROTEGIDAS = ['/busca', '/painel', '/admin', '/relatorio']
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
@@ -49,5 +49,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/busca/:path*', '/painel/:path*', '/admin/:path*'],
+  matcher: ['/busca/:path*', '/painel/:path*', '/admin/:path*', '/relatorio/:path*'],
 }

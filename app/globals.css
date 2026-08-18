@@ -56,9 +56,21 @@ body {
     visibility: hidden;
   }
   .comprovante-imprimivel,
-  .comprovante-imprimivel * {
+  .comprovante-imprimivel *,
+  .relatorio-imprimivel,
+  .relatorio-imprimivel * {
     visibility: visible;
   }
+  .relatorio-imprimivel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
   .comprovante-imprimivel {
     /* fixed (não absolute) pra escapar do max-height/overflow-y-auto do
        modal que a envolve — senão o comprovante fica cortado na impressão. */

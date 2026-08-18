@@ -610,6 +610,15 @@ export default function Painel() {
           >
             Buscar voos
           </button>
+          {podeCancelar && (
+            <button
+              onClick={() => router.push('/relatorio')}
+              className="text-sm font-medium transition-colors hover:opacity-60"
+              style={{ color: '#18283A' }}
+            >
+              Relatório
+            </button>
+          )}
           <button
             onClick={sair}
             className="text-sm transition-colors hover:opacity-60"
