@@ -262,16 +262,33 @@ export async function POST(request: NextRequest) {
     // Um sistema só conta como falho se NENHUMA das suas duas chamadas (com e
     // sem bagagem) respondeu. Antes, uma falha era engolida em silêncio: o
     // cliente via a lista sem a Azul e concluía que não havia voo da Azul.
-    const respondeu = new Set<number>()
-    const falhou    = new Set<number>()
-    for (const r of todasRespostas) {
-      if (r.data?.Exception || r.data?.SessaoExpirada) falhou.add(r.sistema)
-      else respondeu.add(r.sistema)
+    // Nem toda Exception é problema. Numa busca doméstica a WOOBA consulta
+    // ~15 sistemas — incluindo TAP e Copa, que não operam GRU-GIG — e dez
+    // deles recusam SEMPRE, com uma destas duas mensagens de rotina. Tratar
+    // isso como falha faria o aviso aparecer em toda busca; aviso que sempre
+    // aparece ninguém lê, e ainda faz uma busca saudável parecer quebrada.
+    const EXCECOES_ROTINEIRAS = [
+      /nenhum sistema encontrado/i,   // o fornecedor não atende esta rota
+      /nenhuma disponibilidade/i,     // atende, mas não tem voo nestas datas
+      /nenhum voo/i,
+    ]
+    const ehFalhaReal = (d: { SessaoExpirada?: boolean; Exception?: { Message?: string } } | undefined) => {
+      if (d?.SessaoExpirada) return true
+      const msg = d?.Exception?.Message ?? ''
+      if (!msg) return false
+      return !EXCECOES_ROTINEIRAS.some(padrao => padrao.test(msg))
     }
-    const semResposta = [...falhou].filter(s => !respondeu.has(s))
+
+    const respondeu    = new Set<number>()
+    const comFalhaReal = new Set<number>()
+    for (const r of todasRespostas) {
+      if (ehFalhaReal(r.data)) comFalhaReal.add(r.sistema)
+      else if (!r.data?.Exception) respondeu.add(r.sistema)
+    }
+    const semResposta = [...comFalhaReal].filter(s => !respondeu.has(s))
     const avisos: string[] = []
     if (semResposta.length) {
-      console.warn('[BUSCAR-VOOS] sistemas sem resposta:', semResposta.join(', '))
+      console.warn('[BUSCAR-VOOS] FALHA REAL nos sistemas:', semResposta.join(', '))
       avisos.push('Algumas companhias não responderam nesta busca, então a lista pode estar incompleta. Se não achar o voo que procura, tente buscar de novo em instantes.')
     }
 
