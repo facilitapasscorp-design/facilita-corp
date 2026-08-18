@@ -57,13 +57,13 @@ export default function Site() {
               </p>
             </div>
           </div>
+        </div>
 
-          <div className={s.confianca}>
-            <div className={`${s.wrap} ${s.confiancaGrid}`}>
-              <div><b>Sem mensalidade</b>Sem taxa de adesão e sem fidelidade.</div>
-              <div><b>Regra aplicada na compra</b>A política da sua empresa vale na hora, não depois.</div>
-              <div><b>Atendimento por WhatsApp</b>Uma pessoa resolve remarcação e cancelamento.</div>
-            </div>
+        <div className={s.confianca}>
+          <div className={`${s.wrap} ${s.confiancaGrid}`}>
+            <div><b>Sem mensalidade</b>Sem taxa de adesão e sem fidelidade.</div>
+            <div><b>Regra aplicada na compra</b>A política da sua empresa vale na hora, não depois.</div>
+            <div><b>Atendimento por WhatsApp</b>Uma pessoa resolve remarcação e cancelamento.</div>
           </div>
         </div>
       </div>
