@@ -200,6 +200,14 @@
 .form button:hover { opacity: .9; }
 .form button:disabled { opacity: .6; cursor: default; }
 .erroForm { grid-column: span 2; color: #FCA5A5; font-size: 14px; }
+
+/* Consentimento: pequeno, mas nunca escondido. */
+.aceite {
+  grid-column: span 2; display: flex; align-items: flex-start; gap: 10px;
+  font-size: 14px; line-height: 1.45; color: rgba(255, 255, 255, .72); cursor: pointer;
+}
+.aceite input { margin-top: 3px; width: 16px; height: 16px; flex: none; accent-color: var(--gold); }
+.aceite a { color: #fff; text-decoration: underline; }
 .sucessoForm {
   margin-top: 30px; max-width: 560px; border: 1px solid rgba(255, 255, 255, .18);
   background: rgba(255, 255, 255, .06); border-radius: var(--raio-lg); padding: 26px;
@@ -215,6 +223,7 @@
 .rodape { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: center; }
 .logoRodape { height: 44px; width: auto; margin-bottom: 12px; }
 .rodape a { color: #fff; font-weight: 600; }
+.rodapeLinks { display: flex; gap: 22px; flex-wrap: wrap; }
 
 /* ── Telas menores ─────────────────────────────────────────── */
 @media (max-width: 860px) {
@@ -252,5 +261,5 @@
 }
 @media (max-width: 560px) {
   .form { grid-template-columns: 1fr; }
-  .form input, .form select, .form .largo, .form button, .erroForm { grid-column: span 1; }
+  .form input, .form select, .form .largo, .form button, .erroForm, .aceite { grid-column: span 1; }
 }

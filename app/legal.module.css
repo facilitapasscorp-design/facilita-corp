@@ -1,0 +1,69 @@
+/* Páginas de texto: privacidade e termos. Mesmos tokens do site, medida de
+   leitura estreita e tipografia maior, porque ninguém lê contrato em 14px. */
+
+.page {
+  --navy:  #18283A;
+  --gold:  #B79D7D;
+  --page:  #F4F5F3;
+  --linha: #E3E4E0;
+  --ink-2: #374151;
+  --ink-3: #6B7280;
+
+  min-height: 100vh;
+  background: var(--page);
+  color: var(--ink-2);
+  font-size: 17px;
+  line-height: 1.65;
+}
+.page * { box-sizing: border-box; }
+.page a { color: var(--navy); }
+
+.topo {
+  background: #fff;
+  border-bottom: 1px solid var(--linha);
+}
+.topoDentro {
+  max-width: 760px; margin: 0 auto; padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.logo { height: 28px; width: auto; }
+.voltar { font-size: 15px; color: var(--ink-3); text-decoration: none; white-space: nowrap; }
+.voltar:hover { color: var(--navy); }
+
+.corpo { max-width: 760px; margin: 0 auto; padding: 56px 24px 80px; }
+
+.corpo h1 {
+  font-size: clamp(30px, 4vw, 40px); line-height: 1.15; letter-spacing: -.025em;
+  color: var(--navy); font-weight: 700; margin: 0 0 10px;
+}
+.data { font-size: 15px; color: var(--ink-3); margin: 0 0 40px; }
+
+.corpo h2 {
+  font-size: 21px; line-height: 1.3; letter-spacing: -.015em;
+  color: var(--navy); font-weight: 700; margin: 40px 0 12px;
+}
+.corpo p { margin: 0 0 16px; }
+.corpo ul { margin: 0 0 16px; padding-left: 22px; }
+.corpo li { margin-bottom: 8px; }
+.corpo strong { color: var(--navy); font-weight: 600; }
+
+.destaque {
+  border-left: 3px solid var(--gold);
+  padding: 4px 0 4px 18px;
+  margin: 0 0 16px;
+  color: var(--navy);
+}
+
+.rodape {
+  border-top: 1px solid var(--linha);
+  margin-top: 56px; padding-top: 24px;
+  font-size: 15px; color: var(--ink-3);
+  display: flex; gap: 20px; flex-wrap: wrap;
+}
+.rodape a { color: var(--navy); font-weight: 600; text-decoration: none; }
+.rodape a:hover { text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .corpo { padding: 40px 22px 64px; }
+  .corpo h2 { font-size: 19px; margin-top: 32px; }
+}

@@ -13,6 +13,7 @@ export default function FormLead() {
   const [email, setEmail]               = useState('')
   const [telefone, setTelefone]         = useState('')
   const [gastoMensal, setGastoMensal]   = useState<GastoMensal>('')
+  const [aceito, setAceito]             = useState(false)
   const [enviando, setEnviando]         = useState(false)
   const [erro, setErro]                 = useState('')
   const [sucesso, setSucesso]           = useState(false)
@@ -21,6 +22,10 @@ export default function FormLead() {
     e.preventDefault()
     if (!nomeCompleto || !empresa || !email || !telefone || !gastoMensal) {
       setErro('Preencha todos os campos.')
+      return
+    }
+    if (!aceito) {
+      setErro('Marque a autorização para podermos entrar em contato.')
       return
     }
     setEnviando(true)
@@ -100,6 +105,14 @@ export default function FormLead() {
         <option value="20k-50k" style={{ color: '#374151' }}>R$ 20 mil a R$ 50 mil</option>
         <option value="acima-50k" style={{ color: '#374151' }}>Acima de R$ 50 mil</option>
       </select>
+
+      <label className={s.aceite}>
+        <input type="checkbox" checked={aceito} onChange={e => setAceito(e.target.checked)} />
+        <span>
+          Autorizo a Facilita Pass a usar estes dados para entrar em contato comigo,
+          conforme a <a href="/privacidade" target="_blank" rel="noopener noreferrer">política de privacidade</a>.
+        </span>
+      </label>
 
       {erro && <p className={s.erroForm}>{erro}</p>}
 

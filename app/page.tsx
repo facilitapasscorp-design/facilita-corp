@@ -236,7 +236,11 @@ export default function Site() {
             />
             <div>© {new Date().getFullYear()} Facilita Pass Corp. Todos os direitos reservados.</div>
           </div>
-          <div><Link href="/entrar">Área do cliente</Link></div>
+          <div className={s.rodapeLinks}>
+            <Link href="/privacidade">Privacidade</Link>
+            <Link href="/termos">Termos de uso</Link>
+            <Link href="/entrar">Área do cliente</Link>
+          </div>
         </div>
       </footer>
 
