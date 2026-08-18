@@ -238,7 +238,7 @@ export default function Relatorio() {
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getSession().then(async ({ data }) => {
-      if (!data.session) { router.replace('/'); return }
+      if (!data.session) { router.replace('/entrar'); return }
 
       const { data: vinculo } = await supabase
         .from('usuarios_empresas')
@@ -326,7 +326,7 @@ export default function Relatorio() {
 
   async function sair() {
     await createClient().auth.signOut()
-    router.replace('/')
+    router.replace('/entrar')
   }
 
   if (carregando) {

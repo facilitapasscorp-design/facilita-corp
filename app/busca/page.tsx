@@ -984,7 +984,7 @@ export default function Busca() {
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getSession().then(async ({ data }) => {
-      if (!data.session) { router.replace('/'); return }
+      if (!data.session) { router.replace('/entrar'); return }
       const userId = data.session.user.id
       // A política é buscada pela empresa do usuário. Antes era um
       // .eq('ativa', true).maybeSingle() solto, que estoura assim que quem
@@ -1210,7 +1210,7 @@ export default function Busca() {
 
         <div className="hidden sm:flex items-center gap-5">
           <button onClick={() => router.push('/painel')} className="text-sm font-medium hover:opacity-60 transition-colors" style={{ color: AZUL }}>Minhas reservas</button>
-          <button onClick={async () => { await createClient().auth.signOut(); router.replace('/') }} className="text-sm hover:opacity-60 transition-colors" style={{ color: AZUL }}>Sair</button>
+          <button onClick={async () => { await createClient().auth.signOut(); router.replace('/entrar') }} className="text-sm hover:opacity-60 transition-colors" style={{ color: AZUL }}>Sair</button>
         </div>
 
         <button type="button" aria-label="Menu" onClick={() => setMenuMobileAberto(o => !o)}
@@ -1225,7 +1225,7 @@ export default function Busca() {
         {menuMobileAberto && (
           <div className="sm:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-md flex flex-col z-40">
             <button onClick={() => { setMenuMobileAberto(false); router.push('/painel') }} className="text-left px-5 py-3 text-sm font-medium border-b border-gray-100" style={{ color: AZUL }}>Minhas reservas</button>
-            <button onClick={async () => { setMenuMobileAberto(false); await createClient().auth.signOut(); router.replace('/') }} className="text-left px-5 py-3 text-sm" style={{ color: AZUL }}>Sair</button>
+            <button onClick={async () => { setMenuMobileAberto(false); await createClient().auth.signOut(); router.replace('/entrar') }} className="text-left px-5 py-3 text-sm" style={{ color: AZUL }}>Sair</button>
           </div>
         )}
       </div>

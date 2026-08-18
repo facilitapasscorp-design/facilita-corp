@@ -189,7 +189,7 @@ export default function Admin() {
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getSession().then(async ({ data }) => {
-      if (!data.session) { router.replace('/'); return }
+      if (!data.session) { router.replace('/entrar'); return }
       if (data.session.user.email !== ADMIN_EMAIL) { router.replace('/busca'); return }
       setAccessToken(data.session.access_token)
       await carregarTudo(supabase)
@@ -386,7 +386,7 @@ export default function Admin() {
           </button>
         </div>
         <button
-          onClick={async () => { await createClient().auth.signOut(); router.replace('/') }}
+          onClick={async () => { await createClient().auth.signOut(); router.replace('/entrar') }}
           className="text-sm transition-colors"
           style={{ color: 'rgba(255,255,255,0.45)' }}
           onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#fff' }}

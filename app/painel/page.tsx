@@ -186,7 +186,7 @@ export default function Painel() {
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getSession().then(async ({ data }) => {
-      if (!data.session) { router.replace('/'); return }
+      if (!data.session) { router.replace('/entrar'); return }
 
       // Cancelamento é ação de admin da empresa (ou dono do sistema) — o
       // backend também trava isso, aqui é só pra esconder o botão.
@@ -224,7 +224,7 @@ export default function Painel() {
 
   async function sair() {
     await createClient().auth.signOut()
-    router.replace('/')
+    router.replace('/entrar')
   }
 
   // Recebe a lista nova de formas de pagamento e só reseta a opção selecionada

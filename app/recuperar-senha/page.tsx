@@ -64,7 +64,7 @@ export default function RecuperarSenha() {
                   Verifique sua caixa de entrada e clique no link para redefinir sua senha.
                 </p>
                 <Link
-                  href="/"
+                  href="/entrar"
                   className="text-sm font-medium"
                   style={{ color: '#1a2744' }}
                 >
@@ -109,7 +109,7 @@ export default function RecuperarSenha() {
 
                 <div className="mt-6 text-center">
                   <Link
-                    href="/"
+                    href="/entrar"
                     className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
                   >
                     ← Voltar ao login

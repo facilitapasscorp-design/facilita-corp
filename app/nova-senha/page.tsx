@@ -44,7 +44,7 @@ export default function NovaSenha() {
       setErro('Erro ao salvar senha. O link pode ter expirado.')
     } else {
       setSucesso(true)
-      setTimeout(() => router.push('/'), 3000)
+      setTimeout(() => router.push('/entrar'), 3000)
     }
     setSalvando(false)
   }
@@ -152,7 +152,7 @@ export default function NovaSenha() {
 
                 <div className="mt-6 text-center">
                   <Link
-                    href="/"
+                    href="/entrar"
                     className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
                   >
                     ← Voltar ao login

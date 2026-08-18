@@ -40,7 +40,7 @@ export function proxy(req: NextRequest) {
 
   if (!temSessao) {
     const url = req.nextUrl.clone()
-    url.pathname = '/'
+    url.pathname = '/entrar'
     url.search = ''
     return NextResponse.redirect(url)
   }
