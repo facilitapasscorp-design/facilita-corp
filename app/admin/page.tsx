@@ -48,7 +48,14 @@ interface Lead {
   created_at: string
 }
 
-type Secao = 'empresas' | 'usuarios' | 'reservas' | 'politicas' | 'chamados' | 'contatos'
+interface Passageiro {
+  id: string; empresa_id: string; nome: string; sobrenome: string
+  cpf: string | null; nascimento: string | null
+  email: string | null; telefone: string | null
+  tipo: 'ADT' | 'CHD' | 'INF'; created_at: string
+}
+
+type Secao = 'empresas' | 'usuarios' | 'reservas' | 'politicas' | 'chamados' | 'contatos' | 'passageiros'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function mascaraCNPJ(v: string) {
@@ -139,6 +146,15 @@ function IconChamado({ cls }: { cls: string }) {
   )
 }
 
+function IconPassageiro({ cls }: { cls: string }) {
+  return (
+    <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round"
+        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  )
+}
+
 function IconContato({ cls }: { cls: string }) {
   return (
     <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -218,6 +234,9 @@ export default function Admin() {
   const [filtroStatusChamado, setFiltroStatusChamado] = useState('')
   const [salvandoStatusChamado, setSalvandoStatusChamado] = useState<string | null>(null)
   const [leads, setLeads] = useState<Lead[]>([])
+  const [passageiros, setPassageiros] = useState<Passageiro[]>([])
+  const [filtroEmpresaPassageiro, setFiltroEmpresaPassageiro] = useState('')
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState<string | null>(null)
   const [filtroStatusLead, setFiltroStatusLead] = useState('')
   const [salvandoStatusLead, setSalvandoStatusLead] = useState<string | null>(null)
 
@@ -233,19 +252,21 @@ export default function Admin() {
   }, [router])
 
   async function carregarTudo(supabase: ReturnType<typeof createClient>) {
-    const [empRes, usrRes, resRes, polRes, chamRes, leadRes] = await Promise.all([
+    const [empRes, usrRes, resRes, polRes, chamRes, leadRes, passRes] = await Promise.all([
       supabase.from('empresas').select('*').order('nome'),
       supabase.from('usuarios_empresas').select('*, empresas(nome)').order('created_at', { ascending: false }),
       supabase.from('reservas').select('*').order('created_at', { ascending: false }),
       supabase.from('politicas_viagem').select('*'),
       supabase.from('chamados').select('*').order('created_at', { ascending: false }),
       supabase.from('leads').select('*').order('created_at', { ascending: false }),
+      supabase.from('passageiros').select('*').order('nome'),
     ])
     setEmpresas((empRes.data ?? []) as Empresa[])
     setUsuarios((usrRes.data ?? []) as UsuarioEmpresa[])
     setReservas((resRes.data ?? []) as Reserva[])
     setChamados((chamRes.data ?? []) as Chamado[])
     setLeads((leadRes.data ?? []) as Lead[])
+    setPassageiros((passRes.data ?? []) as Passageiro[])
 
     const mapa: Record<string, InfoUsuario> = {}
     for (const u of (usrRes.data ?? []) as UsuarioEmpresa[]) {
@@ -368,6 +389,13 @@ export default function Admin() {
     setSalvandoStatusChamado(null)
   }
 
+  async function excluirPassageiro(id: string) {
+    const supabase = createClient()
+    const { error } = await supabase.from('passageiros').delete().eq('id', id)
+    if (!error) setPassageiros(prev => prev.filter(p => p.id !== id))
+    setConfirmandoExclusao(null)
+  }
+
   // O chamado guarda quem abriu, mas o telefone mora no cadastro da empresa.
   function telefoneDaEmpresa(empresaId: string | undefined) {
     if (!empresaId) return null
@@ -401,6 +429,11 @@ export default function Admin() {
   const leadsFiltrados = leads.filter(l => !filtroStatusLead || l.status === filtroStatusLead)
   const leadsNovos = leads.filter(l => l.status === 'Novo').length
 
+  // Passageiros filtrados
+  const passageirosFiltrados = passageiros.filter(
+    p => !filtroEmpresaPassageiro || p.empresa_id === filtroEmpresaPassageiro,
+  )
+
   const navItems: { id: Secao; label: string; icon: (active: boolean) => React.ReactNode; badge?: number }[] = [
     { id: 'empresas',  label: 'Empresas',  icon: a => <IconPredio   cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
     { id: 'usuarios',  label: 'Usuários',  icon: a => <IconPessoa   cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
@@ -408,6 +441,7 @@ export default function Admin() {
     { id: 'politicas', label: 'Políticas', icon: a => <IconPolitica cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
     { id: 'chamados',  label: 'Chamados',  icon: a => <IconChamado  cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} />, badge: chamadosAbertos },
     { id: 'contatos',  label: 'Contatos',  icon: a => <IconContato  cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} />, badge: leadsNovos },
+    { id: 'passageiros', label: 'Passageiros', icon: a => <IconPassageiro cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
   ]
 
   if (carregando) {
@@ -926,6 +960,91 @@ export default function Admin() {
                                   ))}
                                 </select>
                               </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── PASSAGEIROS ──────────────────────────────────────── */}
+          {secao === 'passageiros' && (
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-wrap gap-3">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Passageiros</h2>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    Base da agência. Cada empresa só enxerga os seus; aqui você vê todos.
+                  </p>
+                </div>
+                <select
+                  value={filtroEmpresaPassageiro}
+                  onChange={e => setFiltroEmpresaPassageiro(e.target.value)}
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">Todas as empresas</option>
+                  {empresas.map(e => (
+                    <option key={e.id} value={e.id}>{e.nome}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="px-6 py-2 bg-gray-50 border-b border-gray-100 text-xs text-gray-400">
+                {passageirosFiltrados.length} {passageirosFiltrados.length === 1 ? 'passageiro' : 'passageiros'}
+              </div>
+
+              {passageirosFiltrados.length === 0 ? (
+                <div className="py-16 text-center text-gray-400 text-sm">
+                  Nenhum passageiro salvo ainda. Eles são guardados sozinhos a cada reserva.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <TableHead cols={['Nome', 'Empresa', 'CPF', 'Nascimento', 'Tipo', 'Contato', '']} />
+                    <tbody className="divide-y divide-gray-50">
+                      {passageirosFiltrados.map(p => {
+                        const empresa = empresas.find(e => e.id === p.empresa_id)
+                        const rotuloTipo = p.tipo === 'ADT' ? 'Adulto' : p.tipo === 'CHD' ? 'Criança' : 'Bebê'
+                        return (
+                          <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="py-3.5 px-4 text-sm font-semibold text-gray-900 whitespace-nowrap">
+                              {p.nome} {p.sobrenome}
+                            </td>
+                            <td className="py-3.5 px-4 text-sm text-gray-700 whitespace-nowrap">{empresa?.nome ?? '—'}</td>
+                            <td className="py-3.5 px-4 text-sm text-gray-500 font-mono whitespace-nowrap">{p.cpf ?? '—'}</td>
+                            <td className="py-3.5 px-4 text-sm text-gray-500 whitespace-nowrap">{formatData(p.nascimento)}</td>
+                            <td className="py-3.5 px-4 text-sm text-gray-600 whitespace-nowrap">{rotuloTipo}</td>
+                            <td className="py-3.5 px-4 text-sm text-gray-500 whitespace-nowrap">{p.email ?? p.telefone ?? '—'}</td>
+                            <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                              {confirmandoExclusao === p.id ? (
+                                <span className="inline-flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">Excluir?</span>
+                                  <button
+                                    onClick={() => excluirPassageiro(p.id)}
+                                    className="text-xs font-semibold px-2.5 py-1 rounded-lg text-white"
+                                    style={{ backgroundColor: '#dc2626' }}
+                                  >
+                                    Sim
+                                  </button>
+                                  <button
+                                    onClick={() => setConfirmandoExclusao(null)}
+                                    className="text-xs font-semibold px-2.5 py-1 rounded-lg border border-gray-200 text-gray-600"
+                                  >
+                                    Não
+                                  </button>
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => setConfirmandoExclusao(p.id)}
+                                  className="text-xs font-semibold text-gray-400 hover:text-red-600 transition-colors"
+                                >
+                                  Excluir
+                                </button>
+                              )}
                             </td>
                           </tr>
                         )

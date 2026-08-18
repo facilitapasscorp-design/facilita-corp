@@ -99,6 +99,12 @@ interface PassageiroForm {
   nascimento: string; email: string; telefone: string
   sexo: 'M' | 'F'; tipo: 'ADT' | 'CHD' | 'INF'
 }
+interface PassageiroSalvo {
+  id: string; nome: string; sobrenome: string; cpf: string | null
+  nascimento: string | null; email: string | null; telefone: string | null
+  sexo: 'M' | 'F' | null; tipo: 'ADT' | 'CHD' | 'INF'
+}
+
 function passageiroVazio(tipo: 'ADT' | 'CHD' | 'INF' = 'ADT'): PassageiroForm {
   return { nome: '', sobrenome: '', cpf: '', nascimento: '', email: '', telefone: '', sexo: 'M', tipo }
 }
@@ -949,6 +955,9 @@ export default function Busca() {
   const [vooDetalhes, setVooDetalhes]                 = useState<Viagem | null>(null)
   const [etapa, setEtapa] = useState<Etapa>('selecao')
   const [passageiros, setPassageiros]             = useState<PassageiroForm[]>([passageiroVazio()])
+  const [passageirosSalvos, setPassageirosSalvos] = useState<PassageiroSalvo[]>([])
+  const [listaAberta, setListaAberta]             = useState<number | null>(null)
+  const [passageirosCarregados, setPassageirosCarregados] = useState(false)
   const [carregandoReserva, setCarregandoReserva] = useState(false)
   const [erroReserva,       setErroReserva]       = useState('')
   const [localizador,       setLocalizador]        = useState('')
@@ -1059,6 +1068,30 @@ export default function Busca() {
   function atualizarPassageiro(idx: number, campo: keyof PassageiroForm, valor: string) {
     setPassageiros(prev => prev.map((p, i) => i === idx ? { ...p, [campo]: valor } : p))
   }
+
+  // Base de passageiros da empresa. A regra de acesso mora no banco, então
+  // aqui basta pedir: cada um só recebe os da própria empresa.
+  async function carregarPassageirosSalvos() {
+    const { data } = await createClient()
+      .from('passageiros').select('*').order('nome')
+    setPassageirosSalvos((data ?? []) as PassageiroSalvo[])
+    setPassageirosCarregados(true)
+  }
+
+  function usarPassageiroSalvo(idx: number, salvo: PassageiroSalvo) {
+    setPassageiros(prev => prev.map((p, i) => i === idx ? {
+      ...p,
+      nome:       salvo.nome,
+      sobrenome:  salvo.sobrenome,
+      cpf:        salvo.cpf ? mascaraCPF(salvo.cpf) : '',
+      nascimento: salvo.nascimento ?? '',
+      email:      salvo.email ?? p.email,
+      telefone:   salvo.telefone ? mascaraTel(salvo.telefone) : p.telefone,
+      sexo:       salvo.sexo === 'F' ? 'F' : 'M',
+    } : p))
+    setListaAberta(null)
+  }
+
 
   async function buscarVoos() {
     if (tipo === 'multiplos') {
@@ -1471,7 +1504,50 @@ export default function Busca() {
                     const cabecalho = passageiros.length > 1 ? `${tipoLabel} ${numPorTipo}` : null
                     return (
                       <div key={idx} className={passageiros.length > 1 ? 'border border-gray-100 rounded-xl p-4 space-y-4' : 'space-y-4'}>
-                        {cabecalho && <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{cabecalho}</p>}
+                        <div className="flex items-center justify-between gap-3">
+                          {cabecalho
+                            ? <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{cabecalho}</p>
+                            : <span />}
+                          <div className="relative">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const abrindo = listaAberta !== idx
+                                setListaAberta(abrindo ? idx : null)
+                                if (abrindo && !passageirosCarregados) carregarPassageirosSalvos()
+                              }}
+                              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                            >
+                              Usar pessoa salva
+                            </button>
+                            {listaAberta === idx && (
+                              <>
+                                <div className="fixed inset-0 z-10" onClick={() => setListaAberta(null)} />
+                                <div className="absolute right-0 top-9 z-20 w-72 max-h-72 overflow-auto bg-white border border-gray-200 rounded-xl shadow-xl">
+                                  {!passageirosCarregados ? (
+                                    <p className="px-4 py-6 text-center text-xs text-gray-400">Carregando...</p>
+                                  ) : passageirosSalvos.length === 0 ? (
+                                    <p className="px-4 py-6 text-center text-xs text-gray-400">
+                                      Ninguém salvo ainda. Quem você reservar hoje aparece aqui na próxima compra.
+                                    </p>
+                                  ) : (
+                                    passageirosSalvos.map(sv => (
+                                      <button
+                                        key={sv.id}
+                                        type="button"
+                                        onClick={() => usarPassageiroSalvo(idx, sv)}
+                                        className="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0"
+                                      >
+                                        <span className="block text-sm font-semibold text-gray-800">{sv.nome} {sv.sobrenome}</span>
+                                        <span className="block text-xs text-gray-400">{sv.cpf ? mascaraCPF(sv.cpf) : 'sem CPF'}</span>
+                                      </button>
+                                    ))
+                                  )}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div><label className="text-sm font-medium text-gray-700">Nome</label><input type="text" placeholder="JOAO" value={p.nome} onChange={e => atualizarPassageiro(idx, 'nome', e.target.value.toUpperCase())} className={INPUT} /></div>
                           <div><label className="text-sm font-medium text-gray-700">Sobrenome</label><input type="text" placeholder="SILVA" value={p.sobrenome} onChange={e => atualizarPassageiro(idx, 'sobrenome', e.target.value.toUpperCase())} className={INPUT} /></div>

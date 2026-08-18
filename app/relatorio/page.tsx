@@ -14,6 +14,7 @@ interface Reserva {
   destino: string
   data_voo: string | null
   passageiro_nome: string | null
+  passageiros: { nome?: string; sobrenome?: string; tipo?: string }[] | null
   valor: number | null
   status: 'Ativa' | 'Emitida' | 'Cancelada' | 'Expirada'
   created_at: string
@@ -31,6 +32,8 @@ interface Viagem {
   ida: Reserva
   valor: number
   viajante: string
+  qtdPassageiros: number
+  acompanhantes: number
   compradoEm: Date
   dataVoo: Date | null
   antecedencia: number | null
@@ -110,6 +113,11 @@ function agruparViagens(reservas: Reserva[]): Viagem[] {
       ida,
       valor: linhas.reduce((s, l) => s + (l.valor ?? 0), 0),
       viajante: normalizarNome(ida.passageiro_nome),
+      // Antes de agosto de 2026 a reserva só guardava o primeiro adulto, então
+      // reserva antiga conta uma pessoa mesmo tendo levado três. Não dá para
+      // inventar o que não foi gravado.
+      qtdPassageiros: ida.passageiros?.length ?? 1,
+      acompanhantes: Math.max((ida.passageiros?.length ?? 1) - 1, 0),
       compradoEm,
       dataVoo,
       antecedencia: dataVoo ? Math.max(diasEntre(compradoEm, dataVoo), 0) : null,
@@ -271,6 +279,7 @@ export default function Relatorio() {
 
   const total       = viagens.reduce((s, v) => s + v.valor, 0)
   const ticketMedio = viagens.length ? total / viagens.length : 0
+  const totalPassageiros = viagens.reduce((s, v) => s + v.qtdPassageiros, 0)
   const comAntec    = viagens.filter(v => v.antecedencia != null)
   const antecMedia  = comAntec.length
     ? Math.round(comAntec.reduce((s, v) => s + (v.antecedencia ?? 0), 0) / comAntec.length)
@@ -416,7 +425,8 @@ export default function Relatorio() {
             {/* KPIs */}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-4">
               <Kpi rotulo="Gasto no período" valor={brl(total)} apoio={`${viagens.length} ${viagens.length === 1 ? 'viagem' : 'viagens'}`} />
-              <Kpi rotulo="Ticket médio" valor={brl(ticketMedio)} apoio="por viagem" />
+              <Kpi rotulo="Pessoas transportadas" valor={String(totalPassageiros)}
+                apoio={totalPassageiros > viagens.length ? 'somando acompanhantes' : 'uma por viagem'} />
               <Kpi rotulo="Antecedência média"
                 valor={antecMedia != null ? `${antecMedia} ${antecMedia === 1 ? 'dia' : 'dias'}` : '—'}
                 apoio={antecMedia != null && antecMedia < 14 ? 'Compra tardia encarece a tarifa' : 'dias entre a compra e o voo'}
