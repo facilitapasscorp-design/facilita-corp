@@ -41,7 +41,14 @@ interface PoliticaEditForm {
   antecedencia_minima_dias: string; familias_permitidas: string[]; max_parcelas: string
 }
 
-type Secao = 'empresas' | 'usuarios' | 'reservas' | 'politicas' | 'chamados'
+interface Lead {
+  id: string; nome_completo: string; empresa: string
+  email: string; telefone: string; gasto_mensal: string | null
+  status: 'Novo' | 'Em contato' | 'Cliente' | 'Descartado'
+  created_at: string
+}
+
+type Secao = 'empresas' | 'usuarios' | 'reservas' | 'politicas' | 'chamados' | 'contatos'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function mascaraCNPJ(v: string) {
@@ -69,6 +76,22 @@ const STATUS_CHAMADO_BADGE: Record<Chamado['status'], { bg: string; color: strin
   'Resolvido':    { bg: '#dcfce7', color: '#16a34a' },
 }
 const CHAMADO_STATUS_OPCOES: Chamado['status'][] = ['Aberto', 'Em andamento', 'Resolvido']
+
+const STATUS_LEAD_BADGE: Record<Lead['status'], { bg: string; color: string }> = {
+  'Novo':       { bg: '#fef9c3', color: '#92400e' },
+  'Em contato': { bg: '#dbeafe', color: '#1d4ed8' },
+  'Cliente':    { bg: '#dcfce7', color: '#16a34a' },
+  'Descartado': { bg: '#f3f4f6', color: '#6b7280' },
+}
+const LEAD_STATUS_OPCOES: Lead['status'][] = ['Novo', 'Em contato', 'Cliente', 'Descartado']
+
+// O formulário do site grava a faixa como código; aqui ela vira texto legível.
+const GASTO_LABEL: Record<string, string> = {
+  'ate-5k':    'Até R$ 5 mil',
+  '5k-20k':    'R$ 5 a 20 mil',
+  '20k-50k':   'R$ 20 a 50 mil',
+  'acima-50k': 'Acima de R$ 50 mil',
+}
 
 const INPUT = 'w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow'
 
@@ -112,6 +135,15 @@ function IconChamado({ cls }: { cls: string }) {
     <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
       <path strokeLinecap="round" strokeLinejoin="round"
         d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-1.163 0-2.274-.196-3.293-.552L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+    </svg>
+  )
+}
+
+function IconContato({ cls }: { cls: string }) {
+  return (
+    <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round"
+        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
     </svg>
   )
 }
@@ -185,6 +217,9 @@ export default function Admin() {
   const [chamados, setChamados] = useState<Chamado[]>([])
   const [filtroStatusChamado, setFiltroStatusChamado] = useState('')
   const [salvandoStatusChamado, setSalvandoStatusChamado] = useState<string | null>(null)
+  const [leads, setLeads] = useState<Lead[]>([])
+  const [filtroStatusLead, setFiltroStatusLead] = useState('')
+  const [salvandoStatusLead, setSalvandoStatusLead] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -198,17 +233,19 @@ export default function Admin() {
   }, [router])
 
   async function carregarTudo(supabase: ReturnType<typeof createClient>) {
-    const [empRes, usrRes, resRes, polRes, chamRes] = await Promise.all([
+    const [empRes, usrRes, resRes, polRes, chamRes, leadRes] = await Promise.all([
       supabase.from('empresas').select('*').order('nome'),
       supabase.from('usuarios_empresas').select('*, empresas(nome)').order('created_at', { ascending: false }),
       supabase.from('reservas').select('*').order('created_at', { ascending: false }),
       supabase.from('politicas_viagem').select('*'),
       supabase.from('chamados').select('*').order('created_at', { ascending: false }),
+      supabase.from('leads').select('*').order('created_at', { ascending: false }),
     ])
     setEmpresas((empRes.data ?? []) as Empresa[])
     setUsuarios((usrRes.data ?? []) as UsuarioEmpresa[])
     setReservas((resRes.data ?? []) as Reserva[])
     setChamados((chamRes.data ?? []) as Chamado[])
+    setLeads((leadRes.data ?? []) as Lead[])
 
     const mapa: Record<string, InfoUsuario> = {}
     for (const u of (usrRes.data ?? []) as UsuarioEmpresa[]) {
@@ -331,6 +368,14 @@ export default function Admin() {
     setSalvandoStatusChamado(null)
   }
 
+  async function mudarStatusLead(lead: Lead, novoStatus: Lead['status']) {
+    setSalvandoStatusLead(lead.id)
+    const supabase = createClient()
+    const { error } = await supabase.from('leads').update({ status: novoStatus }).eq('id', lead.id)
+    if (!error) setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, status: novoStatus } : l))
+    setSalvandoStatusLead(null)
+  }
+
   // Reservas filtradas
   const reservasFiltradas = reservas.filter(r => {
     const info = mapaInfo[r.user_id]
@@ -346,12 +391,17 @@ export default function Admin() {
   })
   const chamadosAbertos = chamados.filter(c => c.status === 'Aberto').length
 
+  // Contatos do site
+  const leadsFiltrados = leads.filter(l => !filtroStatusLead || l.status === filtroStatusLead)
+  const leadsNovos = leads.filter(l => l.status === 'Novo').length
+
   const navItems: { id: Secao; label: string; icon: (active: boolean) => React.ReactNode; badge?: number }[] = [
     { id: 'empresas',  label: 'Empresas',  icon: a => <IconPredio   cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
     { id: 'usuarios',  label: 'Usuários',  icon: a => <IconPessoa   cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
     { id: 'reservas',  label: 'Reservas',  icon: a => <IconPassagem cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
     { id: 'politicas', label: 'Políticas', icon: a => <IconPolitica cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} /> },
     { id: 'chamados',  label: 'Chamados',  icon: a => <IconChamado  cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} />, badge: chamadosAbertos },
+    { id: 'contatos',  label: 'Contatos',  icon: a => <IconContato  cls={`w-5 h-5 ${a ? 'text-white' : 'text-white/50'}`} />, badge: leadsNovos },
   ]
 
   if (carregando) {
@@ -761,6 +811,97 @@ export default function Admin() {
                                   className="text-xs border border-gray-200 rounded-lg px-2 py-1 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50"
                                 >
                                   {CHAMADO_STATUS_OPCOES.map(s => (
+                                    <option key={s} value={s}>{s}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── CONTATOS DO SITE ─────────────────────────────────── */}
+          {secao === 'contatos' && (
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-wrap gap-3">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Contatos do site</h2>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    Quem preencheu o formulário em corp.facilitapass.com.br
+                  </p>
+                </div>
+                <select
+                  value={filtroStatusLead}
+                  onChange={e => setFiltroStatusLead(e.target.value)}
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">Todos os status</option>
+                  {LEAD_STATUS_OPCOES.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="px-6 py-2 bg-gray-50 border-b border-gray-100 text-xs text-gray-400">
+                {leadsFiltrados.length} {leadsFiltrados.length === 1 ? 'contato' : 'contatos'}
+              </div>
+
+              {leadsFiltrados.length === 0 ? (
+                <div className="py-16 text-center text-gray-400 text-sm">
+                  Nenhum contato ainda.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <TableHead cols={['Data', 'Nome', 'Empresa', 'E-mail', 'Telefone', 'Gasto mensal', 'Status']} />
+                    <tbody className="divide-y divide-gray-50">
+                      {leadsFiltrados.map(l => {
+                        const st = STATUS_LEAD_BADGE[l.status] ?? STATUS_LEAD_BADGE['Novo']
+                        const salvando = salvandoStatusLead === l.id
+                        return (
+                          <tr key={l.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="py-3.5 px-4 text-sm text-gray-500 whitespace-nowrap">
+                              {new Date(l.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                            </td>
+                            <td className="py-3.5 px-4 text-sm font-semibold text-gray-900 whitespace-nowrap">{l.nome_completo}</td>
+                            <td className="py-3.5 px-4 text-sm text-gray-700 whitespace-nowrap">{l.empresa}</td>
+                            <td className="py-3.5 px-4 text-sm whitespace-nowrap">
+                              <a href={`mailto:${l.email}`} className="text-blue-700 hover:underline">{l.email}</a>
+                            </td>
+                            <td className="py-3.5 px-4 text-sm whitespace-nowrap">
+                              <a
+                                href={`https://wa.me/55${l.telefone.replace(/\D/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-green-700 hover:underline"
+                              >
+                                {l.telefone}
+                              </a>
+                            </td>
+                            <td className="py-3.5 px-4 text-sm text-gray-600 whitespace-nowrap">
+                              {l.gasto_mensal ? (GASTO_LABEL[l.gasto_mensal] ?? l.gasto_mensal) : '—'}
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className="text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+                                  style={{ backgroundColor: st.bg, color: st.color }}
+                                >
+                                  {l.status}
+                                </span>
+                                <select
+                                  value={l.status}
+                                  disabled={salvando}
+                                  onChange={e => mudarStatusLead(l, e.target.value as Lead['status'])}
+                                  className="text-xs border border-gray-200 rounded-lg px-2 py-1 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50"
+                                >
+                                  {LEAD_STATUS_OPCOES.map(s => (
                                     <option key={s} value={s}>{s}</option>
                                   ))}
                                 </select>
