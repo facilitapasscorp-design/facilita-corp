@@ -1084,6 +1084,25 @@ export default function Busca() {
     setPassageirosCarregados(true)
   }
 
+  // "Não conseguimos salvar" não ajuda ninguém a resolver nada. Cada motivo
+  // conhecido vira uma frase que diz o que fazer.
+  function motivoFalhaAoSalvar(tecnico: string): string {
+    const m = (tecnico || '').toLowerCase()
+    if (m.includes('does not exist') || m.includes('schema cache') || m.includes('relation')) {
+      return 'A lista de passageiros ainda não foi criada no banco de dados. Avise o administrador do sistema. Sua reserva continua normal.'
+    }
+    if (m.includes('row-level security') || m.includes('permission') || m.includes('policy')) {
+      return 'Seu acesso não tem permissão para salvar passageiros nesta empresa. Sua reserva continua normal.'
+    }
+    if (m.includes('duplicate') || m.includes('unique')) {
+      return 'Essa pessoa já está salva na sua empresa. Use o botão Buscar passageiro.'
+    }
+    if (m.includes('invalid input') || m.includes('date')) {
+      return 'Confira a data de nascimento. Sua reserva continua normal.'
+    }
+    return 'Não conseguimos salvar agora. Tente de novo em instantes. Sua reserva continua normal.'
+  }
+
   // Salva na base da empresa. Só roda quando a pessoa clica: ninguém guarda
   // CPF de terceiro por acidente.
   async function salvarPassageiro(idx: number) {
@@ -1114,13 +1133,24 @@ export default function Busca() {
       updated_at: new Date().toISOString(),
     }
 
+    // Nada de upsert aqui: o índice único de CPF é parcial (ignora quem não
+    // tem CPF, como bebê de colo), e o Postgres recusa ON CONFLICT sobre
+    // índice parcial. Procurar antes e decidir é o caminho que funciona.
     const supabase = createClient()
-    const { error } = cpf
-      ? await supabase.from('passageiros').upsert(linha, { onConflict: 'empresa_id,cpf' })
+    let consulta = supabase.from('passageiros').select('id').eq('empresa_id', empresaId)
+    consulta = cpf
+      ? consulta.eq('cpf', cpf)
+      : consulta.eq('nome', linha.nome).eq('sobrenome', linha.sobrenome).is('cpf', null)
+
+    const { data: existente } = await consulta.maybeSingle()
+
+    const { error } = existente?.id
+      ? await supabase.from('passageiros').update(linha).eq('id', existente.id)
       : await supabase.from('passageiros').insert(linha)
 
     if (error) {
-      setErroSalvarPassageiro('Não conseguimos salvar agora. A reserva continua normal.')
+      console.error('[PASSAGEIRO] Falha ao salvar:', error)
+      setErroSalvarPassageiro(motivoFalhaAoSalvar(error.message))
       setSalvandoPassageiro(null)
       return
     }
