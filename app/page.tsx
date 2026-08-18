@@ -43,17 +43,16 @@ export default function Site() {
         <div className={s.heroiConteudo}>
           <div className={s.wrap}>
             <h1>
-              Viagem a trabalho pode ser simples: com regra, com relatório e{' '}
-              <em>com gente do&nbsp;lado</em>.
+              Ajudamos sua empresa a <em>viajar melhor</em>, com mais controle,
+              economia e gestão.
             </h1>
             <p className={s.subHeroi}>
-              Sua equipe compra em poucos cliques, a política da empresa vale na hora
-              e você vê o gasto antes da fatura chegar.
+              Tecnologia própria para emitir em minutos e atendimento humano quando precisar.
             </p>
             <div className={s.ctaLinha}>
               <a href="#contato" className={`${s.btn} ${s.btnOuro} ${s.btnG}`}>Falar com a gente</a>
               <p className={s.notaPreco}>
-                Sua empresa não paga nada a mais por usar. Somos remunerados pelas companhias aéreas.
+                Sua empresa não paga nada a mais por usar.
               </p>
             </div>
           </div>

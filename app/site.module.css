@@ -73,8 +73,8 @@
 }
 .heroiConteudo { position: relative; z-index: 2; padding: 92px 0 0; }
 .heroi h1 {
-  font-size: clamp(31px, 4.5vw, 46px); line-height: 1.12; letter-spacing: -.025em;
-  color: #fff; font-weight: 700; max-width: 21ch;
+  font-size: clamp(32px, 4.8vw, 50px); line-height: 1.1; letter-spacing: -.028em;
+  color: #fff; font-weight: 700; max-width: 19ch;
 }
 .heroi h1 em { font-style: normal; color: var(--gold); }
 .subHeroi { font-size: 19px; max-width: 50ch; margin-top: 28px; color: rgba(255, 255, 255, .8); }
