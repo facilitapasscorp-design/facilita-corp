@@ -149,7 +149,9 @@ export default function Privacidade() {
         <h2>Como falar com a gente</h2>
 
         <p>
-          Facilita Pass Corp, soluções em viagens corporativas.<br />
+          <strong>Facilita Pass Corp</strong>, soluções em viagens corporativas.<br />
+          CNPJ 31.071.738/0001-73<br />
+          Av. Pres. Juscelino K. de Oliveira, 665, Loja 10, Zona 2, Maringá, PR, 87010-440<br />
           E-mail: <a href="mailto:corp@facilitapass.com.br">corp@facilitapass.com.br</a>
         </p>
 

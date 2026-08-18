@@ -155,12 +155,22 @@ export default function Termos() {
           clientes ativos.
         </p>
 
+        <h2>Quem é a Facilita Pass</h2>
+
+        <p>
+          <strong>Facilita Pass Corp</strong>, soluções em viagens corporativas.<br />
+          CNPJ 31.071.738/0001-73<br />
+          Av. Pres. Juscelino K. de Oliveira, 665, Loja 10, Zona 2, Maringá, PR, 87010-440<br />
+          E-mail: <a href="mailto:corp@facilitapass.com.br">corp@facilitapass.com.br</a>
+        </p>
+
         <h2>Lei aplicável</h2>
 
         <p>
           Estes termos são regidos pelas leis brasileiras. Antes de qualquer medida judicial,
           nos comprometemos a tentar resolver diretamente pelo{' '}
-          <a href="mailto:corp@facilitapass.com.br">corp@facilitapass.com.br</a>.
+          <a href="mailto:corp@facilitapass.com.br">corp@facilitapass.com.br</a>. Fica eleito
+          o foro da comarca de Maringá, no Paraná.
         </p>
 
         <div className={s.rodape}>

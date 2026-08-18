@@ -234,7 +234,10 @@ export default function Site() {
               width={626}
               height={132}
             />
-            <div>© {new Date().getFullYear()} Facilita Pass Corp. Todos os direitos reservados.</div>
+            <div>© {new Date().getFullYear()} Facilita Pass Corp. CNPJ 31.071.738/0001-73</div>
+            <div className={s.endereco}>
+              Av. Pres. Juscelino K. de Oliveira, 665, Loja 10, Zona 2, Maringá, PR
+            </div>
           </div>
           <div className={s.rodapeLinks}>
             <Link href="/privacidade">Privacidade</Link>

@@ -224,6 +224,7 @@
 .logoRodape { height: 44px; width: auto; margin-bottom: 12px; }
 .rodape a { color: #fff; font-weight: 600; }
 .rodapeLinks { display: flex; gap: 22px; flex-wrap: wrap; }
+.endereco { margin-top: 4px; font-size: 13px; color: rgba(255, 255, 255, .45); }
 
 /* ── Telas menores ─────────────────────────────────────────── */
 @media (max-width: 860px) {
