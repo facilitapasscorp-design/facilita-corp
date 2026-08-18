@@ -209,7 +209,11 @@ export async function POST(req: NextRequest) {
   if (ehErro(ctx)) return ctx
 
   try {
-    const { vooIda, vooVolta, passageiros: passageirosRaw, dataIda, dataVolta } = await req.json()
+    const { vooIda, vooVolta, passageiros: passageirosRaw, dataIda, dataVolta, violacoesPolitica } = await req.json()
+    // Violações de política com a justificativa que o comprador escolheu na
+    // tela. Até agora isso era calculado, mostrado e descartado — ninguém
+    // conseguia responder quantas viagens saíram fora da regra, nem por quê.
+    const violacoes: Any[] = Array.isArray(violacoesPolitica) ? violacoesPolitica : []
     const passageiros: Any[] = Array.isArray(passageirosRaw) ? passageirosRaw : [passageirosRaw]
 
     const token = process.env.WOOBA_TOKEN!
@@ -306,6 +310,8 @@ export async function POST(req: NextRequest) {
         passageiro_nome: nomePassageiro,
         valor:           l.valor,
         status:          'Ativa',
+        fora_politica:    violacoes.length > 0,
+        politica_motivos: violacoes.length ? violacoes : null,
       }))
 
       const { error } = await ctx.supabase.from('reservas').insert(linhas)

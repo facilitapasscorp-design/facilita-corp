@@ -214,6 +214,24 @@ const CIA: Record<string, { label: string; bg: string }> = {
   IB: { label: 'Iberia',bg: '#8B1A1A' },
 }
 
+
+/**
+ * Motivos prontos para uma exceção de política.
+ *
+ * Escolha deliberada por lista em vez de texto livre: para quem está
+ * comprando é um clique em vez de redação, e para o relatório vira número
+ * somável. Texto livre puro produziria "urgente", "urgencia" e "URGENTE"
+ * como três motivos distintos, e o gestor não conseguiria ver que metade das
+ * exceções do mês é o mesmo problema de processo.
+ */
+const MOTIVOS_EXCECAO = [
+  'Reunião marcada em cima da hora',
+  'Urgência ou emergência',
+  'Não havia opção dentro da política',
+  'Autorizado pelo gestor',
+  'Outro',
+] as const
+
 const INPUT = 'mt-1 w-full px-4 py-2.5 border border-gray-200 rounded-lg text-base sm:text-sm text-[#18283A] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694]'
 
 function AeroportoInput({ value, onChange, placeholder, icon }: { value: string; onChange: (iata: string) => void; placeholder: string; icon?: React.ReactNode }) {
@@ -935,7 +953,10 @@ export default function Busca() {
   const [codigoPagamento,     setCodigoPagamento]     = useState<number>(2)
   const [carregandoFormas,    setCarregandoFormas]    = useState(false)
   const [politica, setPolitica] = useState<PoliticaViagem | null>(null)
-  const [avisoPolitica, setAvisoPolitica] = useState<{ viagem: Viagem; motivos: string[]; onContinuar: () => void } | null>(null)
+  const [avisoPolitica, setAvisoPolitica] = useState<{ viagem: Viagem; motivos: string[]; trecho: 'ida' | 'volta'; aplicar: (v: Viagem) => void } | null>(null)
+  const [motivoExcecao, setMotivoExcecao] = useState('')
+  const [motivoDetalhe, setMotivoDetalhe] = useState('')
+  const [violacoesPolitica, setViolacoesPolitica] = useState<{ trecho: string; motivos: string[]; categoria: string; detalhe: string }[]>([])
   const [avisoGravacao, setAvisoGravacao] = useState<string | null>(null)
   const [avisosBusca, setAvisosBusca] = useState<string[]>([])
   const [nomeUsuario, setNomeUsuario] = useState<string | null>(null)
@@ -1068,7 +1089,7 @@ export default function Busca() {
     try {
       const res = await fetch('/api/tarifar-reservar', {
         method: 'POST', headers: await authHeaders(),
-        body: JSON.stringify({ vooIda: vooIdaSelecionado, vooVolta: vooVoltaSelecionado, passageiros, dataIda, dataVolta }),
+        body: JSON.stringify({ vooIda: vooIdaSelecionado, vooVolta: vooVoltaSelecionado, passageiros, dataIda, dataVolta, violacoesPolitica }),
       })
       const data = await res.json()
       if (data.erro) { setErroReserva(data.erro); setCarregandoReserva(false); return }
@@ -1123,6 +1144,7 @@ export default function Busca() {
     setEtapa('selecao'); setGruposIda(null); setGruposVolta(null)
     setVooIdaSelecionado(null); setVooVoltaSelecionado(null); setFase('ida')
     setLocalizador(''); setLocalizadores([]); setTotalReservas(1); setNumeroBilhete(''); setNomeBilhete(''); setEmitidos({})
+    setViolacoesPolitica([]); setMotivoExcecao(''); setMotivoDetalhe('')
     setAdultos(1); setCriancas(0); setBebes(0); setPassageiros([passageiroVazio('ADT')])
     setOrigem(''); setDestino(''); setDataIda(''); setDataVolta('')
     setCartaoNumero(''); setCartaoTitular(''); setCartaoValidade(''); setCartaoCVV('')
@@ -1378,14 +1400,24 @@ export default function Busca() {
                   <div className="space-y-2">
                     {gruposOrdenados.map((voo, idx) => (
                       <VooCard key={voo.id || idx} voo={voo}
-                        onSelecionar={fase === 'volta' ? selecionarVooVolta : selecionarVooIda}
+                        onSelecionar={viagem => {
+                          // Trocou por um voo dentro da política: some a violação
+                          // que este trecho tinha registrado antes.
+                          const trecho = fase === 'volta' ? 'volta' : 'ida'
+                          setViolacoesPolitica(prev => prev.filter(v => v.trecho !== trecho))
+                          ;(fase === 'volta' ? selecionarVooVolta : selecionarVooIda)(viagem)
+                        }}
                         onVerDetalhes={setVooDetalhes}
                         labelBotao={fase === 'volta' ? 'Selecionar volta' : tipo === 'idavolta' ? 'Selecionar ida' : 'Selecionar'}
                         politica={politica}
                         dataVoo={dataIda}
                         onViolacao={(viagem, motivos) => {
-                          const fn = fase === 'volta' ? selecionarVooVolta : selecionarVooIda
-                          setAvisoPolitica({ viagem, motivos, onContinuar: () => { setAvisoPolitica(null); fn(viagem) } })
+                          setMotivoExcecao(''); setMotivoDetalhe('')
+                          setAvisoPolitica({
+                            viagem, motivos,
+                            trecho: fase === 'volta' ? 'volta' : 'ida',
+                            aplicar: fase === 'volta' ? selecionarVooVolta : selecionarVooIda,
+                          })
                         }} />
                     ))}
                   </div>
@@ -1651,8 +1683,8 @@ export default function Busca() {
       {avisoPolitica && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
-            <div className="flex items-start gap-3 mb-5">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start gap-3 mb-4">
               <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#fef9c3' }}>
                 <svg className="w-5 h-5" style={{ color: '#d97706' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -1668,16 +1700,55 @@ export default function Busca() {
                     </li>
                   ))}
                 </ul>
-                <p className="text-sm text-gray-500 mt-3">Deseja continuar mesmo assim?</p>
               </div>
             </div>
-            <div className="flex gap-3">
+
+            <div className="border-t border-gray-100 pt-4">
+              <p className="text-sm font-semibold text-gray-900 mb-1">Por que você precisa desta opção?</p>
+              <p className="text-xs text-gray-500 mb-3">
+                Esta justificativa aparece no relatório de viagens da sua empresa.
+              </p>
+
+              <div className="space-y-1.5">
+                {MOTIVOS_EXCECAO.map(m => (
+                  <label key={m}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                      motivoExcecao === m ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:bg-gray-50'
+                    }`}>
+                    <input type="radio" name="motivo-excecao" value={m}
+                      checked={motivoExcecao === m}
+                      onChange={() => setMotivoExcecao(m)}
+                      className="accent-gray-900" />
+                    <span className="text-sm text-gray-700">{m}</span>
+                  </label>
+                ))}
+              </div>
+
+              {motivoExcecao === 'Outro' && (
+                <input type="text" autoFocus value={motivoDetalhe}
+                  onChange={e => setMotivoDetalhe(e.target.value)}
+                  placeholder="Descreva o motivo"
+                  className="mt-2 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-[#18283A] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-[#7a8694]" />
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-5">
               <button onClick={() => setAvisoPolitica(null)}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
                 Escolher outro voo
               </button>
-              <button onClick={avisoPolitica.onContinuar}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+              <button
+                disabled={!motivoExcecao || (motivoExcecao === 'Outro' && motivoDetalhe.trim().length < 3)}
+                onClick={() => {
+                  const { viagem, motivos, trecho, aplicar } = avisoPolitica
+                  setViolacoesPolitica(prev => [
+                    ...prev.filter(v => v.trecho !== trecho),
+                    { trecho, motivos, categoria: motivoExcecao, detalhe: motivoDetalhe.trim() },
+                  ])
+                  setAvisoPolitica(null)
+                  aplicar(viagem)
+                }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
                 style={{ backgroundColor: '#18283A' }}>
                 Continuar mesmo assim
               </button>
