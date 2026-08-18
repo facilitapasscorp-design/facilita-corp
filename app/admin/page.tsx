@@ -179,6 +179,7 @@ export default function Admin() {
   // Políticas
   const [politicaEdits, setPoliticaEdits] = useState<Record<string, PoliticaEditForm>>({})
   const [salvandoPolitica, setSalvandoPolitica] = useState<string | null>(null)
+  const [avisoPolitica, setAvisoPolitica] = useState<Record<string, { ok: boolean; texto: string }>>({})
 
   // Chamados
   const [chamados, setChamados] = useState<Chamado[]>([])
@@ -298,8 +299,9 @@ export default function Admin() {
     const form = politicaEdits[empresaId]
     if (!form) return
     setSalvandoPolitica(empresaId)
+    setAvisoPolitica(a => { const c = { ...a }; delete c[empresaId]; return c })
     const supabase = createClient()
-    await supabase.from('politicas_viagem').upsert({
+    const { error } = await supabase.from('politicas_viagem').upsert({
       empresa_id:                 empresaId,
       limite_valor_nacional:      form.limite_valor_nacional      ? Number(form.limite_valor_nacional)      : null,
       limite_valor_internacional: form.limite_valor_internacional ? Number(form.limite_valor_internacional) : null,
@@ -308,6 +310,16 @@ export default function Admin() {
       max_parcelas:               form.max_parcelas               ? Number(form.max_parcelas)               : null,
       ativa: true,
     }, { onConflict: 'empresa_id' })
+
+    // Antes esta gravação era disparada e esquecida: erro nenhum chegava à
+    // tela, então uma política que não salvou parecia salva — e só se
+    // descobria quando o aviso não aparecia na busca, dias depois.
+    if (error) {
+      console.error('[POLITICA] falha ao salvar de', empresaId, error.message)
+      setAvisoPolitica(a => ({ ...a, [empresaId]: { ok: false, texto: `Não salvou: ${error.message}` } }))
+    } else {
+      setAvisoPolitica(a => ({ ...a, [empresaId]: { ok: true, texto: 'Política salva.' } }))
+    }
     setSalvandoPolitica(null)
   }
 
@@ -671,7 +683,13 @@ export default function Admin() {
                             </div>
                           </div>
                         </div>
-                        <div className="mt-5 flex justify-end">
+                        <div className="mt-5 flex justify-end items-center gap-3">
+                          {avisoPolitica[empresa.id] && (
+                            <span className="text-sm font-medium"
+                              style={{ color: avisoPolitica[empresa.id].ok ? '#0ca30c' : '#d03b3b' }}>
+                              {avisoPolitica[empresa.id].ok ? '✓ ' : '⚠ '}{avisoPolitica[empresa.id].texto}
+                            </span>
+                          )}
                           <button onClick={() => salvarPolitica(empresa.id)} disabled={salvando}
                             className="px-5 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-80 transition-opacity disabled:opacity-50"
                             style={{ backgroundColor: '#18283A' }}>

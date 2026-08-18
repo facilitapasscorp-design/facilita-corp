@@ -559,14 +559,31 @@ function verificarViolacoes(
   if (permitidas && permitidas.length > 0) {
     const familia = (tarifa.familia || tarifa.familiaCodigo || '').toLowerCase()
     if (familia) {
-      const ok = permitidas.some(p => {
-        const pl = p.toLowerCase()
-        if (pl === 'light')    return familia.includes('light') || familia.includes('lite')
-        if (pl === 'standard') return familia.includes('standard') || familia.includes('classic') || familia.includes('basic')
-        if (pl === 'plus')     return familia.includes('plus') || familia.includes('full') || familia.includes('premium') || familia.includes('confort')
-        return familia.includes(pl)
-      })
-      if (!ok) violacoes.push(`família "${tarifa.familia || tarifa.familiaCodigo}" fora das famílias permitidas`)
+      // Cada caixinha da tela cobre uma faixa de nomes. As companhias batizam a
+      // mesma coisa de formas diferentes — medido numa busca real de produção,
+      // aparecem BASE, BASIC, CLASSIC, DISCOUNT, ECONOMY BASIC, FLEX, FULL,
+      // LIGHT, STANDARD e PREMIUM ECONOMY FULL.
+      const FAIXAS: Record<string, string[]> = {
+        light:    ['light', 'lite', 'base', 'basic', 'discount', 'promo'],
+        standard: ['standard', 'classic'],
+        plus:     ['plus', 'full', 'premium', 'confort', 'flex'],
+      }
+      const casa = (chave: string) =>
+        (FAIXAS[chave] ?? [chave]).some(termo => familia.includes(termo))
+
+      const ok = permitidas.some(p => casa(p.toLowerCase()))
+
+      // Se a família não cai em NENHUMA faixa conhecida, não é violação — é
+      // um nome que a gente ainda não mapeou. Antes, FLEX (a tarifa flexível
+      // da GOL, justamente a boa para viagem corporativa) era acusada mesmo
+      // com todas as caixinhas marcadas. Acusar tarifa correta destrói a
+      // confiança no aviso muito mais rápido do que deixar uma passar.
+      const conhecida = Object.keys(FAIXAS).some(chave => casa(chave))
+      if (!ok && conhecida) {
+        violacoes.push(`família "${tarifa.familia || tarifa.familiaCodigo}" fora das famílias permitidas`)
+      } else if (!conhecida) {
+        console.warn('[POLITICA] família não mapeada, tratada como permitida:', familia)
+      }
     }
   }
 
