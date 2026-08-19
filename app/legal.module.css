@@ -16,7 +16,7 @@
   line-height: 1.65;
 }
 .page * { box-sizing: border-box; }
-.page a { color: var(--navy); }
+.page :where(a) { color: var(--navy); }
 
 .topo {
   background: #fff;

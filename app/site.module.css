@@ -23,9 +23,12 @@
   width: 100%;
 }
 .page * { box-sizing: border-box; }
-.page p, .page h1, .page h2, .page h3, .page h4 { margin: 0; }
-.page a { color: inherit; text-decoration: none; }
-.page img { display: block; max-width: 100%; }
+/* :where() zera a especificidade do reset. Sem ele, `.page p` (0,1,1) vence
+   `.subHeroi` (0,1,0) e come a margem; e `.page a` vence `.btn`, deixando o
+   texto do botão escuro sobre o navy. Foi o que aconteceu no primeiro deploy. */
+.page :where(p, h1, h2, h3, h4) { margin: 0; }
+.page :where(a) { color: inherit; text-decoration: none; }
+.page :where(img) { display: block; max-width: 100%; }
 
 .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 
