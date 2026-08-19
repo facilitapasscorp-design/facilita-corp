@@ -209,6 +209,22 @@ function mascaraValidade(v: string): string {
   return v.replace(/\D/g, '').slice(0, 4).replace(/(\d{2})(\d)/, '$1/$2')
 }
 
+/** MM/AA precisa ser um mês real e um cartão que ainda não venceu.
+ *  Sem isso, a consulta de parcelas nunca acontece e a emissão falha com um
+ *  erro sobre financiamento, que não diz nada a quem está comprando. */
+function erroDaValidade(v: string): string | null {
+  if (!v) return null
+  if (v.length < 5) return 'Complete no formato MM/AA.'
+  const [mm, aa] = v.split('/')
+  const mes = Number(mm)
+  const ano = 2000 + Number(aa)
+  if (!mes || mes < 1 || mes > 12) return 'Mês inválido. Use de 01 a 12.'
+  const agora = new Date()
+  const ultimoDia = new Date(ano, mes, 0)
+  if (ultimoDia < new Date(agora.getFullYear(), agora.getMonth(), 1)) return 'Cartão vencido.'
+  return null
+}
+
 const AZUL = '#18283A'
 const DOURADO = '#B79D7D'
 const FUNDO = '#F4F5F3'
@@ -1256,7 +1272,9 @@ export default function Busca() {
   }
 
   async function emitirPassagem() {
-    if (!cartaoNumero || !cartaoTitular || !cartaoValidade || !cartaoCVV) { setErroEmissao('Preencha todos os dados do cartão.'); return }
+    // Mesma trava do botão, repetida aqui de propósito: o botão pode estar
+    // desabilitado e ainda assim esta função ser chamada de outro caminho.
+    if (motivoBloqueioEmissao) { setErroEmissao(motivoBloqueioEmissao); return }
     setCarregandoEmissao(true); setErroEmissao('')
     const res = await fetch('/api/iniciar-emitir', {
       method: 'POST', headers: await authHeaders(),
@@ -1313,6 +1331,18 @@ export default function Busca() {
       setCarregandoFormas(false)
     }
   }
+
+  // O que ainda falta para o botão de emitir fazer sentido. Antes ele ficava
+  // liberado com o cartão pela metade: a WOOBA recusava e devolvia um erro
+  // sobre financiamento, que ninguém entende.
+  const erroValidade = erroDaValidade(cartaoValidade)
+  const motivoBloqueioEmissao: string | null = (() => {
+    if (cartaoNumero.replace(/\D/g, '').length < 16) return 'Informe o número completo do cartão para liberar a emissão.'
+    if (!cartaoTitular.trim()) return 'Informe o nome que está impresso no cartão.'
+    if (erroValidade) return `Validade do cartão: ${erroValidade.toLowerCase()}`
+    if (cartaoCVV.length < 3) return 'Informe o código de segurança do cartão (3 ou 4 dígitos).'
+    return null
+  })()
 
   const minDataVolta    = diaSeguinte(dataIda)
   const gruposExibidos  = fase === 'volta' ? gruposVolta : gruposIda
@@ -1831,7 +1861,13 @@ export default function Busca() {
                       <div><label className="text-sm font-medium text-gray-700">Número do cartão</label><input type="text" placeholder="0000 0000 0000 0000" value={cartaoNumero} onChange={e => { const val = mascaraCartao(e.target.value); setCartaoNumero(val) }} className={INPUT} /></div>
                       <div><label className="text-sm font-medium text-gray-700">Nome no cartão</label><input type="text" placeholder="JOAO SILVA" value={cartaoTitular} onChange={e => setCartaoTitular(e.target.value.toUpperCase())} className={INPUT} /></div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        <div><label className="text-sm font-medium text-gray-700">Validade</label><input type="text" placeholder="MM/AA" value={cartaoValidade} onChange={e => { const val = mascaraValidade(e.target.value); setCartaoValidade(val) }} className={INPUT} /></div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Validade</label>
+                          <input type="text" placeholder="MM/AA" value={cartaoValidade}
+                            onChange={e => { const val = mascaraValidade(e.target.value); setCartaoValidade(val) }}
+                            className={INPUT} />
+                          {erroValidade && <p className="text-xs text-red-600 mt-1">{erroValidade}</p>}
+                        </div>
                         <div><label className="text-sm font-medium text-gray-700">CVV</label><input type="text" placeholder="123" maxLength={4} value={cartaoCVV} onChange={e => setCartaoCVV(e.target.value.replace(/\D/g, '').slice(0, 4))} className={INPUT} /></div>
                         <div>
                           <label className="text-sm font-medium text-gray-700">Parcelas</label>
@@ -1852,9 +1888,14 @@ export default function Busca() {
                       </div>
                     )}
                     {erroEmissao && <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200"><p className="text-red-600 text-sm">{erroEmissao}</p></div>}
+                    {motivoBloqueioEmissao && !erroEmissao && (
+                      <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                        <p className="text-sm text-gray-500">{motivoBloqueioEmissao}</p>
+                      </div>
+                    )}
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">
                       <button onClick={() => setEtapa('passageiro')} className="sm:w-auto w-full px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">← Voltar</button>
-                      <button onClick={emitirPassagem} disabled={carregandoEmissao || carregandoFormas} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50" style={{ backgroundColor: '#18283A' }}>{carregandoEmissao ? 'Emitindo passagem...' : `Emitir passagem${multi ? ` (${ativo?.trecho === 'ida' ? 'ida' : 'volta'})` : ''}`}</button>
+                      <button onClick={emitirPassagem} disabled={carregandoEmissao || carregandoFormas || !!motivoBloqueioEmissao} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50" style={{ backgroundColor: '#18283A' }}>{carregandoEmissao ? 'Emitindo passagem...' : `Emitir passagem${multi ? ` (${ativo?.trecho === 'ida' ? 'ida' : 'volta'})` : ''}`}</button>
                     </div>
                   </div>
                 )}

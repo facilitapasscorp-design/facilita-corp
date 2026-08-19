@@ -36,6 +36,11 @@ const REGRAS: Regra[] = [
     mensagem: 'O telefone informado não foi aceito. Confira o DDD e o número.' },
   { padrao: /surname|sobrenome|passenger name|nome do passageiro/i,
     mensagem: 'O nome de algum passageiro não foi aceito. Use exatamente como está no documento, sem acentos.' },
+  // A WOOBA devolve isso quando a emissão foi tentada sem as formas de
+  // pagamento terem sido carregadas com o cartão — na prática, cartão
+  // incompleto ou validade inválida. O texto dela não ajuda ninguém.
+  { padrao: /financiamento|parcelas/i,
+    mensagem: 'Não conseguimos validar o cartão para esta compra. Confira o número, a validade e o código de segurança, e escolha o parcelamento de novo.' },
   { padrao: /credit card|cart[ãa]o de cr[ée]dito|card number/i,
     mensagem: 'Os dados do cartão não foram aceitos. Confira número, validade e código de segurança.' },
   { padrao: /sess[ãa]o expirad|session expired|sessaoexpirada/i,

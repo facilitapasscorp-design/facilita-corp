@@ -275,12 +275,24 @@ export async function POST(req: NextRequest) {
     if (localizadores.every(l => l.valor == null)) {
       const precoIda   = vooIda?.Preco?.Total ?? 0
       const precoVolta = vooVolta?.Preco?.Total ?? 0
-      let algumCasou = false
-      for (const l of localizadores) {
-        if (l.trecho === 'ida' && precoIda)     { l.valor = precoIda;   algumCasou = true }
-        if (l.trecho === 'volta' && precoVolta) { l.valor = precoVolta; algumCasou = true }
+
+      // Localizador único com voo de volta significa que a WOOBA juntou as
+      // duas pernas na mesma reserva. Ele é marcado como 'ida' porque a
+      // primeira viagem de dentro dele é a ida — mas o valor é o da viagem
+      // inteira. Casar preço por trecho só faz sentido quando existem dois
+      // localizadores, que é o caso de companhias diferentes.
+      // (Visto em produção: reserva HKPRWM, Azul POA/CAC ida e volta, gravada
+      // com 718,71 quando o total para pagamento era 1.456,98.)
+      if (localizadores.length === 1 && localizadores[0]) {
+        localizadores[0].valor = vooVolta ? precoIda + precoVolta : precoIda
+      } else {
+        let algumCasou = false
+        for (const l of localizadores) {
+          if (l.trecho === 'ida' && precoIda)     { l.valor = precoIda;   algumCasou = true }
+          if (l.trecho === 'volta' && precoVolta) { l.valor = precoVolta; algumCasou = true }
+        }
+        if (!algumCasou && localizadores[0]) localizadores[0].valor = precoIda + precoVolta
       }
-      if (!algumCasou && localizadores[0]) localizadores[0].valor = precoIda + precoVolta
     }
 
     console.log('[RESERVAR] localizadores finais:', JSON.stringify(localizadores))
