@@ -227,7 +227,7 @@ function erroDaValidade(v: string): string | null {
 
 const AZUL = '#18283A'
 const DOURADO = '#B79D7D'
-const FUNDO = '#F4F5F3'
+const FUNDO = '#F1F1F3'
 
 const CIA: Record<string, { label: string; bg: string }> = {
   G3: { label: 'GOL',   bg: '#F97316' },
@@ -624,48 +624,50 @@ function VooCard({ voo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes, 
   onViolacao?: (viagem: Viagem, motivos: string[]) => void
 }) {
   const escalas      = voo.numParadas
-  const escalasLabel = escalas === 0 ? 'Direto' : escalas === 1 ? '1 escala' : `${escalas} escalas`
-  const escalasCor   = escalas === 0 ? '#16a34a' : '#d97706'
+  const escalasLabel = escalas === 0 ? 'direto' : escalas === 1 ? '1 escala' : `${escalas} escalas`
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all">
+    <div className="bg-white rounded-2xl border border-gray-200 hover:border-gray-300 transition-colors overflow-hidden">
 
-      {/* Cabeçalho compacto */}
-      <div className="px-4 py-3 flex items-center gap-3">
+      {/* Linha do voo: companhia, horários com a duração no meio, rota */}
+      <div className="px-5 py-4 flex items-center gap-4 flex-wrap sm:flex-nowrap">
         <AirlineBadge iata={voo.companhia} icone={voo.icone} />
 
-        {/* Horários */}
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-          <span className="text-sm font-semibold text-gray-900 tabular-nums">{formatHora(voo.horaSaida)}</span>
-          <span className="text-gray-300 text-xs">→</span>
-          <span className="text-sm font-semibold text-gray-900 tabular-nums">{formatHora(voo.horaChegada)}</span>
-          <span className="text-xs text-gray-400 ml-1">{voo.origem}·{voo.destino}</span>
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <span className="text-lg sm:text-xl font-semibold tabular-nums tracking-tight" style={{ color: AZUL }}>
+            {formatHora(voo.horaSaida)}
+          </span>
+          <div className="text-center shrink-0">
+            <p className="text-[11px] leading-tight text-gray-400">{formatDuracao(voo.duracao)}</p>
+            <div className="h-px w-12 sm:w-16 my-1 bg-gray-200 relative">
+              <span className="absolute -right-0.5 -top-[2px] w-[5px] h-[5px] rounded-full bg-gray-300" />
+            </div>
+            <p className="text-[11px] leading-tight text-gray-400">{escalasLabel}</p>
+          </div>
+          <span className="text-lg sm:text-xl font-semibold tabular-nums tracking-tight" style={{ color: AZUL }}>
+            {formatHora(voo.horaChegada)}
+          </span>
         </div>
 
-        {/* Duração + escalas */}
-        <div className="text-right shrink-0">
-          <p className="text-xs text-gray-500">{formatDuracao(voo.duracao)}</p>
-          <p className="text-xs font-medium" style={{ color: escalasCor }}>{escalasLabel}</p>
+        <div className="flex items-center gap-2 flex-wrap ml-auto">
+          <span className="text-[11px] border border-gray-200 rounded-md px-2 py-0.5 text-gray-500">
+            {voo.origem} → {voo.destino}
+          </span>
+          {voo.numeroVoo && (
+            <span className="text-[11px] border border-gray-200 rounded-md px-2 py-0.5 text-gray-500">
+              {nomeCompanhia(voo.companhia)} {voo.numeroVoo}
+            </span>
+          )}
+          {escalas > 0 && onVerDetalhes && voo.tarifas[0] && (
+            <button onClick={() => onVerDetalhes(voo.tarifas[0].viagem)}
+              className="text-[11px] underline text-gray-500 hover:text-gray-800 transition-colors">
+              Ver escalas
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Linha info: número do voo + ver detalhes */}
-      {(voo.numeroVoo || (escalas > 0 && onVerDetalhes)) && (
-        <div className="px-4 pb-2 flex items-center gap-2 text-xs text-gray-400">
-          {voo.numeroVoo && <span>{nomeCompanhia(voo.companhia)} {voo.numeroVoo}</span>}
-          {escalas > 0 && onVerDetalhes && voo.tarifas[0] && (
-            <>
-              {voo.numeroVoo && <span>·</span>}
-              <button onClick={() => onVerDetalhes(voo.tarifas[0].viagem)}
-                className="text-blue-500 hover:text-blue-700 underline transition-colors">
-                Ver detalhes
-              </button>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Tarifas — colunas finas */}
+      {/* Tarifas: uma coluna por família */}
       <div className="flex overflow-x-auto border-t border-gray-100 divide-x divide-gray-100">
         {voo.tarifas.map((tarifa, i) => {
           const violacoes  = politica && dataVoo ? verificarViolacoes(voo, tarifa, politica, dataVoo) : []
@@ -679,64 +681,43 @@ function VooCard({ voo, onSelecionar, labelBotao = 'Selecionar', onVerDetalhes, 
                 if (foraPolicy && onViolacao) onViolacao(tarifa.viagem, violacoes)
                 else onSelecionar(tarifa.viagem)
               }}
-              className={`flex-1 min-w-[110px] flex flex-col items-center gap-1 px-2.5 py-2.5 text-center transition-colors ${
-                menor ? 'bg-slate-50 hover:bg-slate-100' : 'bg-white hover:bg-gray-50'
+              className={`flex-1 min-w-[132px] flex flex-col items-start gap-1.5 px-4 py-3.5 text-left transition-colors ${
+                menor ? 'bg-gray-50/70 hover:bg-gray-100' : 'bg-white hover:bg-gray-50'
               }`}>
 
-              {/* Badge fora da política */}
-              {foraPolicy && (
-                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-sm leading-tight"
-                  style={{ backgroundColor: '#fef9c3', color: '#92400e' }}>⚠️ Fora da política</span>
-              )}
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{nomeFam}</span>
 
-              {/* Nome da família */}
-              <p className={`text-[10px] font-bold uppercase tracking-widest leading-none ${
-                menor ? 'text-slate-700' : 'text-gray-400'
-              }`}>{nomeFam}</p>
+              <span className="text-lg font-semibold tabular-nums tracking-tight" style={{ color: AZUL }}>
+                {formatPreco(tarifa.preco)}
+              </span>
 
-              {/* Preço */}
-              <p className={`text-base font-bold leading-tight tabular-nums ${
-                menor ? 'text-slate-900' : 'text-gray-700'
-              }`}>{formatPreco(tarifa.preco)}</p>
-
-              {/* Bagagem */}
-              <div className="flex items-center gap-1">
+              {/* Bagagem e política, na mesma linguagem de etiqueta */}
+              <span className="flex items-center gap-1.5 flex-wrap">
                 {tarifa.bagagemInclusa ? (
-                  <>
-                    <svg className="w-3.5 h-3.5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <rect x="5" y="7" width="14" height="13" rx="2"/>
-                      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                      <line x1="12" y1="11" x2="12" y2="16"/>
-                      <line x1="9.5" y1="13.5" x2="14.5" y2="13.5"/>
-                    </svg>
-                    <span className="text-[10px] text-blue-600 font-medium">
-                      {tarifa.bagagemQuantidade && tarifa.bagagemPeso
-                        ? `${tarifa.bagagemQuantidade}x ${tarifa.bagagemPeso}kg`
-                        : tarifa.bagagemPeso ? `${tarifa.bagagemPeso}kg`
-                        : tarifa.bagagemQuantidade ? `${tarifa.bagagemQuantidade} mala${tarifa.bagagemQuantidade > 1 ? 's' : ''}`
-                        : 'Inclusa'}
-                    </span>
-                  </>
+                  <span className="text-[10px] rounded-md px-2 py-0.5 border"
+                    style={{ borderColor: '#BBE5C4', backgroundColor: '#F0FBF3', color: '#1B7A38' }}>
+                    {tarifa.bagagemQuantidade && tarifa.bagagemPeso
+                      ? `Bagagem ${tarifa.bagagemQuantidade}x ${tarifa.bagagemPeso}kg`
+                      : tarifa.bagagemPeso ? `Bagagem ${tarifa.bagagemPeso}kg`
+                      : tarifa.bagagemQuantidade ? `${tarifa.bagagemQuantidade} mala${tarifa.bagagemQuantidade > 1 ? 's' : ''}`
+                      : 'Com bagagem'}
+                  </span>
                 ) : (
-                  <>
-                    <div className="relative w-3.5 h-3.5">
-                      <svg className="w-3.5 h-3.5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                        <rect x="5" y="7" width="14" height="13" rx="2"/>
-                        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                      </svg>
-                      <svg className="absolute inset-0 w-3.5 h-3.5 text-red-400" viewBox="0 0 24 24">
-                        <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"/>
-                      </svg>
-                    </div>
-                    <span className="text-[10px] text-gray-400">Sem bagagem</span>
-                  </>
+                  <span className="text-[10px] rounded-md px-2 py-0.5 border border-gray-200 text-gray-400">
+                    Sem bagagem
+                  </span>
                 )}
-              </div>
+                {foraPolicy && (
+                  <span className="text-[10px] rounded-md px-2 py-0.5 border"
+                    style={{ borderColor: '#FDE68A', backgroundColor: '#FEF9C3', color: '#92400E' }}>
+                    Fora da política
+                  </span>
+                )}
+              </span>
 
-              {/* Botão */}
-              <span className={`mt-0.5 text-[10px] font-semibold px-2.5 py-1 rounded-md ${
-                menor ? 'text-white' : 'bg-gray-100 text-gray-500'
-              }`} style={menor ? { backgroundColor: '#18283A' } : {}}>
+              <span className={`mt-1 text-[11px] font-semibold px-3 py-1.5 rounded-lg ${
+                menor ? 'text-white' : 'bg-gray-100 text-gray-600'
+              }`} style={menor ? { backgroundColor: AZUL } : {}}>
                 {labelBotao}
               </span>
             </button>
@@ -1572,7 +1553,7 @@ export default function Busca() {
                 )}
 
                 {!carregando && gruposOrdenados && gruposOrdenados.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {gruposOrdenados.map((voo, idx) => (
                       <VooCard key={voo.id || idx} voo={voo}
                         onSelecionar={viagem => {
